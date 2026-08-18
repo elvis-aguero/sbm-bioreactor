@@ -42,7 +42,14 @@ function sample_scalar_field(field; radius, n=121)
     values = Matrix{Float64}(undef, length(ys), length(xs))
     for (j, y) in enumerate(ys), (i, x) in enumerate(xs)
         if x^2 + y^2 <= radius^2 + 1e-12
-            values[j, i] = field(Point(x, y))
+            # The square-to-disk mesh mapping is only approximately circular, so
+            # a point that passes the disk-radius test can still land just
+            # outside the mapped mesh near the boundary; treat those as NaN too.
+            values[j, i] = try
+                field(Point(x, y))
+            catch err
+                err isa AssertionError ? NaN : rethrow()
+            end
         else
             values[j, i] = NaN
         end
