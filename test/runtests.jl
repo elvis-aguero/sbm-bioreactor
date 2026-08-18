@@ -1,9 +1,7 @@
-"""
-    test/runtests.jl
-
-Main test runner for the SBM_Bioreactor package. Executes various sub-testsets to 
-verify physical components, solver stability, and numerical convergence.
-"""
+# test/runtests.jl
+#
+# Main test runner for the SBM_Bioreactor package. Executes various sub-testsets to
+# verify physical components, solver stability, and numerical convergence.
 using Test
 using SBM_Bioreactor
 

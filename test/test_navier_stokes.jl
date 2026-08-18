@@ -1,8 +1,6 @@
-"""
-    test/test_navier_stokes.jl
-
-Test suite for verifying the Navier-Stokes formulation implementation.
-"""
+# test/test_navier_stokes.jl
+#
+# Test suite for verifying the Navier-Stokes formulation implementation.
 using Test
 using Gridap
 using SBM_Bioreactor
