@@ -125,7 +125,11 @@ function run_bioreactor_simulation(
     solver = FESolver(nls)
     
     xh = x_n
-    history = collect_history ? Any[x_n] : nothing
+    # Newton's solve!(xh, ...) mutates xh's underlying free-dof array in place, so
+    # storing xh itself in history would leave every entry aliasing the same buffer
+    # (all snapshots collapsing to the final state). Store an independent copy.
+    snapshot(x) = FEFunction(X, copy(get_free_dof_values(x)))
+    history = collect_history ? Any[snapshot(x_n)] : nothing
     times = collect_history ? Float64[0.0] : nothing
     
     for step in 1:nsteps
@@ -147,7 +151,7 @@ function run_bioreactor_simulation(
         x_nn = x_n
         x_n = xh
         if collect_history
-            push!(history, xh)
+            push!(history, snapshot(xh))
             push!(times, t)
         end
         
