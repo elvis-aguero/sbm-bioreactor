@@ -70,6 +70,37 @@ using SBM_Bioreactor
     @test haskey(profiled, :profile)
     @test profiled.profile.initial_setup_time >= 0.0
     @test isempty(profiled.profile.steps)
+
+    history_case = build_harv_2d_case(partition=(1, 1), dt=0.05, total_time=0.10, degree=2, blocked=true)
+    history_params = merge(
+        history_case.params,
+        (
+            use_explicit_jacobian = true,
+            enable_particle_flux = false,
+            freeze_viscosity = true,
+            include_convection = false,
+            enable_growth_source = false,
+            enable_nutrient_reaction = false,
+        ),
+    )
+    history_result = run_bioreactor_simulation(
+        history_case.X,
+        history_case.Y,
+        history_case.dΩ,
+        history_case.metadata.dt,
+        history_params,
+        history_case.metadata.nsteps;
+        collect_history=true,
+        write_vtk_interval=0,
+        nonlinear_show_trace=false,
+        max_order=1,
+        blocked_linear_solver=true,
+        blocked_outer_solver=:gmres,
+        transport_block_solver=:lu,
+    )
+
+    @test length(history_result.history) == history_case.metadata.nsteps + 1
+    @test history_result.history[2] !== history_result.history[3]
 end
 
 if get(ENV, "SBM_RUN_PLOTS_TESTS", "0") == "1"

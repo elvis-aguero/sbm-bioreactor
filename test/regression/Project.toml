@@ -1,0 +1,6 @@
+[deps]
+JSON3 = "0f8b85d8-7281-11e9-16c4-efb75df4cca4"
+SBM_Bioreactor = "0ea9b2ef-5af9-4974-a40f-5f7a103bf293"
+
+[compat]
+JSON3 = "1"

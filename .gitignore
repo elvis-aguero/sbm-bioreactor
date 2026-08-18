@@ -31,7 +31,10 @@
 ~/.julia/scratchspaces/
 docs/superpowers/plans/*.md.tmp
 docs/superpowers/specs/*.md.tmp
+docs/superpowers/
 Manifest.toml
+notebooks/artifacts/
+notebooks/notebooks/artifacts/
 results_*.pvd
 results_*.vtu
 tmp/

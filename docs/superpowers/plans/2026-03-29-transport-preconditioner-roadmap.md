@@ -1,5 +1,16 @@
 # Transport Preconditioner Roadmap
 
+## Why This Exists
+
+- The outer blocked `GMRES` path is now viable and should stay stable.
+- The current flow block is not the next experimental target.
+- The unresolved question is inside the transport block.
+- `Φ` is the only transport variable that directly changes flow coefficients.
+- `Γ` does not belong in the flow block, but it strongly affects migration.
+- That makes the next safe refinement a transport-side split, not a flow rewrite.
+- Version 1 tests whether `Γ | (Φ,C)` is strong enough.
+- If it is not, the fallback is `(Γ,Φ) | C`.
+
 ## Goal
 
 - [x] Keep the outer blocked `GMRES` path unchanged.

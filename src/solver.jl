@@ -693,6 +693,10 @@ function Algebra.solve!(x::AbstractVector, ns::ZeroedInitialGuessLinearSolverNS,
     return x
 end
 
+function _history_snapshot(x)
+    return deepcopy(x)
+end
+
 # -----------------------------------------------------------------------------
 # Time-stepping driver
 # -----------------------------------------------------------------------------
@@ -780,7 +784,7 @@ function run_bioreactor_simulation(
     solver = FESolver(nls)
     
     xh = x_n
-    history = collect_history ? Any[x_n] : nothing
+    history = collect_history ? Any[_history_snapshot(x_n)] : nothing
     times = collect_history ? Float64[0.0] : nothing
     step_profiles = profile_steps ? NamedTuple[] : nothing
     
@@ -821,7 +825,7 @@ function run_bioreactor_simulation(
         x_nn = x_n
         x_n = xh
         if collect_history
-            push!(history, xh)
+            push!(history, _history_snapshot(xh))
             push!(times, t)
         end
         

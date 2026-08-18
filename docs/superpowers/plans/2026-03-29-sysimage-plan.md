@@ -16,6 +16,8 @@
 - Build with `julia --project=. scripts/build_sysimage.jl`.
 - Launch with `julia --project=. -J artifacts/SBM_Bioreactor_sysimage.<platform-extension>`.
 - The build script chooses the correct shared-library extension for the host OS (`.dylib` on macOS, `.so` on Linux).
+- Install the notebook kernel with `julia --project=. scripts/install_sysimage_kernel.jl`.
+- Then select `Julia SBM Sysimage` inside Jupyter.
 - Rebuild after package or solver-signature changes.
 
 ## Workload choice
