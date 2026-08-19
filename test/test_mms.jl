@@ -110,14 +110,7 @@ using SBM_Bioreactor
     
     l2(e) = sqrt(sum(∫(e⋅e)dΩ))
     
-    # Pre-existing convergence failure, not caused by the analytic-vs-AD Jacobian choice:
-    # test_analytic_jacobian.jl independently confirms the analytic and AD Jacobians agree
-    # to machine precision on this same coupled system, so Newton's iterations are
-    # numerically identical either way. This test never actually ran to completion in CI
-    # before (earlier runs failed/timed out upstream of it), so this non-convergence was
-    # never caught. Marked @test_broken (not silently skipped) so it fails loudly -- and
-    # tells us to remove the annotation -- the moment it's fixed.
-    @test_broken l2(eu) < 1e-8
-    @test_broken l2(eΦ) < 1e-8
-    @test_broken l2(eΓ) < 1e-8
+    @test l2(eu) < 1e-8
+    @test l2(eΦ) < 1e-8
+    @test l2(eΓ) < 1e-8
 end
