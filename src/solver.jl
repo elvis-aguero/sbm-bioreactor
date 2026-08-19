@@ -28,14 +28,18 @@ function coupled_bioreactor_residual(x, x_prevs, y, dt, params, order=1, t=0.0)
     u, p, Φ, C, Γ = x
     v, q, w, z, v_γ = y
     
-    # Time discretization using BDF1 (Backward Euler) or BDF2
+    # Time discretization using BDF1 (Backward Euler) or BDF2.
+    # x_prevs is always a fixed-shape 2-tuple (see run_bioreactor_simulation) so that
+    # this function's argument types never change between order==1 and order==2 steps;
+    # letting x_prevs be a 1-tuple on the first step forces Gridap's AD/assembly
+    # pipeline to be JIT-compiled a second time from scratch for the new tuple type,
+    # roughly doubling the (already expensive) one-time compilation cost.
+    u_n, p_n, Φ_n, C_n, Γ_n = x_prevs[1]
     if order == 1
-        u_n, p_n, Φ_n, C_n, Γ_n = x_prevs[1]
         u_dot = (u - u_n) / dt
         Φ_dot = (Φ - Φ_n) / dt
         C_dot = (C - C_n) / dt
     else
-        u_n, p_n, Φ_n, C_n, Γ_n = x_prevs[1]
         u_nn, p_nn, Φ_nn, C_nn, Γ_nn = x_prevs[2]
         u_dot = (3.0*u - 4.0*u_n + u_nn) / (2.0*dt)
         Φ_dot = (3.0*Φ - 4.0*Φ_n + Φ_nn) / (2.0*dt)
@@ -136,9 +140,11 @@ function run_bioreactor_simulation(
         t = step * dt
         println("Step: $step, Time: $t")
         
-        # Use BDF1 for the first step, BDF2 for subsequent steps
+        # Use BDF1 for the first step, BDF2 for subsequent steps. x_prevs is always a
+        # 2-tuple (x_nn is simply unused when order==1) to keep its type stable across
+        # steps -- see the note in coupled_bioreactor_residual.
         order = step == 1 ? 1 : 2
-        x_prevs = order == 1 ? (x_n,) : (x_n, x_nn)
+        x_prevs = (x_n, x_nn)
         
         # Define the residual on the triangulation
         res(x, y) = ∫( coupled_bioreactor_residual(x, x_prevs, y, dt, params, order, t) )dΩ
