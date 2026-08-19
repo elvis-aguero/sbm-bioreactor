@@ -2,7 +2,7 @@
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "e3a936727e2a45c2019e7c3c405a03dafddd2f94"
+project_hash = "c4c289ee9798d59e471d31f1e2fb55682308242e"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "5970c86505ae9c07bf5bc521ef2bbbb3849e8b7b"
@@ -1369,7 +1369,7 @@ uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.1"
 
 [[deps.SBM_Bioreactor]]
-deps = ["Gridap", "GridapGmsh", "LineSearches", "Plots", "Test"]
+deps = ["Gridap", "GridapGmsh", "LineSearches", "Plots", "PrecompileTools", "Test"]
 path = "."
 uuid = "0ea9b2ef-5af9-4974-a40f-5f7a103bf293"
 version = "0.0.0"
