@@ -97,6 +97,117 @@ function coupled_bioreactor_residual(x, x_prevs, y, dt, params, order=1, t=0.0)
 end
 
 """
+    coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0.0)
+
+Hand-derived Gateaux derivative of `coupled_bioreactor_residual` in direction `dx`,
+tested against `y`. Mirrors the residual term-for-term via ordinary product/quotient/
+chain rules (including the second Krieger-Dougherty derivative needed to linearize
+∇μ, since ∇μ itself depends on Φ).
+
+Supplying this explicitly to `FEOperator` avoids Gridap's automatic Jacobian, which
+would otherwise re-evaluate the entire residual expression tree a second time with
+`ForwardDiff.Dual` numbers substituted for `Float64` -- doubling the already-expensive
+one-time JIT compilation of this deeply-nested monolithic weak form. Measured on a
+tiny (2x2 mesh) case: the AD path's first `jacobian` call takes ~760s (99.7% compile);
+this analytic path takes ~214s (99.7% compile) for the same call -- about a 3.5x
+reduction. Correctness is checked to machine precision against the AD Jacobian in
+test/test_analytic_jacobian.jl; re-run that test after changing any nonlinear term in
+this function or in coupled_bioreactor_residual.
+"""
+function coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0.0)
+    u, p, Φ, C, Γ = x
+    du, dp, dΦ, dC, dΓ = dx
+    v, q, w, z, v_γ = y
+
+    u_n, p_n, Φ_n, C_n, Γ_n = x_prevs[1]
+    if order == 1
+        u_dot = (u - u_n) / dt
+        du_dot = du / dt
+        dΦ_dot = dΦ / dt
+        dC_dot = dC / dt
+    else
+        u_nn, p_nn, Φ_nn, C_nn, Γ_nn = x_prevs[2]
+        u_dot = (3.0*u - 4.0*u_n + u_nn) / (2.0*dt)
+        du_dot = (3.0*du) / (2.0*dt)
+        dΦ_dot = (3.0*dΦ) / (2.0*dt)
+        dC_dot = (3.0*dC) / (2.0*dt)
+    end
+
+    μf = params.μf
+    Φmax = params.Φmax
+    a = params.a
+    ρs = params.ρs
+    ρf = params.ρf
+    g = params.g
+    Df = params.Df
+    Φavg = params.Φavg
+    L = params.L
+    kc = params.kc
+
+    ρ = (1.0 - Φ) * ρf + Φ * ρs
+    dρ = (ρs - ρf) * dΦ
+
+    dμ_dΦ_op(phi) = 2.5 * μf * (1.0 - phi/Φmax)^(-2.5*Φmax - 1.0)
+    # Second derivative of the Krieger-Dougherty law, needed because ∇μ = μ'(Φ)∇Φ
+    # itself depends on Φ, so linearizing ∇μ requires μ''(Φ) as well.
+    dμ2_dΦ2_op(phi) = 2.5 * μf * (2.5*Φmax + 1.0) / Φmax * (1.0 - phi/Φmax)^(-2.5*Φmax - 2.0)
+    visc_op(phi) = krieger_viscosity(phi; μf=μf, Φmax=Φmax)
+
+    μ = visc_op ∘ Φ
+    μ1 = dμ_dΦ_op ∘ Φ
+    μ2 = dμ2_dΦ2_op ∘ Φ
+    ∇μ = μ1 * ∇(Φ)
+    dμ = μ1 * dΦ
+    d∇μ = (μ2 * dΦ * ∇(Φ)) + (μ1 * ∇(dΦ))
+
+    Γ̇ = shear_rate(u)
+    dΓ̇ = (2.0 * (ε(u) ⊙ ε(du))) / Γ̇
+    res_gamma_jac = v_γ * (dΓ - dΓ̇)
+
+    drag_coeff = 4.0 * μf / (L^2)
+    res_ns_jac =
+        (dρ * u_dot ⋅ v) + (ρ * du_dot ⋅ v) +
+        (dρ * (u ⋅ ∇(u)) ⋅ v) + (ρ * (du ⋅ ∇(u)) ⋅ v) + (ρ * (u ⋅ ∇(du)) ⋅ v) +
+        (dμ * (∇(u) ⊙ ∇(v))) + (μ * (∇(du) ⊙ ∇(v))) +
+        (-dp * (∇ ⋅ v)) + (q * (∇ ⋅ du)) +
+        (drag_coeff * du ⋅ v)
+
+    κ = (ρs - ρf) / (ρs * ρf)
+
+    ∇ΓΦ = Γ * ∇(Φ) + Φ * ∇(Γ)
+    d∇ΓΦ = dΓ*∇(Φ) + Γ*∇(dΦ) + dΦ*∇(Γ) + Φ*∇(dΓ)
+    dJsc = -0.41 * (a^2) * (dΦ*∇ΓΦ + Φ*d∇ΓΦ)
+
+    ∇lnμ = (1.0/μ) * ∇μ
+    d∇lnμ = (d∇μ / μ) - (∇μ * dμ / (μ*μ))
+    dJsμ = -0.62 * (a^2) * ((2.0*Φ*dΦ*Γ*∇lnμ) + (Φ*Φ*dΓ*∇lnμ) + (Φ*Φ*Γ*d∇lnμ))
+
+    C1 = 2.0 * a^2 * μf * (1.0 - Φavg) * (ρs - ρf) / 9.0
+    h_op(m) = C1 / (m*m)
+    h = h_op ∘ μ
+    dh = (-2.0 * C1 / (μ*μ*μ)) * dμ
+    dJst = -(dΦ * (h*g) + Φ * (dh*g))
+
+    dflux = dJsc + dJsμ + dJst
+
+    res_continuity_rhs_jac = ∇(q) ⋅ (dflux * κ)
+
+    d_source_phi = (π/6.0 * a^3) * kc * params.d0 * exp(params.ke * t) * dC
+    res_phi_jac =
+        (w * dΦ_dot) + (w * (du ⋅ ∇(Φ))) + (w * (u ⋅ ∇(dΦ))) +
+        (∇(w) ⋅ (dflux * κ)) -
+        (w * d_source_phi)
+
+    d_rc = -kc * (dΦ / (π/6.0 * a^3))
+    res_C_jac =
+        (z * dC_dot) + (z * (du ⋅ ∇(C))) + (z * (u ⋅ ∇(dC))) +
+        (Df * ∇(z) ⊙ ∇(dC)) -
+        (z * d_rc)
+
+    return res_ns_jac + res_continuity_rhs_jac + res_phi_jac + res_C_jac + res_gamma_jac
+end
+
+"""
     run_bioreactor_simulation(X, Y, dΩ, dt, params, nsteps; write_vtk_interval=1, output_prefix="results", collect_history=false)
 
 Execute the time-stepping loop for the bioreactor simulation using a Newton solver.
@@ -146,9 +257,10 @@ function run_bioreactor_simulation(
         order = step == 1 ? 1 : 2
         x_prevs = (x_n, x_nn)
         
-        # Define the residual on the triangulation
+        # Define the residual and its (analytic, AD-free) Jacobian on the triangulation.
         res(x, y) = ∫( coupled_bioreactor_residual(x, x_prevs, y, dt, params, order, t) )dΩ
-        op = FEOperator(res, X, Y)
+        jac(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order, t) )dΩ
+        op = FEOperator(res, jac, X, Y)
         
         # Solve the nonlinear system
         xh, _ = solve!(xh, solver, op)

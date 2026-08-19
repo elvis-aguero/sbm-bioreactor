@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.12"
+
+      # Caches the full ~/.julia depot (registries, artifacts, and -- critically --
+      # each package's compiled precompile/package-image cache) keyed on the OS, Julia
+      # version, and Project.toml. Gridap's AD-heavy monolithic residual/Jacobian is
+      # expensive to JIT-compile from a cold depot (tens of minutes); SBM_Bioreactor's
+      # own PrecompileTools.@compile_workload (src/SBM_Bioreactor.jl) bakes that
+      # compiled code into its precompile cache during the build step below, and this
+      # cache is what lets later CI runs reuse it instead of recompiling from scratch.
+      - uses: julia-actions/cache@v2
+
+      - uses: julia-actions/julia-buildpkg@v1
+
+      - uses: julia-actions/julia-runtest@v1
