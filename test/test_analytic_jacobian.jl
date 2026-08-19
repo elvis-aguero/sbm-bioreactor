@@ -31,10 +31,13 @@ using SBM_Bioreactor
         res(x, y) = ∫( coupled_bioreactor_residual(x, x_prevs, y, dt, params, order, t) )dΩ
         jac_analytic(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order, t) )dΩ
 
+        println("  [test_analytic_jacobian] order=$order: building AD operator..."); flush(stdout)
         op_ad = FEOperator(res, X, Y)
         op_analytic = FEOperator(res, jac_analytic, X, Y)
 
+        println("  [test_analytic_jacobian] order=$order: computing AD jacobian..."); flush(stdout)
         A_ad = jacobian(op_ad, x0)
+        println("  [test_analytic_jacobian] order=$order: computing analytic jacobian..."); flush(stdout)
         A_analytic = jacobian(op_analytic, x0)
 
         rel_err = norm(A_ad - A_analytic) / norm(A_ad)

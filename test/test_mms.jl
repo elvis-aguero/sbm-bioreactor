@@ -89,17 +89,20 @@ using SBM_Bioreactor
     # would be a genuinely new, uncached compile on this test's unit-square domain).
     jac_mms(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, (x_n,), y, dt, params, 1, t) )dΩ
 
+    println("  [test_mms] building FEOperator..."); flush(stdout)
     op = FEOperator(res_mms, jac_mms, X, Y)
-    
+
     # 6. Solve
     using LineSearches: BackTracking
     nls = NLSolver(show_trace=false, method=:newton, linesearch=BackTracking())
     solver = FESolver(nls)
-    
+
     # Start from a perturbed initial guess
     xh = interpolate_everywhere([x -> u_ex(x)*0.9, x -> p_ex(x)*0.0, x -> Φ_ex(x)*1.1, x -> C_ex(x)*0.95, x -> Γ_ex(x)*1.0], X)
-    
+
+    println("  [test_mms] starting Newton solve..."); flush(stdout)
     xh, _ = solve!(xh, solver, op)
+    println("  [test_mms] Newton solve done."); flush(stdout)
     
     uh, ph, Φh, Ch, Γh = xh
 

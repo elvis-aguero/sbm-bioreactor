@@ -12,6 +12,7 @@ using SBM_Bioreactor
     @test case.params.Φ0(Point(0.0, 0.0)) ≈ 0.0
     @test case.params.Γ0(Point(0.0, 0.0)) > 0.0
 
+    println("  [test_examples] starting run_bioreactor_simulation..."); flush(stdout)
     result = run_bioreactor_simulation(
         case.X,
         case.Y,
@@ -22,6 +23,7 @@ using SBM_Bioreactor
         write_vtk_interval=0,
         collect_history=true,
     )
+    println("  [test_examples] run_bioreactor_simulation done."); flush(stdout)
 
     @test length(result.history) == 1
     @test result.times == [0.0]
