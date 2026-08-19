@@ -68,6 +68,22 @@ end
             write_vtk_interval=0,
         )
     end
+
+    # run_bioreactor_simulation above only exercises the analytic Jacobian. But
+    # test/test_analytic_jacobian.jl deliberately also builds Gridap's automatic (AD)
+    # Jacobian on this same case, as the ground truth to validate against -- without
+    # warming that path too, every such comparison (including in CI) pays the ~760s-class
+    # AD compile fresh, since it's a genuinely different, otherwise-unexercised code path.
+    dΩ_ad = case.dΩ
+    params_ad = case.params
+    dt_ad = case.metadata.dt
+    x0 = interpolate_everywhere(
+        [params_ad.u0, params_ad.p0, params_ad.Φ0, params_ad.C0, params_ad.Γ0], case.X,
+    )
+    x_prevs = (x0, x0)
+    res(x, y) = ∫(coupled_bioreactor_residual(x, x_prevs, y, dt_ad, params_ad, 1, dt_ad))dΩ_ad
+    op_ad = FEOperator(res, case.X, case.Y)
+    Gridap.FESpaces.jacobian(op_ad, x0)
 end
 
 end
