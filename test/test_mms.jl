@@ -79,11 +79,17 @@ using SBM_Bioreactor
     
     # Internal physics residual
     res_int(x, y) = ∫( coupled_bioreactor_residual(x, (x_n,), y, dt, params, 1, t) )dΩ
-    
+
     # MMS residual with derived source term functional
     res_mms(x, y) = res_int(x, y) - res_int(x_ex, y)
-    
-    op = FEOperator(res_mms, X, Y)
+
+    # res_int(x_ex, y) doesn't depend on x, so the Jacobian of res_mms w.r.t. x is just
+    # the Jacobian of res_int -- supply the analytic one directly rather than falling
+    # back to Gridap's AD (see coupled_bioreactor_jacobian's docstring for why: AD here
+    # would be a genuinely new, uncached compile on this test's unit-square domain).
+    jac_mms(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, (x_n,), y, dt, params, 1, t) )dΩ
+
+    op = FEOperator(res_mms, jac_mms, X, Y)
     
     # 6. Solve
     using LineSearches: BackTracking
