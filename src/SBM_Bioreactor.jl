@@ -86,6 +86,14 @@ end
     # identically-written closure in test/test_analytic_jacobian.jl, so this precompiled
     # specialization would never actually be reused there. ResidualProbe instantiated in
     # the test file is the exact same type, so it is.
+    #
+    # Both order=1 (BDF1) and order=2 (BDF2) are exercised here, not just order=1: `order`
+    # is a runtime Int, not a type parameter, so it alone wouldn't force a second
+    # specialization -- but the order==2 branch of coupled_bioreactor_residual folds in
+    # extra history terms (u_nn, Φ_nn, C_nn), giving Gridap's AD tracing a structurally
+    # different expression tree to dualize. Measured: with only order=1 warmed here,
+    # test_analytic_jacobian.jl's order=1 AD jacobian collapsed to ~1s as expected, but
+    # its order=2 AD jacobian still cost a fresh ~11min compile.
     dΩ_ad = case.dΩ
     params_ad = case.params
     dt_ad = case.metadata.dt
@@ -93,12 +101,14 @@ end
         [params_ad.u0, params_ad.p0, params_ad.Φ0, params_ad.C0, params_ad.Γ0], case.X,
     )
     x_prevs = (x0, x0)
-    res_probe = ResidualProbe(x_prevs, dΩ_ad, dt_ad, params_ad, 1, dt_ad)
-    jac_probe = JacobianProbe(x_prevs, dΩ_ad, dt_ad, params_ad, 1, dt_ad)
-    op_ad = FEOperator(res_probe, case.X, case.Y)
-    op_analytic = FEOperator(res_probe, jac_probe, case.X, case.Y)
-    Gridap.FESpaces.jacobian(op_ad, x0)
-    Gridap.FESpaces.jacobian(op_analytic, x0)
+    for order in (1, 2)
+        res_probe = ResidualProbe(x_prevs, dΩ_ad, dt_ad, params_ad, order, dt_ad)
+        jac_probe = JacobianProbe(x_prevs, dΩ_ad, dt_ad, params_ad, order, dt_ad)
+        op_ad = FEOperator(res_probe, case.X, case.Y)
+        op_analytic = FEOperator(res_probe, jac_probe, case.X, case.Y)
+        Gridap.FESpaces.jacobian(op_ad, x0)
+        Gridap.FESpaces.jacobian(op_analytic, x0)
+    end
 end
 
 end
