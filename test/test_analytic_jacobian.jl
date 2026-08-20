@@ -28,12 +28,18 @@ using SBM_Bioreactor
         x_prevs = (x_n, x_n)
         t = dt
 
-        res(x, y) = ∫( coupled_bioreactor_residual(x, x_prevs, y, dt, params, order, t) )dΩ
-        jac_analytic(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order, t) )dΩ
+        # Built via ResidualProbe/JacobianProbe (structs, i.e. nominal types) rather
+        # than local closures -- a closure defined here would get its own anonymous
+        # type distinct from an identically-written closure in the package's
+        # @compile_workload, so the precompiled AD/analytic specializations built there
+        # would never actually be reused here. These probes are the same type either
+        # way, so they are.
+        res_probe = ResidualProbe(x_prevs, dΩ, dt, params, order, t)
+        jac_probe = JacobianProbe(x_prevs, dΩ, dt, params, order, t)
 
         println("  [test_analytic_jacobian] order=$order: building AD operator..."); flush(stdout)
-        op_ad = FEOperator(res, X, Y)
-        op_analytic = FEOperator(res, jac_analytic, X, Y)
+        op_ad = FEOperator(res_probe, X, Y)
+        op_analytic = FEOperator(res_probe, jac_probe, X, Y)
 
         println("  [test_analytic_jacobian] order=$order: computing AD jacobian..."); flush(stdout)
         A_ad = jacobian(op_ad, x0)

@@ -208,6 +208,43 @@ function coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0
 end
 
 """
+    ResidualProbe(x_prevs, dΩ, dt, params, order, t)
+
+Callable functor wrapping `coupled_bioreactor_residual` for use as `FEOperator`'s
+residual argument, in place of an ad-hoc closure. A `struct` is a nominal type: the
+same `ResidualProbe` built inside this package's own `@compile_workload` and one built
+inside a test file are the exact same type, so the precompiled specialization is
+actually reused. A closure defined locally in a test file, by contrast, gets its own
+anonymous type distinct from an identically-written closure baked into
+`@compile_workload` -- so precompiling that path never helps the test, and Gridap's
+AD/assembly machinery gets JIT-compiled from scratch again, every CI run.
+"""
+struct ResidualProbe{Xp,DΩ,Dt,P}
+    x_prevs::Xp
+    dΩ::DΩ
+    dt::Dt
+    params::P
+    order::Int
+    t::Float64
+end
+(f::ResidualProbe)(x, y) = ∫( coupled_bioreactor_residual(x, f.x_prevs, y, f.dt, f.params, f.order, f.t) )f.dΩ
+
+"""
+    JacobianProbe(x_prevs, dΩ, dt, params, order, t)
+
+Callable functor wrapping `coupled_bioreactor_jacobian`, analogous to `ResidualProbe`.
+"""
+struct JacobianProbe{Xp,DΩ,Dt,P}
+    x_prevs::Xp
+    dΩ::DΩ
+    dt::Dt
+    params::P
+    order::Int
+    t::Float64
+end
+(f::JacobianProbe)(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, f.x_prevs, y, f.dt, f.params, f.order, f.t) )f.dΩ
+
+"""
     run_bioreactor_simulation(X, Y, dΩ, dt, params, nsteps; write_vtk_interval=1, output_prefix="results", collect_history=false)
 
 Execute the time-stepping loop for the bioreactor simulation using a Newton solver.

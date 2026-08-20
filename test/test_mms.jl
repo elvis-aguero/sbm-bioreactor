@@ -87,7 +87,13 @@ using SBM_Bioreactor
     # the Jacobian of res_int -- supply the analytic one directly rather than falling
     # back to Gridap's AD (see coupled_bioreactor_jacobian's docstring for why: AD here
     # would be a genuinely new, uncached compile on this test's unit-square domain).
-    jac_mms(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, (x_n,), y, dt, params, 1, t) )dΩ
+    #
+    # Built via JacobianProbe (a struct, i.e. a nominal type) rather than a local
+    # closure, so this reuses the package's precompiled analytic-Jacobian
+    # specialization instead of a fresh one, same reasoning as in
+    # test_analytic_jacobian.jl. x_prevs is padded to the precompiled 2-tuple shape
+    # (x_nn unused when order==1, per the note in coupled_bioreactor_residual).
+    jac_mms = JacobianProbe((x_n, x_n), dΩ, dt, params, 1, t)
 
     println("  [test_mms] building FEOperator..."); flush(stdout)
     op = FEOperator(res_mms, jac_mms, X, Y)

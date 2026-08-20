@@ -48,6 +48,12 @@ export coupled_bioreactor_residual
 @doc "coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0.0): Hand-derived Jacobian of coupled_bioreactor_residual, avoiding Gridap's automatic (AD) differentiation." coupled_bioreactor_jacobian
 export coupled_bioreactor_jacobian
 
+@doc "ResidualProbe(x_prevs, dΩ, dt, params, order, t): Callable functor wrapping coupled_bioreactor_residual, for use as FEOperator's residual argument in place of an ad-hoc closure." ResidualProbe
+export ResidualProbe
+
+@doc "JacobianProbe(x_prevs, dΩ, dt, params, order, t): Callable functor wrapping coupled_bioreactor_jacobian, analogous to ResidualProbe." JacobianProbe
+export JacobianProbe
+
 function run_simulation()
     println("Simulation started.")
 end
@@ -74,6 +80,12 @@ end
     # Jacobian on this same case, as the ground truth to validate against -- without
     # warming that path too, every such comparison (including in CI) pays the ~760s-class
     # AD compile fresh, since it's a genuinely different, otherwise-unexercised code path.
+    #
+    # Built via ResidualProbe (a struct, i.e. a nominal type) rather than a local closure
+    # -- a closure defined here would get its own anonymous type distinct from an
+    # identically-written closure in test/test_analytic_jacobian.jl, so this precompiled
+    # specialization would never actually be reused there. ResidualProbe instantiated in
+    # the test file is the exact same type, so it is.
     dΩ_ad = case.dΩ
     params_ad = case.params
     dt_ad = case.metadata.dt
@@ -81,9 +93,12 @@ end
         [params_ad.u0, params_ad.p0, params_ad.Φ0, params_ad.C0, params_ad.Γ0], case.X,
     )
     x_prevs = (x0, x0)
-    res(x, y) = ∫(coupled_bioreactor_residual(x, x_prevs, y, dt_ad, params_ad, 1, dt_ad))dΩ_ad
-    op_ad = FEOperator(res, case.X, case.Y)
+    res_probe = ResidualProbe(x_prevs, dΩ_ad, dt_ad, params_ad, 1, dt_ad)
+    jac_probe = JacobianProbe(x_prevs, dΩ_ad, dt_ad, params_ad, 1, dt_ad)
+    op_ad = FEOperator(res_probe, case.X, case.Y)
+    op_analytic = FEOperator(res_probe, jac_probe, case.X, case.Y)
     Gridap.FESpaces.jacobian(op_ad, x0)
+    Gridap.FESpaces.jacobian(op_analytic, x0)
 end
 
 end
