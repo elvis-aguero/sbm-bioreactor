@@ -44,4 +44,13 @@ jobs:
 
       - uses: julia-actions/julia-buildpkg@v1
 
+      # coverage defaults to true, which passes --code-coverage=@<path> to Julia.
+      # Coverage instrumentation requires re-instrumented compilation of any method
+      # that actually executes, which cannot reuse a precompiled cache regardless of
+      # depot caching or type-matching -- measured locally: a jacobian assembly call
+      # that takes ~3s normally (precompiled cache hit) did not finish in 5 minutes
+      # under coverage (>100x slower), and this repo does not upload or otherwise
+      # consume coverage data anywhere, so disabling it costs nothing.
       - uses: julia-actions/julia-runtest@v1
+        with:
+          coverage: false
