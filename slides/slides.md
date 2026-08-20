@@ -245,31 +245,43 @@ layout: center
 
 # Results
 
-<video src="/floating_cells.mp4" controls loop autoplay muted class="mx-auto rounded shadow" style="max-height:60vh"></video>
-
-<div class="text-sm pt-4 opacity-60 text-center">
-Φ(t) — cells start exactly where buoyancy alone would hold them
+<div class="grid grid-cols-2 gap-4">
+<div>
+<video src="/phi.mp4" controls loop autoplay muted class="mx-auto rounded shadow" style="max-height:50vh"></video>
+<div class="text-sm pt-2 opacity-60 text-center">Φ(t) — particle concentration</div>
+</div>
+<div>
+<video src="/velocity.mp4" controls loop autoplay muted class="mx-auto rounded shadow" style="max-height:50vh"></video>
+<div class="text-sm pt-2 opacity-60 text-center">|u|(t) — flow speed</div>
+</div>
 </div>
 
 <!--
+Same simulation, same timestamps, two views side by side — the flow
+driving the migration (right) next to the concentration field it's
+redistributing (left).
+
 This is a deliberately adversarial initial condition, not a "nice" one:
 cells are placed in the upper half of the disk at t=0 — which, since
 these cells are less dense than the surrounding medium (buoyant), is
 exactly the configuration buoyancy alone would want anyway. If buoyancy
-were the only thing going on, this field would just... sit there.
+were the only thing going on, the concentration field would just... sit
+there.
 
 What to watch for: does the concentration field visibly redistribute
-away from that buoyancy-favored configuration as the simulation runs?
+away from that buoyancy-favored configuration as the simulation runs,
+and does that redistribution track where the flow field is most active?
 If yes, that's shear-induced migration actively fighting the passive
 buoyant equilibrium, which is the qualitative claim the whole paper is
 built on — that shear-induced migration is a real, non-negligible
 transport mechanism in this geometry, not a small correction to
 buoyancy.
 
-Caveat to state plainly: this is a coarse mesh, short run, run for
-qualitative illustration, not a converged production result — that
-distinction matters to this audience and I'd rather say it than have
-someone ask.
+Caveat to state plainly: this is a coarse mesh, short run, rendered for
+qualitative illustration (frames interpolated for smooth playback, not
+one frame per solved timestep) — not a converged production result.
+That distinction matters to this audience and I'd rather say it than
+have someone ask.
 -->
 
 ---

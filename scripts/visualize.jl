@@ -111,6 +111,63 @@ function animate_scalar_history(history, times; radius, output_path, n=121, fps=
     return output_path
 end
 
+"""
+    interpolate_history(history, times, X; nframes)
+
+Linearly blend each real solved snapshot's free-dof vector into `nframes`
+evenly-spaced-in-time frames, for smooth video playback without re-solving more
+timesteps. Valid for Lagrange nodal values: blending two snapshots' free-dof
+vectors is itself a valid (if unphysical between exact solves) intermediate state,
+good enough for a qualitative slide video.
+"""
+function interpolate_history(history, times, X; nframes)
+    n = length(history)
+    raw = [copy(get_free_dof_values(h)) for h in history]
+    out_times = collect(range(times[1], times[end]; length=nframes))
+    out_states = Vector{Any}(undef, nframes)
+    for (k, t) in enumerate(out_times)
+        i = clamp(searchsortedlast(times, t), 1, n - 1)
+        i2 = i + 1
+        α = (times[i2] > times[i]) ? (t - times[i]) / (times[i2] - times[i]) : 0.0
+        α = clamp(α, 0.0, 1.0)
+        vec = (1 - α) .* raw[i] .+ α .* raw[i2]
+        out_states[k] = FEFunction(X, vec)
+    end
+    return out_states, out_times
+end
+
+vector_magnitude(field) = x -> sqrt(field(x)[1]^2 + field(x)[2]^2)
+
+"""
+    plot_bare_scalar_snapshot(field; radius, n=121)
+
+A heatmap with no title, colorbar, axes, or ticks -- for slide videos where
+Slidev's own caption carries any labeling, not the video itself.
+"""
+function plot_bare_scalar_snapshot(field; radius, n=121)
+    xs, ys, values = sample_scalar_field(x -> field(Point(x[1], x[2])); radius=radius, n=n)
+    return heatmap(
+        xs, ys, values;
+        aspect_ratio=:equal, colorbar=false, title="", legend=false,
+        axis=false, ticks=false, framestyle=:none,
+    )
+end
+
+function animate_bare_scalar(fields; radius, output_path, n=121, fps=30)
+    anim = @animate for field in fields
+        display(plot_bare_scalar_snapshot(field; radius=radius, n=n))
+    end
+
+    if endswith(lowercase(output_path), ".mp4")
+        mp4(anim, output_path, fps=fps)
+    elseif endswith(lowercase(output_path), ".gif")
+        gif(anim, output_path, fps=fps)
+    else
+        error("Unsupported animation extension for $output_path. Use .gif or .mp4.")
+    end
+    return output_path
+end
+
 function demo_harv_visualization(; partition=(12, 12), dt=0.2, total_time=1.0, output_dir="notebooks/artifacts")
     case = build_harv_2d_case(partition=partition, dt=dt, total_time=total_time)
     result = run_bioreactor_simulation(
