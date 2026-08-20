@@ -219,7 +219,7 @@ anonymous type distinct from an identically-written closure baked into
 `@compile_workload` -- so precompiling that path never helps the test, and Gridap's
 AD/assembly machinery gets JIT-compiled from scratch again, every CI run.
 """
-struct ResidualProbe{Xp,DΩ,Dt,P}
+struct ResidualProbe{Xp,DΩ,Dt,P} <: Function
     x_prevs::Xp
     dΩ::DΩ
     dt::Dt
@@ -234,7 +234,7 @@ end
 
 Callable functor wrapping `coupled_bioreactor_jacobian`, analogous to `ResidualProbe`.
 """
-struct JacobianProbe{Xp,DΩ,Dt,P}
+struct JacobianProbe{Xp,DΩ,Dt,P} <: Function
     x_prevs::Xp
     dΩ::DΩ
     dt::Dt
