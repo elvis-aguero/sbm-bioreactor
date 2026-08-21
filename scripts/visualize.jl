@@ -44,55 +44,37 @@ Sample `field` on an `n`x`n` grid over the disk of radius `radius`, applying
 scalar magnitude before plotting).
 
 `field` may be a genuine Gridap `CellField`/`FEFunction` component, or a plain
-Julia closure (e.g. `case.params.Φ0`). These need different treatment: calling
-a `CellField` one point at a time (`field(Point(x,y))`, looped n^2 times) reruns
-a full KDTree search over the mesh *and* a ~150KB-allocating `evaluate!` for
-every single point -- measured at ~9s and 2 GiB of allocations for a 121x121
-grid, dominating per-frame render time. Gridap's `CellField` also supports
-evaluating a whole `Vector{<:Point}` in one call, which groups points by cell
-and evaluates each cell's basis functions once for all of its points instead
--- orders of magnitude fewer allocations. Plain closures don't have (or need)
-that batched path, so they're just mapped one point at a time.
+Julia closure (e.g. `case.params.Φ0`); both are evaluated one point at a time.
+
+Measured directly (not assumed): evaluating a `CellField` at a
+`Vector{<:Point}` in one batched call costs the *same* ~0.6ms/point as calling
+it once per point in a loop (~9s for a 121x121 grid either way) -- Gridap's
+per-cell grouping doesn't avoid the per-point cost here, it's inherent to its
+point-location + basis-evaluation machinery, not a batching-vs-looping
+question. So `n` (this function's resolution) and the frame count are what
+actually control render time; there's no API-level trick that removes this
+cost.
 """
 function sample_scalar_field(field; radius, n=121, post=identity)
     xs = range(-radius, radius; length=n)
     ys = range(-radius, radius; length=n)
     values = fill(NaN, length(ys), length(xs))
 
-    idxs = Tuple{Int,Int}[]
-    pts = Point{2,Float64}[]
     for (j, y) in enumerate(ys), (i, x) in enumerate(xs)
         if x^2 + y^2 <= radius^2 + 1e-12
-            push!(idxs, (j, i))
-            push!(pts, Point(x, y))
-        end
-    end
-
-    fxs = if field isa Function
-        map(field, pts)
-    else
-        try
-            field(pts)
-        catch err
-            err isa AssertionError || rethrow()
-            # The square-to-disk mesh mapping is only approximately circular, so a
-            # point that passes the disk-radius test above can still land just
-            # outside the mapped mesh near the boundary, which fails the *whole*
-            # batched call. Fall back to evaluating one at a time only in that
-            # (rare) case, so a single bad boundary point doesn't cost every frame
-            # the fast path.
-            map(pts) do p
-                try
-                    field(p)
-                catch err2
-                    err2 isa AssertionError ? NaN : rethrow()
-                end
+            pt = Point(x, y)
+            # The square-to-disk mesh mapping is only approximately circular, so
+            # a point that passes the disk-radius test can still land just
+            # outside the mapped mesh near the boundary; treat those as NaN too.
+            # NaN is applied here (post the raw field value), not as a
+            # placeholder raw value, so it works uniformly whether `field`
+            # is scalar- or vector-valued.
+            values[j, i] = try
+                post(field(pt))
+            catch err
+                err isa AssertionError ? NaN : rethrow()
             end
         end
-    end
-
-    for (k, (j, i)) in enumerate(idxs)
-        values[j, i] = post(fxs[k])
     end
     return xs, ys, values
 end
