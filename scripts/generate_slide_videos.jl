@@ -39,15 +39,20 @@ u_frames = [f[1] for f in frames]
 output_dir = joinpath(@__DIR__, "..", "slides", "public")
 mkpath(output_dir)
 
+# n=31 for rendering only (the FE solve above stays at the fine partition=(16,16)
+# mesh -- this just controls the raster resolution of the sampled heatmap).
+# Measured directly: sampling a CellField costs ~0.6-0.8ms *per point* in
+# Gridap's evaluate machinery, independent of API tricks (see
+# sample_scalar_field's docstring) -- n=121 (14641 points/frame) meant ~9s/frame
+# and a ~3 hour render for both videos; n=31 (~755 in-disk points/frame) cuts
+# that to an estimated ~15-20 min for both, at a coarser but still legible
+# raster resolution for a small on-slide video.
+render_n = 31
+
 println("Rendering phi.mp4..."); flush(stdout)
-animate_bare_scalar(phi_frames; radius=case.metadata.radius, output_path=joinpath(output_dir, "phi.mp4"), fps=30)
+animate_bare_scalar(phi_frames; radius=case.metadata.radius, output_path=joinpath(output_dir, "phi.mp4"), fps=30, n=render_n)
 
 println("Rendering velocity.mp4..."); flush(stdout)
-# post reduces the raw (vector-valued) velocity sample to a scalar magnitude as
-# part of the same batched CellField evaluate -- passing a pre-wrapped closure
-# here instead (as the old vector_magnitude helper did) would silently fall
-# back to evaluating one point at a time, which was the actual per-frame
-# rendering bottleneck (see sample_scalar_field's docstring).
-animate_bare_scalar(u_frames; radius=case.metadata.radius, output_path=joinpath(output_dir, "velocity.mp4"), fps=30, post=v -> sqrt(v[1]^2 + v[2]^2))
+animate_bare_scalar(u_frames; radius=case.metadata.radius, output_path=joinpath(output_dir, "velocity.mp4"), fps=30, n=render_n, post=v -> sqrt(v[1]^2 + v[2]^2))
 
 println("VIDEOS_DONE")
