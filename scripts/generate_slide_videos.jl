@@ -39,15 +39,17 @@ u_frames = [f[1] for f in frames]
 output_dir = joinpath(@__DIR__, "..", "slides", "public")
 mkpath(output_dir)
 
-# n=31 for rendering only (the FE solve above stays at the fine partition=(16,16)
+# n=61 for rendering only (the FE solve above stays at the fine partition=(16,16)
 # mesh -- this just controls the raster resolution of the sampled heatmap).
 # Measured directly: sampling a CellField costs ~0.6-0.8ms *per point* in
 # Gridap's evaluate machinery, independent of API tricks (see
 # sample_scalar_field's docstring) -- n=121 (14641 points/frame) meant ~9s/frame
-# and a ~3 hour render for both videos; n=31 (~755 in-disk points/frame) cuts
-# that to an estimated ~15-20 min for both, at a coarser but still legible
-# raster resolution for a small on-slide video.
-render_n = 31
+# and a ~3 hour render for both videos combined. n=31 rendered in minutes but
+# looked visibly blocky (same "too coarse" complaint as the first attempt);
+# n=61 (~2.2-2.3s/frame, ~45-55 min for both videos) was visually smooth and
+# legible in a direct side-by-side comparison against n=45/61/81 -- n=81 was
+# barely different from n=61 for ~1.8x the cost, so not worth it.
+render_n = 61
 
 println("Rendering phi.mp4..."); flush(stdout)
 animate_bare_scalar(phi_frames; radius=case.metadata.radius, output_path=joinpath(output_dir, "phi.mp4"), fps=30, n=render_n)
