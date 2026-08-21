@@ -36,35 +36,63 @@ function plot_harv_mesh(case; title="Mapped HARV Tutorial Mesh")
     return plt
 end
 
-function sample_scalar_field(field; radius, n=121)
+"""
+    sample_scalar_field(field; radius, n=121, post=identity)
+
+Sample `field` on an `n`x`n` grid over the disk of radius `radius`, applying
+`post` to each raw sample (e.g. `v -> norm(v)` to turn a vector field into a
+scalar magnitude before plotting).
+
+`field` may be a genuine Gridap `CellField`/`FEFunction` component, or a plain
+Julia closure (e.g. `case.params.Φ0`). These need different treatment: calling
+a `CellField` one point at a time (`field(Point(x,y))`, looped n^2 times) reruns
+a full KDTree search over the mesh *and* a ~150KB-allocating `evaluate!` for
+every single point -- measured at ~9s and 2 GiB of allocations for a 121x121
+grid, dominating per-frame render time. Gridap's `CellField` also supports
+evaluating a whole `Vector{<:Point}` in one call, which groups points by cell
+and evaluates each cell's basis functions once for all of its points instead
+-- orders of magnitude fewer allocations. Plain closures don't have (or need)
+that batched path, so they're just mapped one point at a time.
+"""
+function sample_scalar_field(field; radius, n=121, post=identity)
     xs = range(-radius, radius; length=n)
     ys = range(-radius, radius; length=n)
-    values = Matrix{Float64}(undef, length(ys), length(xs))
+    values = fill(NaN, length(ys), length(xs))
 
-    # field(Point(x,y)) alone calls evaluate(f,x) = evaluate!(return_cache(f,x),f,x),
-    # and return_cache for a CellField/point rebuilds a KDTree over the whole mesh
-    # from scratch (see Gridap's CellData/Interpolation.jl) -- looping that call
-    # n^2 times rebuilds the same search structure n^2 times. Build the cache once
-    # from the first in-mesh point and reuse it for every subsequent point instead;
-    # this is the dominant cost in per-frame rendering, especially at video scale.
-    cache = nothing
+    idxs = Tuple{Int,Int}[]
+    pts = Point{2,Float64}[]
     for (j, y) in enumerate(ys), (i, x) in enumerate(xs)
         if x^2 + y^2 <= radius^2 + 1e-12
-            pt = Point(x, y)
-            # The square-to-disk mesh mapping is only approximately circular, so
-            # a point that passes the disk-radius test can still land just
-            # outside the mapped mesh near the boundary; treat those as NaN too.
-            values[j, i] = try
-                if cache === nothing
-                    cache = Gridap.CellData.return_cache(field, pt)
-                end
-                Gridap.CellData.evaluate!(cache, field, pt)
-            catch err
-                err isa AssertionError ? NaN : rethrow()
-            end
-        else
-            values[j, i] = NaN
+            push!(idxs, (j, i))
+            push!(pts, Point(x, y))
         end
+    end
+
+    fxs = if field isa Function
+        map(field, pts)
+    else
+        try
+            field(pts)
+        catch err
+            err isa AssertionError || rethrow()
+            # The square-to-disk mesh mapping is only approximately circular, so a
+            # point that passes the disk-radius test above can still land just
+            # outside the mapped mesh near the boundary, which fails the *whole*
+            # batched call. Fall back to evaluating one at a time only in that
+            # (rare) case, so a single bad boundary point doesn't cost every frame
+            # the fast path.
+            map(pts) do p
+                try
+                    field(p)
+                catch err2
+                    err2 isa AssertionError ? NaN : rethrow()
+                end
+            end
+        end
+    end
+
+    for (k, (j, i)) in enumerate(idxs)
+        values[j, i] = post(fxs[k])
     end
     return xs, ys, values
 end
@@ -79,7 +107,7 @@ function plot_initial_conditions(case; n=121)
 end
 
 function plot_scalar_snapshot(field; radius, n=121, title="Scalar Field", colorbar_title="value")
-    xs, ys, values = sample_scalar_field(x -> field(Point(x[1], x[2])); radius=radius, n=n)
+    xs, ys, values = sample_scalar_field(field; radius=radius, n=n)
     return heatmap(xs, ys, values, aspect_ratio=:equal, colorbar_title=colorbar_title, title=title)
 end
 
@@ -148,16 +176,17 @@ function interpolate_history(history, times, X; nframes)
     return out_states, out_times
 end
 
-vector_magnitude(field) = x -> sqrt(field(x)[1]^2 + field(x)[2]^2)
-
 """
-    plot_bare_scalar_snapshot(field; radius, n=121)
+    plot_bare_scalar_snapshot(field; radius, n=121, post=identity)
 
 A heatmap with no title, colorbar, axes, or ticks -- for slide videos where
-Slidev's own caption carries any labeling, not the video itself.
+Slidev's own caption carries any labeling, not the video itself. `post` lets a
+vector field (e.g. velocity) be reduced to a scalar (e.g. `v -> norm(v)`) as
+part of the same batched sample, instead of pre-wrapping `field` in a closure
+that would defeat `sample_scalar_field`'s fast batched-CellField path.
 """
-function plot_bare_scalar_snapshot(field; radius, n=121)
-    xs, ys, values = sample_scalar_field(x -> field(Point(x[1], x[2])); radius=radius, n=n)
+function plot_bare_scalar_snapshot(field; radius, n=121, post=identity)
+    xs, ys, values = sample_scalar_field(field; radius=radius, n=n, post=post)
     return heatmap(
         xs, ys, values;
         aspect_ratio=:equal, colorbar=false, title="", legend=false,
@@ -165,9 +194,9 @@ function plot_bare_scalar_snapshot(field; radius, n=121)
     )
 end
 
-function animate_bare_scalar(fields; radius, output_path, n=121, fps=30)
+function animate_bare_scalar(fields; radius, output_path, n=121, fps=30, post=identity)
     anim = @animate for field in fields
-        display(plot_bare_scalar_snapshot(field; radius=radius, n=n))
+        display(plot_bare_scalar_snapshot(field; radius=radius, n=n, post=post))
     end
 
     if endswith(lowercase(output_path), ".mp4")

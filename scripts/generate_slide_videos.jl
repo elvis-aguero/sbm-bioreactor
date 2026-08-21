@@ -34,7 +34,7 @@ println("Simulation done, $(length(result.history)) snapshots. Interpolating..."
 
 frames, _ = interpolate_history(result.history, result.times, case.X; nframes=600)
 phi_frames = [f[3] for f in frames]
-velmag_frames = [vector_magnitude(f[1]) for f in frames]
+u_frames = [f[1] for f in frames]
 
 output_dir = joinpath(@__DIR__, "..", "slides", "public")
 mkpath(output_dir)
@@ -43,6 +43,11 @@ println("Rendering phi.mp4..."); flush(stdout)
 animate_bare_scalar(phi_frames; radius=case.metadata.radius, output_path=joinpath(output_dir, "phi.mp4"), fps=30)
 
 println("Rendering velocity.mp4..."); flush(stdout)
-animate_bare_scalar(velmag_frames; radius=case.metadata.radius, output_path=joinpath(output_dir, "velocity.mp4"), fps=30)
+# post reduces the raw (vector-valued) velocity sample to a scalar magnitude as
+# part of the same batched CellField evaluate -- passing a pre-wrapped closure
+# here instead (as the old vector_magnitude helper did) would silently fall
+# back to evaluating one point at a time, which was the actual per-frame
+# rendering bottleneck (see sample_scalar_field's docstring).
+animate_bare_scalar(u_frames; radius=case.metadata.radius, output_path=joinpath(output_dir, "velocity.mp4"), fps=30, post=v -> sqrt(v[1]^2 + v[2]^2))
 
 println("VIDEOS_DONE")
