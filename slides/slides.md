@@ -256,6 +256,10 @@ layout: center
 </div>
 </div>
 
+<div class="text-xs pt-4 opacity-50 text-center">
+buoyancy artificially scaled ~10⁶× to be visible on a 1.5s clip — real Stokes settling is ~nm/s
+</div>
+
 <!--
 Same simulation, same timestamps, two views side by side — the flow
 driving the migration (right) next to the concentration field it's
@@ -277,11 +281,27 @@ built on — that shear-induced migration is a real, non-negligible
 transport mechanism in this geometry, not a small correction to
 buoyancy.
 
-Caveat to state plainly: this is a coarse mesh, short run, rendered for
-qualitative illustration (frames interpolated for smooth playback, not
-one frame per solved timestep) — not a converged production result.
-That distinction matters to this audience and I'd rather say it than
-have someone ask.
+Two caveats to state plainly, both on-slide as a compact note, not buried:
+
+1. The timestep here (dt=0.015s) was chosen specifically to resolve the
+   Hele-Shaw drag relaxation time (τ≈0.04s) — the one fast physical
+   process in this model. An earlier attempt used a timestep ~60x too
+   coarse for that timescale and the flow field never actually developed;
+   this run's real transient is honestly resolved, not aliased past.
+2. Buoyancy is artificially scaled up by ~10^6 for this clip only (the
+   note on-slide says so). The real Stokes settling velocity for these
+   particles is nanometers/second — physically real, but it would take
+   months to visibly cross the domain, useless for a 1.5s illustrative
+   video. Scaling it up makes buoyancy's pull visible on the same
+   timescale as shear-induced migration, so the audience can watch the
+   two effects compete directly. The momentum equation's own gravity term
+   is untouched — only the settling flux J_st is scaled, and only in this
+   script.
+
+Otherwise: coarse-for-a-slide mesh, short run, frames interpolated between
+real solves for smooth playback — not a converged production result. That
+distinction matters to this audience and I'd rather say it than have
+someone ask.
 -->
 
 ---

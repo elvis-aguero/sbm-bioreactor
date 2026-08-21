@@ -60,27 +60,31 @@ function coupled_bioreactor_residual(x, x_prevs, y, dt, params, order=1, t=0.0)
     kc = params.kc
     ke = params.ke
     d0 = params.d0
-    
+    # Defaults to 1.0 (the literal physical flux, unchanged) for every existing
+    # caller; only illustrative visualizations set this explicitly. See the note
+    # in particle_flux for why it can't just be folded into g.
+    buoyancy_scale = get(params, :buoyancy_scale, 1.0)
+
     # Constitutive Relations: Mixture density and Krieger-Dougherty viscosity
     ρ = (1.0 - Φ) * ρf + Φ * ρs
     visc_op(phi) = krieger_viscosity(phi; μf=μf, Φmax=Φmax)
     μ = visc_op ∘ Φ
-    
+
     # Analytical gradient of viscosity with respect to Φ (for the migration terms)
     # dμ/dΦ = μf * (-2.5*Φmax) * (1-Φ/Φmax)^(-2.5*Φmax-1) * (-1/Φmax)
     dμ_dΦ_op(phi) = 2.5 * μf * (1.0 - phi/Φmax)^(-2.5*Φmax - 1.0)
     ∇μ = (dμ_dΦ_op ∘ Φ) * ∇(Φ)
-    
+
     # 1. Shear Rate Projection: Smooth Γ to calculate ∇Γ in the migration flux
     res_gamma = v_γ * (Γ - shear_rate(u))
 
     # 2. Momentum Balance: Navier Stokes + Hele-Shaw depth-averaged friction
     drag_coeff = 4.0 * μf / (L^2)
     res_ns = (ρ * u_dot ⋅ v) + navier_stokes_weak_form(u, p, v, q, μ, ρ, g, u_wall, drag_coeff)
-    
+
     # 3. Modified Continuity: ∇⋅u = - ∇⋅(J * (1/ρs - 1/ρf))
     # This accounts for volume changes when particles migrate in a variable density mixture.
-    flux = particle_flux(u, Φ, ∇(Φ), μ, ∇μ, a, ρs, ρf, μf, Φavg, g, Γ, ∇(Γ))
+    flux = particle_flux(u, Φ, ∇(Φ), μ, ∇μ, a, ρs, ρf, μf, Φavg, g, Γ, ∇(Γ); buoyancy_scale=buoyancy_scale)
     res_continuity_rhs = ∇(q) ⋅ (flux * ((ρs - ρf) / (ρs * ρf)))
     
     # 4. Particle Transport: ∂Φ/∂t + u⋅∇Φ = -∇⋅J + Source
@@ -143,6 +147,7 @@ function coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0
     Φavg = params.Φavg
     L = params.L
     kc = params.kc
+    buoyancy_scale = get(params, :buoyancy_scale, 1.0)
 
     ρ = (1.0 - Φ) * ρf + Φ * ρs
     dρ = (ρs - ρf) * dΦ
@@ -186,7 +191,7 @@ function coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0
     h_op(m) = C1 / (m*m)
     h = h_op ∘ μ
     dh = (-2.0 * C1 / (μ*μ*μ)) * dμ
-    dJst = -(dΦ * (h*g) + Φ * (dh*g))
+    dJst = -buoyancy_scale * (dΦ * (h*g) + Φ * (dh*g))
 
     dflux = dJsc + dJsμ + dJst
 

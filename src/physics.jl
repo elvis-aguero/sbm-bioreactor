@@ -92,24 +92,29 @@ Compute the total particle migration flux based on the Suspension Balance Model 
 3. `Jst = - (ust) * Φ`: Sedimentation flux due to buoyancy, corrected for hindrance 
    effects at high Φ.
 """
-function particle_flux(u, Φ, ∇Φ, μ, ∇μ, a, ρs, ρf, μf, Φavg, g, Γ, ∇Γ)
+function particle_flux(u, Φ, ∇Φ, μ, ∇μ, a, ρs, ρf, μf, Φavg, g, Γ, ∇Γ; buoyancy_scale=1.0)
     # Gradient of log-viscosity for the Jsμ term
     ∇lnμ = (1.0 / μ) * ∇μ
-    
+
     # Total gradient of (Γ * Φ) for the Jsc term: ∇(Γ*Φ) = Γ*∇Φ + Φ*∇Γ
     ∇ΓΦ = Γ * ∇Φ + Φ * ∇Γ
 
     # 1. Flux due to shear rate and concentration gradients (Chao & Das Eq. 12)
     Jsc = -0.41 * (a^2) * Φ * ∇ΓΦ
-    
+
     # 2. Flux due to viscosity gradients (Chao & Das Eq. 13)
     Jsμ = -0.62 * (a^2) * (Φ * Φ) * Γ * ∇lnμ
-    
+
     # 3. Sedimentation / Buoyancy flux (Chao & Das Eq. 14)
-    # Corrected for fluid viscosity and hindrance via Richardson-Zaki like term
+    # Corrected for fluid viscosity and hindrance via Richardson-Zaki like term.
+    # buoyancy_scale defaults to 1.0 (the literal physical flux, unchanged from
+    # before) -- it exists only so illustrative visualizations can artificially
+    # speed up settling (physically ~nm/s for micron-scale near-neutrally-buoyant
+    # particles, i.e. months to cross a few cm) without touching the momentum
+    # equation's own (real, unscaled) gravity term, which shares the same `g`.
     ust_fh_op(m) = (μf * (1.0 - Φavg) / m) * (2.0 * a^2 * (ρs - ρf) / (9.0 * m)) * g
-    Jst = - (ust_fh_op ∘ μ) * Φ
-    
+    Jst = -buoyancy_scale * (ust_fh_op ∘ μ) * Φ
+
     return Jsc + Jsμ + Jst
 end
 

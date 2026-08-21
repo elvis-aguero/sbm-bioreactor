@@ -40,13 +40,25 @@ function sample_scalar_field(field; radius, n=121)
     xs = range(-radius, radius; length=n)
     ys = range(-radius, radius; length=n)
     values = Matrix{Float64}(undef, length(ys), length(xs))
+
+    # field(Point(x,y)) alone calls evaluate(f,x) = evaluate!(return_cache(f,x),f,x),
+    # and return_cache for a CellField/point rebuilds a KDTree over the whole mesh
+    # from scratch (see Gridap's CellData/Interpolation.jl) -- looping that call
+    # n^2 times rebuilds the same search structure n^2 times. Build the cache once
+    # from the first in-mesh point and reuse it for every subsequent point instead;
+    # this is the dominant cost in per-frame rendering, especially at video scale.
+    cache = nothing
     for (j, y) in enumerate(ys), (i, x) in enumerate(xs)
         if x^2 + y^2 <= radius^2 + 1e-12
+            pt = Point(x, y)
             # The square-to-disk mesh mapping is only approximately circular, so
             # a point that passes the disk-radius test can still land just
             # outside the mapped mesh near the boundary; treat those as NaN too.
             values[j, i] = try
-                field(Point(x, y))
+                if cache === nothing
+                    cache = Gridap.CellData.return_cache(field, pt)
+                end
+                Gridap.CellData.evaluate!(cache, field, pt)
             catch err
                 err isa AssertionError ? NaN : rethrow()
             end

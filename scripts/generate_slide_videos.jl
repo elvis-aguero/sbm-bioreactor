@@ -3,17 +3,31 @@
 # One-shot generator for the two synchronized slide-deck videos (particle
 # concentration Φ and velocity magnitude) used in slides/slides.md. Both are
 # rendered from the same simulation run and the same interpolated frame times,
-# so they stay frame-for-frame in sync. See /root/.claude/plans/zippy-imagining-dove.md
-# for the parameter choices (4 min simulated time, 100 real solves, interpolated
-# to 600 frames for smooth 20s@30fps playback).
+# so they stay frame-for-frame in sync.
+#
+# Parameters, locked in after diagnosing the first (too-coarse, visually-frozen)
+# attempt against the model's own timescales (Chao & Das 2015 + Table 1):
+#   - dt=0.015s vs. the Hele-Shaw drag relaxation time τ≈0.04s (was 2.4s, ~60x
+#     too coarse to resolve that transient at all) -- honestly resolves the one
+#     fast physical process in the model instead of aliasing past it.
+#   - partition=(16,16), up from (10,10), for a visibly smoother field.
+#   - total_time=1.5s (nsteps=100, same real-solve budget as before).
+# buoyancy_scale=1e6 is an ARTIFICIAL speed-up, disclosed on the Results slide:
+# the real Stokes settling velocity for these particles is ~nm/s (months to
+# cross the domain), invisible on any short illustrative clip. Scaling it by
+# 1e6 gives a settling velocity of order mm/s -- visible in ~1.5s -- without
+# touching the momentum equation's own (real, unscaled) gravity term. This
+# affects only this illustration script; every other caller of particle_flux
+# still gets the literal, unscaled physical flux (buoyancy_scale defaults to 1.0).
 using Gridap
 using SBM_Bioreactor
 include(joinpath(@__DIR__, "visualize.jl"))
 
 println("Building case and running simulation..."); flush(stdout)
-case = build_harv_2d_case(partition=(10, 10), dt=2.4, total_time=240.0)
+case = build_harv_2d_case(partition=(16, 16), dt=0.015, total_time=1.5)
+params = merge(case.params, (buoyancy_scale=1.0e6,))
 result = run_bioreactor_simulation(
-    case.X, case.Y, case.dΩ, case.metadata.dt, case.params, case.metadata.nsteps;
+    case.X, case.Y, case.dΩ, case.metadata.dt, params, case.metadata.nsteps;
     collect_history=true, write_vtk_interval=0,
 )
 println("Simulation done, $(length(result.history)) snapshots. Interpolating..."); flush(stdout)
