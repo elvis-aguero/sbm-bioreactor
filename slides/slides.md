@@ -257,7 +257,7 @@ layout: center
 </div>
 
 <div class="text-xs pt-4 opacity-50 text-center">
-buoyancy artificially scaled ~10⁶× to be visible on a 1.5s clip — real Stokes settling is ~nm/s
+buoyancy artificially scaled ~10⁶× to be visible on this clip — real Stokes settling is ~nm/s
 </div>
 
 <!--
@@ -291,17 +291,20 @@ Two caveats to state plainly, both on-slide as a compact note, not buried:
 2. Buoyancy is artificially scaled up by ~10^6 for this clip only (the
    note on-slide says so). The real Stokes settling velocity for these
    particles is nanometers/second — physically real, but it would take
-   months to visibly cross the domain, useless for a 1.5s illustrative
+   months to visibly cross the domain, useless for an illustrative
    video. Scaling it up makes buoyancy's pull visible on the same
    timescale as shear-induced migration, so the audience can watch the
    two effects compete directly. The momentum equation's own gravity term
    is untouched — only the settling flux J_st is scaled, and only in this
    script.
 
-Otherwise: coarse-for-a-slide mesh, short run, frames interpolated between
-real solves for smooth playback — not a converged production result. That
-distinction matters to this audience and I'd rather say it than have
-someone ask.
+The simulated window is 30s — about 3.75 vessel rotations and ~2.7
+buoyancy-crossing times under the artificial scaling above — chosen so the
+field has room to settle into a repeating pattern rather than show a single
+partial transient. Otherwise: coarse-for-a-slide mesh, frames interpolated
+between real solves for smooth playback — not a converged production
+result. That distinction matters to this audience and I'd rather say it
+than have someone ask.
 -->
 
 ---
