@@ -201,12 +201,19 @@ sampling the SAME raster grid against a different frame's field, because
 `field(pts)` for a plain point vector always re-derives cell assignment.
 
 Gridap's `CellPoint` precomputes that cell assignment once for a fixed set of
-points; evaluating a *different* CellField at an *already-built* CellPoint
-skips the search entirely. Measured: reusing one CellPoint across repeated
-evaluations dropped the same ~2300-point sample from ~1.7s to ~0.0007s --
-roughly 2000x, because the raster grid is identical every frame and only the
-field's own values change. So the CellPoint is built exactly once, outside
-the frame loop, and every frame reuses it.
+points, but evaluating a CellField at a CellPoint returns results grouped BY
+CELL (Gridap's own quadrature-oriented layout), not in the original per-point
+order -- so the cell-to-point/point-to-cell bookkeeping Gridap computes
+internally (normally hidden inside `compute_cell_points_from_vector_of_points`)
+has to be redone explicitly here so it can be reused to reorder every frame's
+result back to raster order. Gridap's own reordering helper
+(`lazy_map(Reindex(...), ...)`) turned out to be too slow to use per-frame
+(measured ~0.6s, as slow as not caching at all) -- it builds a new lazy
+wrapper array every call. A plain `collect` once per frame plus direct
+indexing is ~15x faster than that. Net effect, measured: the same ~2300-point
+sample dropped from ~1.7s/frame (naive, uncached) to ~0.04-0.05s/frame
+(cached point-location + plain-array reorder) -- ~40x, cutting an estimated
+~50 minute two-video render to under a minute of raw sampling.
 """
 function animate_bare_scalar(fields; radius, output_path, n=121, fps=30, post=identity, color=:viridis, clims=nothing)
     xs = range(-radius, radius; length=n)
@@ -221,27 +228,41 @@ function animate_bare_scalar(fields; radius, output_path, n=121, fps=30, post=id
     end
 
     probe = first(fields)
-    # The square-to-disk mesh mapping isn't exactly circular, so a handful of
+    trian = get_triangulation(probe)
+
+    # Locate each point's cell exactly once (the expensive KDTree-search part),
+    # keeping only points Gridap can actually place in a cell -- the
+    # square-to-disk mesh mapping isn't exactly circular, so a handful of
     # points that pass the disk-radius test above can still fall just outside
-    # every cell. This locatability check is itself a one-time cost (paid
-    # once here, not once per frame), so the slow per-point path is fine for it.
-    locatable(p) = try
-        probe(p); true
-    catch err
-        err isa AssertionError ? false : rethrow()
+    # every cell.
+    search_cache = Gridap.CellData._point_to_cell_cache(Gridap.CellData.KDTreeSearch(), trian)
+    point_to_cell = Vector{Int}(undef, length(candidates))
+    keep = falses(length(candidates))
+    for (k, p) in enumerate(candidates)
+        try
+            point_to_cell[k] = Gridap.CellData._point_to_cell!(search_cache, p)
+            keep[k] = true
+        catch err
+            err isa AssertionError || rethrow()
+        end
     end
-    keep = locatable.(candidates)
     valid = candidates[keep]
     valid_idxs = idxs[keep]
-    trian = get_triangulation(probe)
-    cp = Gridap.CellData.compute_cell_points_from_vector_of_points(valid, trian, Gridap.CellData.PhysicalDomain())
+    point_to_cell = point_to_cell[keep]
 
+    ncells = num_cells(trian)
+    cell_to_points, point_to_lpoint = Gridap.CellData.make_inverse_table(point_to_cell, ncells)
+    cell_to_xs = Gridap.Arrays.lazy_map(Gridap.Fields.Broadcasting(Gridap.Arrays.Reindex(valid)), cell_to_points)
+    cp = Gridap.CellData.CellPoint(cell_to_xs, trian, Gridap.CellData.PhysicalDomain())
+
+    npts = length(valid)
     kwargs = clims === nothing ? (;) : (; clims=clims)
     anim = @animate for field in fields
-        fxs = field(cp)
+        cell_to_fxs = collect(field(cp))
         values = fill(NaN, length(ys), length(xs))
-        for (k, (j, i)) in enumerate(valid_idxs)
-            values[j, i] = post(fxs[k])
+        @inbounds for k in 1:npts
+            j, i = valid_idxs[k]
+            values[j, i] = post(cell_to_fxs[point_to_cell[k]][point_to_lpoint[k]])
         end
         plt = heatmap(
             xs, ys, values;
