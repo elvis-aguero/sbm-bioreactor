@@ -303,6 +303,16 @@ function run_bioreactor_simulation(
     jac(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, state[].x_prevs, y, dt, params, state[].order, state[].t) )dΩ
     op = FEOperator(res, jac, X, Y)
 
+    # Reusing `op` alone (above) didn't actually help: `solve!(xh, solver, op)` is
+    # sugar for `solve!(xh, solver, op, nothing)`, and passing `cache=nothing` is
+    # exactly what tells Gridap's NLSolver to allocate a brand new Jacobian
+    # matrix, sparsity pattern, and LU symbolic factorization from scratch (see
+    # Gridap's Algebra/NLSolvers.jl `_new_nlsolve_cache` vs `_update_nlsolve_cache!`)
+    # -- discarding the cache every step, independent of `op`, was the actual
+    # fixed per-step cost. Thread the returned cache back in so steps after the
+    # first reuse that storage and only refactorize with updated values.
+    nlcache = nothing
+
     for step in 1:nsteps
         t = step * dt
         println("Step: $step, Time: $t")
@@ -314,7 +324,7 @@ function run_bioreactor_simulation(
         state[] = (x_prevs=(x_n, x_nn), order=order, t=t)
 
         # Solve the nonlinear system
-        xh, _ = solve!(xh, solver, op)
+        xh, nlcache = solve!(xh, solver, op, nlcache)
         
         # Update time-history
         x_nn = x_n
