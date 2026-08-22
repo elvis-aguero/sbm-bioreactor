@@ -33,6 +33,12 @@ export build_harv_2d_case
 @doc "krieger_viscosity(Φ, Φmax): Compute the local fluid viscosity using the Krieger-Dougherty model." krieger_viscosity
 export krieger_viscosity
 
+@doc "krieger_viscosity_dΦ(Φ; μf, Φmax): Analytic dμ/dΦ of krieger_viscosity." krieger_viscosity_dΦ
+export krieger_viscosity_dΦ
+
+@doc "krieger_viscosity_d2Φ2(Φ; μf, Φmax): Analytic d²μ/dΦ² of krieger_viscosity." krieger_viscosity_d2Φ2
+export krieger_viscosity_d2Φ2
+
 @doc "shear_rate(u): Compute the magnitude of the shear rate tensor for SBM migration." shear_rate
 export shear_rate
 

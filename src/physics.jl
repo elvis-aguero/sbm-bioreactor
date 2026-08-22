@@ -54,6 +54,29 @@ function krieger_viscosity(Φ; μf=0.5889, Φmax=0.64)
 end
 
 """
+    krieger_viscosity_dΦ(Φ; μf=0.5889, Φmax=0.64)
+
+Analytic derivative dμ/dΦ of `krieger_viscosity`, used to build ∇μ = μ'(Φ)∇Φ in
+the migration flux and in `coupled_bioreactor_jacobian`'s linearization of ∇μ.
+Exported (rather than kept as a solver-local closure) so it can be tested
+directly against `krieger_viscosity` itself instead of being duplicated by hand
+in two places with nothing checking they still agree.
+"""
+function krieger_viscosity_dΦ(Φ; μf=0.5889, Φmax=0.64)
+    return 2.5 * μf * (1.0 - Φ/Φmax)^(-2.5*Φmax - 1.0)
+end
+
+"""
+    krieger_viscosity_d2Φ2(Φ; μf=0.5889, Φmax=0.64)
+
+Second derivative d²μ/dΦ² of `krieger_viscosity`. Needed because ∇μ itself
+depends on Φ, so linearizing ∇μ for the analytic Jacobian requires μ''(Φ) too.
+"""
+function krieger_viscosity_d2Φ2(Φ; μf=0.5889, Φmax=0.64)
+    return 2.5 * μf * (2.5*Φmax + 1.0) / Φmax * (1.0 - Φ/Φmax)^(-2.5*Φmax - 2.0)
+end
+
+"""
     shear_rate(u)
 
 Compute the local shear rate (scalar invariant of the strain rate tensor).

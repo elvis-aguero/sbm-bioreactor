@@ -71,8 +71,7 @@ function coupled_bioreactor_residual(x, x_prevs, y, dt, params, order=1, t=0.0)
     μ = visc_op ∘ Φ
 
     # Analytical gradient of viscosity with respect to Φ (for the migration terms)
-    # dμ/dΦ = μf * (-2.5*Φmax) * (1-Φ/Φmax)^(-2.5*Φmax-1) * (-1/Φmax)
-    dμ_dΦ_op(phi) = 2.5 * μf * (1.0 - phi/Φmax)^(-2.5*Φmax - 1.0)
+    dμ_dΦ_op(phi) = krieger_viscosity_dΦ(phi; μf=μf, Φmax=Φmax)
     ∇μ = (dμ_dΦ_op ∘ Φ) * ∇(Φ)
 
     # 1. Shear Rate Projection: Smooth Γ to calculate ∇Γ in the migration flux
@@ -84,13 +83,29 @@ function coupled_bioreactor_residual(x, x_prevs, y, dt, params, order=1, t=0.0)
 
     # 3. Modified Continuity: ∇⋅u = - ∇⋅(J * (1/ρs - 1/ρf))
     # This accounts for volume changes when particles migrate in a variable density mixture.
+    #
+    # κ = (ρs-ρf)/ρf, NOT (ρs-ρf)/(ρs*ρf): particle_flux's Jsc/Jsμ/Jst are all
+    # velocity-dimensioned (m/s -- confirmed by unit tracking each term, and by
+    # the code's own "Stokes settling velocity" u_st), so the coefficient
+    # multiplying flux before a divergence (which already yields the correct
+    # 1/s from a velocity field) must be dimensionless. (ρs-ρf)/(ρs*ρf) has
+    # units of inverse density, not dimensionless -- it cannot produce the 1/s
+    # that ∂Φ/∂t or ∇⋅u require, independent of how the source paper's Eq.
+    # 8/10 (which use an undivided, mass-flux-dimensioned J_s = ρs*flux) are
+    # read. (ρs-ρf)/(ρs*ρf) is exactly κ_paper/ρs; multiplying flux (=J_s/ρs
+    # per the paper's own Eq. 14) by κ_paper*ρs = (ρs-ρf)/ρf recovers the
+    # paper's κ*∇·J_s while keeping flux itself in its documented, exported,
+    # velocity-dimensioned form -- this is the minimal fix, isolated to the
+    # two places (here and the analogous Jacobian term) that consume `flux`,
+    # not a change to particle_flux's own well-documented interface.
     flux = particle_flux(u, Φ, ∇(Φ), μ, ∇μ, a, ρs, ρf, μf, Φavg, g, Γ, ∇(Γ); buoyancy_scale=buoyancy_scale)
-    res_continuity_rhs = ∇(q) ⋅ (flux * ((ρs - ρf) / (ρs * ρf)))
-    
+    κ = (ρs - ρf) / ρf
+    res_continuity_rhs = ∇(q) ⋅ (flux * κ)
+
     # 4. Particle Transport: ∂Φ/∂t + u⋅∇Φ = -∇⋅J + Source
     # Source term models cell proliferation (B.7)
     source_phi = (π/6.0 * a^3) * kc * C * d0 * exp(ke * t)
-    res_phi = (w * Φ_dot) + (w * (u ⋅ ∇(Φ))) + (∇(w) ⋅ (flux * ((ρs - ρf) / (ρs * ρf)))) - (w * source_phi)
+    res_phi = (w * Φ_dot) + (w * (u ⋅ ∇(Φ))) + (∇(w) ⋅ (flux * κ)) - (w * source_phi)
     
     # 5. Nutrient Transport: Advection-Diffusion-Reaction
     # Consumption rate rc is proportional to cell concentration (Φ / volume_of_one_cell)
@@ -152,10 +167,10 @@ function coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0
     ρ = (1.0 - Φ) * ρf + Φ * ρs
     dρ = (ρs - ρf) * dΦ
 
-    dμ_dΦ_op(phi) = 2.5 * μf * (1.0 - phi/Φmax)^(-2.5*Φmax - 1.0)
+    dμ_dΦ_op(phi) = krieger_viscosity_dΦ(phi; μf=μf, Φmax=Φmax)
     # Second derivative of the Krieger-Dougherty law, needed because ∇μ = μ'(Φ)∇Φ
     # itself depends on Φ, so linearizing ∇μ requires μ''(Φ) as well.
-    dμ2_dΦ2_op(phi) = 2.5 * μf * (2.5*Φmax + 1.0) / Φmax * (1.0 - phi/Φmax)^(-2.5*Φmax - 2.0)
+    dμ2_dΦ2_op(phi) = krieger_viscosity_d2Φ2(phi; μf=μf, Φmax=Φmax)
     visc_op(phi) = krieger_viscosity(phi; μf=μf, Φmax=Φmax)
 
     μ = visc_op ∘ Φ
@@ -177,7 +192,9 @@ function coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0
         (-dp * (∇ ⋅ v)) + (q * (∇ ⋅ du)) +
         (drag_coeff * du ⋅ v)
 
-    κ = (ρs - ρf) / (ρs * ρf)
+    # See the matching note in coupled_bioreactor_residual: κ = (ρs-ρf)/ρf,
+    # not (ρs-ρf)/(ρs*ρf), for flux/dflux to be dimensionally consistent.
+    κ = (ρs - ρf) / ρf
 
     ∇ΓΦ = Γ * ∇(Φ) + Φ * ∇(Γ)
     d∇ΓΦ = dΓ*∇(Φ) + Γ*∇(dΦ) + dΦ*∇(Γ) + Φ*∇(dΓ)

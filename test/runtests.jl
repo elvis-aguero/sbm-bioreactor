@@ -27,6 +27,8 @@ const TEST_FILES = [
     "test_mms.jl",
     "test_mms_unsteady.jl",
     "test_examples.jl",
+    "test_physical_limits.jl",
+    "test_conservation_and_equilibria.jl",
 ]
 
 for file in TEST_FILES
