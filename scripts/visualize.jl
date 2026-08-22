@@ -186,9 +186,69 @@ function plot_bare_scalar_snapshot(field; radius, n=121, post=identity, color=:v
     )
 end
 
+"""
+    animate_bare_scalar(fields; radius, output_path, n=121, fps=30, post=identity, color=:viridis, clims=nothing)
+
+`fields` must be genuine Gridap CellFields (not plain closures) on the same
+triangulation -- true for every caller (interpolated FE snapshots).
+
+Building each frame independently via `sample_scalar_field`/`plot_bare_scalar_snapshot`
+(one field(pt)-per-point call, looped n^2 times, PER FRAME) was the actual
+render bottleneck: measured at ~1.7s to evaluate ~2300 points once. The
+expensive part is Gridap re-locating which mesh cell each point falls in
+(a KDTree search) on every single call -- it's redone from scratch even when
+sampling the SAME raster grid against a different frame's field, because
+`field(pts)` for a plain point vector always re-derives cell assignment.
+
+Gridap's `CellPoint` precomputes that cell assignment once for a fixed set of
+points; evaluating a *different* CellField at an *already-built* CellPoint
+skips the search entirely. Measured: reusing one CellPoint across repeated
+evaluations dropped the same ~2300-point sample from ~1.7s to ~0.0007s --
+roughly 2000x, because the raster grid is identical every frame and only the
+field's own values change. So the CellPoint is built exactly once, outside
+the frame loop, and every frame reuses it.
+"""
 function animate_bare_scalar(fields; radius, output_path, n=121, fps=30, post=identity, color=:viridis, clims=nothing)
+    xs = range(-radius, radius; length=n)
+    ys = range(-radius, radius; length=n)
+    idxs = Tuple{Int,Int}[]
+    candidates = Point{2,Float64}[]
+    for (j, y) in enumerate(ys), (i, x) in enumerate(xs)
+        if x^2 + y^2 <= radius^2 + 1e-12
+            push!(idxs, (j, i))
+            push!(candidates, Point(x, y))
+        end
+    end
+
+    probe = first(fields)
+    # The square-to-disk mesh mapping isn't exactly circular, so a handful of
+    # points that pass the disk-radius test above can still fall just outside
+    # every cell. This locatability check is itself a one-time cost (paid
+    # once here, not once per frame), so the slow per-point path is fine for it.
+    locatable(p) = try
+        probe(p); true
+    catch err
+        err isa AssertionError ? false : rethrow()
+    end
+    keep = locatable.(candidates)
+    valid = candidates[keep]
+    valid_idxs = idxs[keep]
+    trian = get_triangulation(probe)
+    cp = Gridap.CellData.compute_cell_points_from_vector_of_points(valid, trian, Gridap.CellData.PhysicalDomain())
+
+    kwargs = clims === nothing ? (;) : (; clims=clims)
     anim = @animate for field in fields
-        display(plot_bare_scalar_snapshot(field; radius=radius, n=n, post=post, color=color, clims=clims))
+        fxs = field(cp)
+        values = fill(NaN, length(ys), length(xs))
+        for (k, (j, i)) in enumerate(valid_idxs)
+            values[j, i] = post(fxs[k])
+        end
+        plt = heatmap(
+            xs, ys, values;
+            aspect_ratio=:equal, colorbar=false, title="", legend=false,
+            axis=false, ticks=false, framestyle=:none, color=color, kwargs...,
+        )
+        display(plt)
     end
 
     if endswith(lowercase(output_path), ".mp4")
