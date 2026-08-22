@@ -288,22 +288,31 @@ function run_bioreactor_simulation(
     snapshot(x) = FEFunction(X, copy(get_free_dof_values(x)))
     history = collect_history ? Any[snapshot(x_n)] : nothing
     times = collect_history ? Float64[0.0] : nothing
-    
+
+    # res/jac used to close directly over per-step-local x_prevs/order/t, so every
+    # step built a brand new FEOperator -- and FEOperator's construction rebuilds
+    # the SparseMatrixAssembler (sparsity pattern, Jacobian/residual storage) from
+    # scratch, a large FIXED cost paid every step regardless of problem size
+    # (measured: allocations/step barely changed between a 1205-dof and a 3077-dof
+    # mesh). The residual/Jacobian *forms* -- which fields couple to which -- don't
+    # depend on x_prevs/order/t at all, so the sparsity pattern is identical every
+    # step; only the numeric values change. Route the varying pieces through this
+    # mutable box instead, so `op` (and its assembler) is built once and reused.
+    state = Ref((x_prevs=(x_n, x_nn), order=1, t=dt))
+    res(x, y) = ∫( coupled_bioreactor_residual(x, state[].x_prevs, y, dt, params, state[].order, state[].t) )dΩ
+    jac(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, state[].x_prevs, y, dt, params, state[].order, state[].t) )dΩ
+    op = FEOperator(res, jac, X, Y)
+
     for step in 1:nsteps
         t = step * dt
         println("Step: $step, Time: $t")
-        
+
         # Use BDF1 for the first step, BDF2 for subsequent steps. x_prevs is always a
         # 2-tuple (x_nn is simply unused when order==1) to keep its type stable across
         # steps -- see the note in coupled_bioreactor_residual.
         order = step == 1 ? 1 : 2
-        x_prevs = (x_n, x_nn)
-        
-        # Define the residual and its (analytic, AD-free) Jacobian on the triangulation.
-        res(x, y) = ∫( coupled_bioreactor_residual(x, x_prevs, y, dt, params, order, t) )dΩ
-        jac(x, dx, y) = ∫( coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order, t) )dΩ
-        op = FEOperator(res, jac, X, Y)
-        
+        state[] = (x_prevs=(x_n, x_nn), order=order, t=t)
+
         # Solve the nonlinear system
         xh, _ = solve!(xh, solver, op)
         

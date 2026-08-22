@@ -159,26 +159,36 @@ function interpolate_history(history, times, X; nframes)
 end
 
 """
-    plot_bare_scalar_snapshot(field; radius, n=121, post=identity)
+    plot_bare_scalar_snapshot(field; radius, n=121, post=identity, color=:viridis, clims=nothing)
 
 A heatmap with no title, colorbar, axes, or ticks -- for slide videos where
 Slidev's own caption carries any labeling, not the video itself. `post` lets a
 vector field (e.g. velocity) be reduced to a scalar (e.g. `v -> norm(v)`) as
 part of the same batched sample, instead of pre-wrapping `field` in a closure
 that would defeat `sample_scalar_field`'s fast batched-CellField path.
+
+`color` defaults to `:viridis` rather than Plots/GR's default inferno-like
+palette -- for Φ, which is close to binary (0 in most of the domain, phi_cloud
+in the seeded region), the default palette collapsed to two flat color blocks
+with a thin gradient at the interface, reading as harsh rather than as a
+field. `clims` fixes the color scale across all frames of an animation
+(otherwise each frame's colors auto-rescale to *that frame's* min/max, so a
+field settling toward uniformity would misleadingly look like it's still
+"full-contrast" throughout).
 """
-function plot_bare_scalar_snapshot(field; radius, n=121, post=identity)
+function plot_bare_scalar_snapshot(field; radius, n=121, post=identity, color=:viridis, clims=nothing)
     xs, ys, values = sample_scalar_field(field; radius=radius, n=n, post=post)
+    kwargs = clims === nothing ? (;) : (; clims=clims)
     return heatmap(
         xs, ys, values;
         aspect_ratio=:equal, colorbar=false, title="", legend=false,
-        axis=false, ticks=false, framestyle=:none,
+        axis=false, ticks=false, framestyle=:none, color=color, kwargs...,
     )
 end
 
-function animate_bare_scalar(fields; radius, output_path, n=121, fps=30, post=identity)
+function animate_bare_scalar(fields; radius, output_path, n=121, fps=30, post=identity, color=:viridis, clims=nothing)
     anim = @animate for field in fields
-        display(plot_bare_scalar_snapshot(field; radius=radius, n=n, post=post))
+        display(plot_bare_scalar_snapshot(field; radius=radius, n=n, post=post, color=color, clims=clims))
     end
 
     if endswith(lowercase(output_path), ".mp4")
