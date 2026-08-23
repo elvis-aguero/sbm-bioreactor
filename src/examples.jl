@@ -73,7 +73,12 @@ function build_harv_2d_case(;
         kc = 1.0e-13,
         ke = 4.2e-6,
         d0 = 3.0e5,
-        u0 = u_wall,
+        # Fluid starts at rest, not already spun up: u_wall only constrains the
+        # boundary (Dirichlet) DOFs of the trial space regardless of what's passed
+        # here, so this genuinely models "impulsively started rotating wall, fluid
+        # initially at rest" (the classic spin-up problem) rather than skipping the
+        # startup transient by initializing already at rigid rotation everywhere.
+        u0 = x -> VectorValue(0.0, 0.0),
         p0 = x -> 0.0,
         Φ0 = x -> (x[2] > phi_cutoff ? phi_cloud : 0.0),
         C0 = x -> 5.5,
