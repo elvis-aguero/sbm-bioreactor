@@ -67,8 +67,21 @@ Viscosity increases nonlinearly with particle concentration, becoming infinite a
 approaches Φmax, reflecting the transition from a fluid-like to a solid-like state.
 """
 function krieger_viscosity(Φ; μf=0.5889, Φmax=0.64)
-    return μf * (1 - Φ/Φmax)^(-2.5*Φmax)
+    Φc = _clamp_Φ(Φ, Φmax)
+    return μf * (1 - Φc/Φmax)^(-2.5*Φmax)
 end
+
+# Plain Galerkin FEM on advection-dominated Φ transport (no flux limiter/stabilization)
+# can produce bounded but real over/undershoot past [0, Φmax) -- confirmed while
+# generating scripts/generate_illustrative_video.jl, where Φ's DOF values drifted to
+# -0.09 over a long, rotation-heavy run with strong migration/sedimentation forcing,
+# well outside any IC- or timestep-specific edge case. Without this, a fractional
+# power of a negative (or >Φmax) base throws a DomainError and aborts the whole
+# simulation. Clamping only the *input* to this and the two derivative functions below
+# is a purely defensive domain-validity safeguard, not a change to the physics for any
+# well-resolved simulation, where Φ already stays in-bounds -- it's identical to
+# krieger_viscosity's exact formula for every Φ every existing test exercises.
+_clamp_Φ(Φ, Φmax) = clamp(Φ, 0.0, Φmax - 1.0e-9)
 
 """
     krieger_viscosity_dΦ(Φ; μf=0.5889, Φmax=0.64)
@@ -80,7 +93,8 @@ directly against `krieger_viscosity` itself instead of being duplicated by hand
 in two places with nothing checking they still agree.
 """
 function krieger_viscosity_dΦ(Φ; μf=0.5889, Φmax=0.64)
-    return 2.5 * μf * (1.0 - Φ/Φmax)^(-2.5*Φmax - 1.0)
+    Φc = _clamp_Φ(Φ, Φmax)
+    return 2.5 * μf * (1.0 - Φc/Φmax)^(-2.5*Φmax - 1.0)
 end
 
 """
@@ -90,7 +104,8 @@ Second derivative d²μ/dΦ² of `krieger_viscosity`. Needed because ∇μ itsel
 depends on Φ, so linearizing ∇μ for the analytic Jacobian requires μ''(Φ) too.
 """
 function krieger_viscosity_d2Φ2(Φ; μf=0.5889, Φmax=0.64)
-    return 2.5 * μf * (2.5*Φmax + 1.0) / Φmax * (1.0 - Φ/Φmax)^(-2.5*Φmax - 2.0)
+    Φc = _clamp_Φ(Φ, Φmax)
+    return 2.5 * μf * (2.5*Φmax + 1.0) / Φmax * (1.0 - Φc/Φmax)^(-2.5*Φmax - 2.0)
 end
 
 """
