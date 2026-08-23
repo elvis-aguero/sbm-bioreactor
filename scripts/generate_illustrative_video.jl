@@ -42,13 +42,25 @@
 # disclosed on the Results slide, same honest "time-lapse" framing nature
 # documentaries use for slow processes) -- not a hidden manipulation of the
 # underlying physics.
+#
+# Φ0 override: build_harv_2d_case's default "floating cells" IC is a sharp step
+# (0.1 inside a region, 0 outside) -- a known Gibbs-ringing source in a plain
+# Galerkin discretization (already worked around with a smooth IC in
+# test_conservation_and_equilibria.jl for the same reason). A first attempt at
+# this clip, using the default step IC, crashed at t≈142s with Φ ringing to
+# -0.097 (a DomainError in krieger_viscosity's fractional power) -- the much
+# stronger migration/sedimentation transport here (vs. the realistic clip)
+# amplifies that ringing past zero. A smooth Gaussian bump of the same peak
+# value and roughly the same size/location avoids the discontinuity causing it,
+# without changing the qualitative "off-center cloud" visual.
 using Gridap
 using SBM_Bioreactor
 include(joinpath(@__DIR__, "visualize.jl"))
 
 println("Building case and running simulation..."); flush(stdout)
 case = build_harv_2d_case(partition=(16, 16), omega_rpm=2.0, dt=0.1, total_time=300.0)
-params = merge(case.params, (a=1.0e-3, ρs=1250.0))
+smooth_Φ0(x) = 0.1 * exp(-((x[1])^2 + (x[2] - 0.03)^2) / (2 * 0.015^2))
+params = merge(case.params, (a=1.0e-3, ρs=1250.0, Φ0=smooth_Φ0))
 result = run_bioreactor_simulation(
     case.X, case.Y, case.dΩ, case.metadata.dt, params, case.metadata.nsteps;
     collect_history=true, write_vtk_interval=0,
