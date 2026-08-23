@@ -126,36 +126,58 @@ end
 end
 
 @testset "Growth kinetics matches an independent ODE integration of the same source terms" begin
-    # ω=0 (no rotation) with spatially uniform Φ0, C0: with no other momentum
-    # forcing breaking symmetry (uniform Φ ⇒ uniform ρ ⇒ gravity is absorbed by
-    # a hydrostatic pressure gradient alone), u stays exactly 0 and Φ, C stay
-    # exactly spatially uniform for all time -- this is an EXACT reduction to a
-    # 2-variable ODE pair, not an approximation, so the PDE solver's own
-    # (spatially-averaged) Φ(t), C(t) can be compared directly against an
+    # ω=0 (no rotation) with spatially uniform Φ0, C0, AND ρs=ρf: with no other
+    # momentum forcing breaking symmetry, u stays exactly 0. ρs=ρf is required
+    # too, not just uniform Φ0 -- Jst (sedimentation) depends on Φ itself, not
+    # ∇Φ, so it's a nonzero *constant* vector for any ρs≠ρf even when Φ is
+    # perfectly uniform, and since the Φ/C spaces carry no Dirichlet BC, that
+    # constant flux acts as a natural boundary flux (∫∇w⋅Jst dΩ = ∮w Jst⋅n ds
+    # for boundary-supported w), genuinely un-uniforming Φ near the domain edge
+    # over time. An earlier version of this test omitted ρs=ρf and saw exactly
+    # that -- a real, non-negligible mismatch against the pure-ODE reference,
+    # not a bug in the solver. With ρs=ρf, Jst=0 too (see the "ρs=ρf zeroes
+    # κ" testset in test_physical_limits.jl), leaving no mechanism to break
+    # spatial uniformity: Φ, C stay exactly spatially uniform for all time --
+    # this is an EXACT reduction to a 2-variable ODE pair, not an
+    # approximation, so the PDE solver's own (spatially-averaged) Φ(t), C(t)
+    # can be compared directly against an
     # independent RK4 integration of dΦ/dt = a3*kc*C*d0*exp(ke*t),
     # dC/dt = -kc*Φ/a3 (a3 = π/6*a³), the same closed-form growth/consumption
     # submodel coded in coupled_bioreactor_residual.
     #
-    # Parameters are a deliberately synthetic regime (not the paper's a=5μm,
-    # kc=1e-13): a is chosen so a3=π/6*a³=1 exactly, and kc/d0/ke are picked to
-    # give a clearly observable growth signal within a short, cheap test
-    # window while keeping Φ safely below Φmax throughout (avoiding a
-    # DomainError from Krieger-Dougherty's (1-Φ/Φmax)^... at Φ>Φmax). At the
-    # paper's real a=5μm, a3~6.5e-17 makes source_phi negligible on any
-    # testable timescale -- this is analogous to buoyancy_scale elsewhere in
-    # this repo, an illustrative parameter choice for exercising a mechanism
-    # that's real but too slow to observe directly at physical parameter
-    # values.
-    a_test = (6.0 / π)^(1.0 / 3.0)
-    kc_test, d0_test, ke_test = 0.01, 1.0, 0.0
+    # Parameters are a deliberately synthetic regime for kc/d0 (not the paper's
+    # kc=1e-13): at the paper's real a=5μm, a3=π/6*a³~6.5e-17 makes
+    # source_phi/rc negligible on any testable timescale, so kc/d0 are scaled
+    # up to give a clearly observable growth/consumption signal within a
+    # short, cheap test window (this is analogous to buoyancy_scale elsewhere
+    # in this repo -- an illustrative parameter choice for exercising a
+    # mechanism that's real but too slow to observe directly at physical
+    # parameter values).
+    #
+    # `a` itself, however, is left at its real (tiny) default -- unlike kc/d0,
+    # `a` is *also* the particle radius feeding the migration-flux terms
+    # (Jsc/Jsμ/Jst, all ∝a²). An earlier version of this test set a=(6/π)^(1/3)
+    # (≈1.24m) purely to make a3=1 exactly for the ODE arithmetic, without
+    # accounting for that shared use -- it made those flux terms ~10 orders of
+    # magnitude too strong (a²~1.5 instead of ~2.5e-11), which destabilized the
+    # Newton solve (Φ overshot far outside [0,Φmax] on the very first step,
+    # hitting a DomainError in Krieger-Dougherty's fractional power) even
+    # though Φ starts spatially uniform. Keeping a physical and instead scaling
+    # kc/d0 (which don't feed the flux terms) avoids that entirely.
+    a3 = π / 6.0 * (5.0e-6)^3  # ≈ 6.5e-17, the real default a
     Φ0_const, C0_const = 0.3, 5.5
-    a3 = π / 6.0 * a_test^3  # ≈ 1.0 by construction
+    # kc chosen so rc0 = -kc*Φ0/a3 ≈ -1.0 (a modest, observable consumption
+    # rate); d0 chosen so source_phi0 = a3*kc*d0*C0 ≈ 0.05 (Φ grows from 0.3 to
+    # ~0.325 over total_time_test, safely below Φmax=0.64).
+    kc_test = a3 / Φ0_const
+    d0_test = 0.05 / (a3 * kc_test * C0_const)
+    ke_test = 0.0
 
     dt_test, total_time_test = 0.025, 0.5
     case = build_harv_2d_case(partition=(2, 2), omega_rpm=0.0, dt=dt_test, total_time=total_time_test)
     params = merge(
         case.params,
-        (a=a_test, kc=kc_test, d0=d0_test, ke=ke_test, Φ0=x -> Φ0_const, C0=x -> C0_const),
+        (kc=kc_test, d0=d0_test, ke=ke_test, Φ0=x -> Φ0_const, C0=x -> C0_const, ρs=case.params.ρf),
     )
 
     result = run_bioreactor_simulation(
@@ -163,7 +185,9 @@ end
         collect_history=false, write_vtk_interval=0,
     )
     uh_final, ph_final, Φh_final, Ch_final, Γh_final = result
-    area = π * case.metadata.radius^2
+    # The actual mesh area (a coarse polygonal approximation of the disk),
+    # not π*radius² -- see the identical note in test_physical_limits.jl.
+    area = sum(∫(1.0) * case.dΩ)
     Φ_pde = sum(∫(Φh_final) * case.dΩ) / area
     C_pde = sum(∫(Ch_final) * case.dΩ) / area
     speed2 = sum(∫(uh_final ⋅ uh_final) * case.dΩ) / area

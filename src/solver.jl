@@ -190,6 +190,7 @@ function coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0
         (dρ * (u ⋅ ∇(u)) ⋅ v) + (ρ * (du ⋅ ∇(u)) ⋅ v) + (ρ * (u ⋅ ∇(du)) ⋅ v) +
         (dμ * (∇(u) ⊙ ∇(v))) + (μ * (∇(du) ⊙ ∇(v))) +
         (-dp * (∇ ⋅ v)) + (q * (∇ ⋅ du)) +
+        (-(dρ * g) ⋅ v) +
         (drag_coeff * du ⋅ v)
 
     # See the matching note in coupled_bioreactor_residual: κ = (ρs-ρf)/ρf,
@@ -340,11 +341,24 @@ function run_bioreactor_simulation(
         order = step == 1 ? 1 : 2
         state[] = (x_prevs=(x_n, x_nn), order=order, t=t)
 
+        # Snapshot x_n into an independent copy *before* solving, not after: `xh`
+        # aliases x_n's underlying dof array (for Newton warm-starting -- see the
+        # note above `snapshot`'s definition), and solve! mutates that array in
+        # place. Writing `x_nn = x_n` *after* solve! (as this used to) would
+        # silently capture the array's just-mutated (this step's) contents rather
+        # than the actual previous-timestep state, since by then x_n and xh are
+        # the same object -- corrupting BDF2's second history point (x_nn, the
+        # x^{k-1} in `(3x-4x^k+x^{k-1})/(2dt)`) from step 2 onward. Confirmed by
+        # comparing against a hand-solved closed-form of a reduced (spatially
+        # uniform, decoupled-from-flow) case in test_conservation_and_equilibria.jl:
+        # the bug made every BDF2 step after the first use x^k in place of
+        # x^{k-1}, silently degrading accuracy in every multi-step simulation.
+        x_nn = snapshot(x_n)
+
         # Solve the nonlinear system
         xh, nlcache = solve!(xh, solver, op, nlcache)
-        
+
         # Update time-history
-        x_nn = x_n
         x_n = xh
         if collect_history
             push!(history, snapshot(xh))

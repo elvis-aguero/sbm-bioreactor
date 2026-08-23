@@ -9,7 +9,9 @@ Hele-Shaw depth-averaged friction term (B.6 in Chao & Das 2015).
 - `v`, `q`: Test velocity and pressure fields.
 - `μ`: Dynamic viscosity (typically depends on particle concentration Φ).
 - `ρ`: Mixture density.
-- `f`: External body forces (e.g., gravity).
+- `f`: Gravitational acceleration (e.g., `g`) -- NOT pre-multiplied by density; this
+  function does that internally (Chao & Das 2015 Eq. 1: `ρ ∂u/∂t + ρ(u⋅∇)u = ... + ρg`,
+  the last term being force per volume, not the bare acceleration).
 - `u_drag`: Reference velocity for drag (e.g., wall velocity).
 - `drag_coeff`: Friction coefficient for depth-averaged flow.
 
@@ -18,13 +20,28 @@ Hele-Shaw depth-averaged friction term (B.6 in Chao & Das 2015).
 2. `(μ * ∇(u) ⊙ ∇(v))`: Viscous stress term (dissipation).
 3. `-(p * (∇ ⋅ v))`: Pressure gradient term.
 4. `(q * (∇ ⋅ u))`: Continuity constraint (incompressibility).
-5. `-(f ⋅ v)`: Body force term (e.g., buoyancy).
-6. `(drag_coeff * (u - u_drag) ⋅ v)`: Hele-Shaw drag representing the out-of-plane 
+5. `-(ρ * f ⋅ v)`: Body force term (buoyancy/gravity, force per volume = ρg).
+6. `(drag_coeff * (u - u_drag) ⋅ v)`: Hele-Shaw drag representing the out-of-plane
    viscous resistance in thin-gap bioreactors.
 """
 function navier_stokes_weak_form(u, p, v, q, μ, ρ, f, u_drag=nothing, drag_coeff=0.0)
     # Standard Navier-Stokes terms: Advection + Diffusion - Pressure + Divergence Constraint - Forces
-    res = (ρ * (u ⋅ ∇(u)) ⋅ v) + (μ * ∇(u) ⊙ ∇(v)) - (p * (∇ ⋅ v)) + (q * (∇ ⋅ u)) - (f ⋅ v)
+    #
+    # The body force is ρ*f (force per volume), not bare f: f=g is a spatially
+    # uniform acceleration, and a spatially uniform force is always exactly
+    # absorbable into a hydrostatic pressure gradient with zero effect on velocity,
+    # regardless of how Φ (hence ρ) varies. Only a density-weighted force can
+    # actually drive buoyancy flow when ρ varies in space -- using bare f here
+    # would silently make buoyancy-driven convection impossible for any Φ field.
+    #
+    # `(f ⋅ v) * ρ`, not `ρ * f ⋅ v`: f is typically a bare constant VectorValue
+    # or a plain Julia Function (not a Gridap CellField) at call sites -- Gridap's
+    # operator overloading lifts it when combined with the CellField `v` via `⋅`,
+    # but `ρ * f` alone (two non-CellField operands whenever ρ happens to be a
+    # plain Number, e.g. in the unit test that exercises this in isolation) has no
+    # such overload and errors. Scaling the already-lifted `f ⋅ v` result by ρ
+    # afterward works in both the scalar-ρ and CellField-ρ cases.
+    res = (ρ * (u ⋅ ∇(u)) ⋅ v) + (μ * ∇(u) ⊙ ∇(v)) - (p * (∇ ⋅ v)) + (q * (∇ ⋅ u)) - ((f ⋅ v) * ρ)
     
     # Hele-Shaw Depth-Averaged Friction (B.6)
     # Models the viscous drag from the top and bottom plates in a 2D depth-averaged simulation.

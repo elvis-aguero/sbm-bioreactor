@@ -47,6 +47,14 @@ using SBM_Bioreactor
 
     flux_norm2(flux) = sum(∫(flux ⋅ flux) * dΩ)
 
+    # The actual FE mesh is a coarse (here 4x4) polygonal approximation of the
+    # disk, not the disk itself -- its quadrature-computed area is systematically
+    # smaller than the exact π*radius². Any test that averages a field by
+    # dividing by "the domain area" must use this, not π*radius², or the
+    # mismatch (~2-3% on a mesh this coarse) shows up as a spurious failure
+    # unrelated to whatever the test actually intends to check.
+    mesh_area = sum(∫(1.0) * dΩ)
+
     @testset "Φ=0 collapses migration flux to exactly zero" begin
         Φh0 = interpolate_everywhere(x -> 0.0, Wh)
         μh0 = interpolate_everywhere(μ_of(x -> 0.0), Wh)
@@ -79,7 +87,7 @@ using SBM_Bioreactor
         u_st = (2.0 * p.a^2 * (p.ρs - p.ρf) / (9.0 * μ0)) * p.g
         Jst_exact = -f_h * u_st * 0.1
 
-        flux_int = sum(∫(flux) * dΩ) / (π * radius^2)
+        flux_int = sum(∫(flux) * dΩ) / mesh_area
         @test isapprox(flux_int[1], Jst_exact[1]; rtol=1e-6, atol=1e-20)
         @test isapprox(flux_int[2], Jst_exact[2]; rtol=1e-6, atol=1e-20)
     end
@@ -94,7 +102,13 @@ using SBM_Bioreactor
         # all), but its κ-weighted contribution to continuity/Φ-transport vanishes.
         ρs_matched = ρf_matched = 1025.0
         flux = particle_flux(uh_nz, Φh_nz, ∇(Φh_nz), μh_nz, ∇(μh_nz), p.a, ρs_matched, ρf_matched, p.μf, p.Φavg, p.g, Γh_nz, ∇(Γh_nz))
-        @test flux_norm2(flux) > 1e-10
+        # Jsc/Jsμ scale as a², and the paper's real a=5μm makes a²~2.5e-11 --
+        # genuinely nonzero here, but tiny in absolute terms (flux components
+        # ~1e-12, so flux_norm2 ~1e-25), not O(1e-10) as an earlier version of
+        # this test assumed without doing that arithmetic. 1e-30 keeps a wide
+        # margin below the real value while still catching an actual
+        # accidental-cancellation bug (which would be exactly 0.0, not just small).
+        @test flux_norm2(flux) > 1e-30
 
         κ = (ρs_matched - ρf_matched) / ρf_matched
         @test κ == 0.0
@@ -140,19 +154,40 @@ using SBM_Bioreactor
     end
 
     @testset "Sedimentation flux direction tracks sign(ρs - ρf)" begin
+        # NOTE on sign: this is J_s, the paper's mixture-relative diffusive flux
+        # (Eq. 14: J_s/ρs = ... - f_h*u_st*Φ), not the particle's own settling
+        # velocity -- the two point in *opposite* directions here (confirmed
+        # against the transcribed paper text, assets/Chao_Das_2015.md, and
+        # against the independently-verified closed form used in the "Uniform
+        # Φ" and "Sedimentation flux magnitude" testsets above, which match the
+        # code's Jst exactly). An earlier version of this test asserted the
+        # naive "lighter rises, heavier sinks" direction directly and had it
+        # backward; anchoring to the same verified closed form as those other
+        # two testsets avoids re-guessing the sign by hand.
         Φh_u = interpolate_everywhere(x -> 0.1, Wh)
         Γh_u = interpolate_everywhere(x -> 0.0, Wh)  # Γ=0 ⇒ Jsc=Jsμ=0, isolating Jst
         μh_u = interpolate_everywhere(μ_of(x -> 0.1), Wh)
 
+        Jst_exact(ρs, ρf) = begin
+            μ0 = krieger_viscosity(0.1; μf=p.μf, Φmax=p.Φmax)
+            f_h = p.μf * (1.0 - p.Φavg) / μ0
+            u_st = (2.0 * p.a^2 * (ρs - ρf) / (9.0 * μ0)) * p.g
+            -f_h * u_st * 0.1
+        end
+
         flux_light = particle_flux(uh_nz, Φh_u, ∇(Φh_u), μh_u, ∇(μh_u), p.a, 1000.0, 1050.0, p.μf, p.Φavg, p.g, Γh_u, ∇(Γh_u))
         flux_heavy = particle_flux(uh_nz, Φh_u, ∇(Φh_u), μh_u, ∇(μh_u), p.a, 1100.0, 1050.0, p.μf, p.Φavg, p.g, Γh_u, ∇(Γh_u))
 
-        y_light = sum(∫(flux_light) * dΩ)[2]
-        y_heavy = sum(∫(flux_heavy) * dΩ)[2]
-        # g points in -y; lighter-than-fluid particles (ρs<ρf) rise (+y, against g),
-        # denser particles (ρs>ρf) sink (-y, with g).
-        @test y_light > 0.0
-        @test y_heavy < 0.0
+        y_light = sum(∫(flux_light) * dΩ)[2] / mesh_area
+        y_heavy = sum(∫(flux_heavy) * dΩ)[2] / mesh_area
+        y_light_exact = Jst_exact(1000.0, 1050.0)[2]
+        y_heavy_exact = Jst_exact(1100.0, 1050.0)[2]
+
+        @test isapprox(y_light, y_light_exact; rtol=1e-6, atol=1e-20)
+        @test isapprox(y_heavy, y_heavy_exact; rtol=1e-6, atol=1e-20)
+        # The physically robust invariant regardless of sign convention: flipping
+        # the sign of (ρs-ρf) must flip the flux's sign.
+        @test sign(y_light) == -sign(y_heavy)
     end
 
     @testset "Jsc/Jsμ are strictly down-gradient (stabilizing, never anti-diffusive)" begin
@@ -221,7 +256,7 @@ using SBM_Bioreactor
         Γh_u = interpolate_everywhere(x -> 0.0, Wh)
         μh_u = interpolate_everywhere(μ_of(x -> Φ0), Wh)
         flux = particle_flux(uh_nz, Φh_u, ∇(Φh_u), μh_u, ∇(μh_u), a, ρs, ρf, μf, Φavg, g, Γh_u, ∇(Γh_u))
-        flux_avg = sum(∫(flux) * dΩ) / (π * radius^2)
+        flux_avg = sum(∫(flux) * dΩ) / mesh_area
 
         @test isapprox(flux_avg[1], Jst_exact[1]; rtol=1e-8, atol=1e-20)
         @test isapprox(flux_avg[2], Jst_exact[2]; rtol=1e-8, atol=1e-20)
@@ -245,7 +280,7 @@ using SBM_Bioreactor
 
     @testset "Shear-rate regularization floor is self-consistent with the default Γ0 IC" begin
         uh_zero = interpolate_everywhere(x -> VectorValue(0.0, 0.0), Vh)
-        Γ_floor = sum(∫(shear_rate(uh_zero)) * dΩ) / (π * radius^2)
+        Γ_floor = sum(∫(shear_rate(uh_zero)) * dΩ) / mesh_area
         @test isapprox(Γ_floor, sqrt(1e-10); rtol=1e-6)
         @test isapprox(p.Γ0(Point(0.0, 0.0)), sqrt(1e-10); rtol=1e-6)
     end
