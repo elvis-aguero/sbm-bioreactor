@@ -84,89 +84,358 @@ them to the fluid flow and nutrient transport, self-consistently.
 layout: center
 ---
 
-# The Model
+# The Model — Momentum
 
-<video src="/chao_das_derivation.mp4" controls class="mx-auto rounded shadow" style="max-height:70vh"></video>
+<v-switch transition="fade">
 
-<div class="text-xs pt-2 opacity-50 text-center">
-click to play/pause at each equation — full derivation, Eq. 1 through the complete model
+<template #0>
+<div class="text-sm opacity-70 mb-2">Momentum balance</div>
+
+$$
+\rho \frac{\partial \mathbf{u}}{\partial t} + \rho (\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p + \nabla\cdot\left[\mu\left(\nabla\mathbf{u} + \nabla\mathbf{u}^{T}\right)\right] + \rho \mathbf{g}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 1</div>
+</template>
+
+<template #1>
+<div class="text-sm opacity-70 mb-2">closure: mixture density</div>
+
+$$
+\rho \frac{\partial \mathbf{u}}{\partial t} + \rho (\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p + \nabla\cdot\left[\mu\left(\nabla\mathbf{u} + \nabla\mathbf{u}^{T}\right)\right] + \textcolor{#c2410c}{\left[(1-\Phi)\rho_f^\circ + \Phi \rho_s^\circ\right]} \mathbf{g}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 1, 2</div>
+</template>
+
+<template #2>
+<div class="text-sm opacity-70 mb-2">closure: Krieger-Dougherty viscosity</div>
+
+$$
+\mu = \mu_f \left(1-\frac{\Phi}{\Phi_{\max}}\right)^{-2.5\Phi_{\max}}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 3</div>
+</template>
+
+</v-switch>
+
+<!--
+Real KaTeX, not video: each click swaps in the next equation, with the
+newly-introduced or changed piece colored so it's visually obvious what
+just got substituted, rather than needing to re-read the whole line.
+-->
+
+---
+layout: center
+---
+
+# From two phases to one Φ-equation
+
+<v-switch transition="fade">
+
+<template #0>
+<div class="text-sm opacity-70 mb-2">solid-phase transport</div>
+
+$$
+\frac{\partial \Phi}{\partial t} + \nabla\cdot(\Phi \mathbf{u}_s) = 0
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 5</div>
+</template>
+
+<template #1>
+<div class="text-sm opacity-70 mb-2">substitute: u_s = u + slip velocity</div>
+
+$$
+\frac{\partial \Phi}{\partial t} - \nabla\cdot\left[\Phi\left(\mathbf{u} + \textcolor{#c2410c}{(1-c_s)\mathbf{u}_{slip}}\right)\right] = 0
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 5, 6</div>
+</template>
+
+<template #2>
+<div class="text-sm opacity-70 mb-2">define the migration flux J_s</div>
+
+$$
+\frac{\partial \Phi}{\partial t} + \nabla\cdot(\mathbf{u}\Phi) = \textcolor{#c2410c}{-\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 7</div>
+</template>
+
+<template #3>
+<div class="text-sm opacity-70 mb-2">meanwhile, mixture continuity</div>
+
+$$
+(\rho_s^\circ-\rho_f^\circ)\left[\nabla\cdot\left(\Phi(1-c_s)\mathbf{u}_{slip}\right)\right] - \rho_f^\circ (\nabla\cdot\mathbf{u}) = 0
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 4</div>
+</template>
+
+<template #4>
+<div class="text-sm opacity-70 mb-2">rearrange: continuity in terms of ∇·J_s</div>
+
+$$
+\textcolor{#c2410c}{\nabla\cdot\mathbf{u}} = \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 8</div>
+</template>
+
+<template #5>
+<div class="text-sm opacity-70 mb-2">combine with Eq. 7: the master Φ-transport equation</div>
+
+$$
+\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi = \underbrace{\frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}}_{\textcolor{#c2410c}{\kappa}}\,\nabla\cdot\mathbf{J}_s
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 10</div>
+<div class="text-xs pt-2" style="color:#c2410c">κ has units of inverse density — a dimensional slip here is exactly the bug our own test suite caught this session.</div>
+</template>
+
+</v-switch>
+
+---
+layout: center
+---
+
+# Closing the flux J_s
+
+<v-switch transition="fade">
+
+<template #0>
+<div class="text-sm opacity-70 mb-2">decompose J_s</div>
+
+$$
+\mathbf{J}_s = \mathbf{J}_{s\mu} + \mathbf{J}_{sc}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 11</div>
+</template>
+
+<template #1>
+<div class="text-sm opacity-70 mb-2">shear-induced migration flux</div>
+
+$$
+\mathbf{J}_{sc} = -a^2\Phi^2 k_{sc}\nabla(\dot{\gamma}\Phi)
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 12</div>
+</template>
+
+<template #2>
+<div class="text-sm opacity-70 mb-2">viscosity-gradient flux</div>
+
+$$
+\mathbf{J}_{s\mu} = -a^2\Phi^2 k_\mu \nabla(\ln \mu)
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 13</div>
+</template>
+
+<template #3>
+<div class="text-sm opacity-70 mb-2">add sedimentation, divide by ρ_s: hindered settling</div>
+
+$$
+\frac{\mathbf{J}_s}{\rho_s} = -\left[\Phi D_\Phi \nabla(\dot{\gamma}\Phi) + \Phi^2 D_\mu \dot{\gamma}\nabla(\ln \mu)\right] \textcolor{#c2410c}{- f_h \mathbf{u}_{st}\Phi}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 14</div>
+</template>
+
+<template #4>
+<div class="text-sm opacity-70 mb-2">empirical prefactors</div>
+
+$$
+D_\Phi = 0.41 a^2 \qquad D_\mu = 0.62 a^2
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 15, 16</div>
+</template>
+
+<template #5>
+<div class="text-sm opacity-70 mb-2">Stokes settling velocity</div>
+
+$$
+\mathbf{u}_{st} = \frac{2a^2(\rho_s-\rho_f)}{9\mu}\,\mathbf{g}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 17</div>
+</template>
+
+<template #6>
+<div class="text-sm opacity-70 mb-2">hindered-settling function</div>
+
+$$
+f_h = \frac{\mu_f(1-\Phi_{avg})}{\mu}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 18</div>
+</template>
+
+</v-switch>
+
+---
+layout: center
+---
+
+# Shear rate
+
+<v-switch transition="fade">
+
+<template #0>
+<div class="text-sm opacity-70 mb-2">shear-rate tensor</div>
+
+$$
+\dot{\boldsymbol{\gamma}} = \nabla\mathbf{u} + \nabla\mathbf{u}^{T}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 19</div>
+</template>
+
+<template #1>
+<div class="text-sm opacity-70 mb-2">its scalar magnitude</div>
+
+$$
+\dot{\gamma} = \left[\tfrac{1}{2}\left(\dot{\boldsymbol{\gamma}}\cdot\dot{\boldsymbol{\gamma}}\right)\right]^{1/2} = \textcolor{#c2410c}{\left[\tfrac{1}{2}\left(4u_x^2 + 2(u_y+v_x)^2 + 4v_y^2\right)\right]^{1/2}}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 20</div>
+</template>
+
+</v-switch>
+
+---
+layout: center
+---
+
+# Assemble: the master Φ-equation
+
+<v-switch transition="fade">
+
+<template #0>
+<div class="text-sm opacity-70 mb-2">Eq. 10 + Eq. 14-18, combined</div>
+
+$$
+\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi = \kappa\,\nabla\cdot\mathbf{J}_s
+$$
+
+$$
+\frac{\mathbf{J}_s}{\rho_s} = -\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right] - f_h\mathbf{u}_{st}\Phi
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 10, 14-18</div>
+</template>
+
+<template #1>
+<div class="text-sm opacity-70 mb-2">assembled — this is the one equation that determines where the cells go</div>
+
+$$
+\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi = \frac{\rho_f^\circ-\rho_s^\circ}{\rho_s^\circ\rho_f^\circ}\nabla\cdot \rho_s^\circ\left\{\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right]- \Phi \frac{2\mu_f a^2(1-\Phi_{avg})(\rho_s-\rho_f)}{9\mu^2}\mathbf{g}\right\}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 21</div>
+</template>
+
+</v-switch>
+
+---
+layout: center
+---
+
+# The rest of the model
+
+<v-switch transition="fade">
+
+<template #0>
+<div class="text-sm opacity-70 mb-2">wall shear & rotational boundary</div>
+
+$$
+\tau_w = \frac{4\mu_f(\mathbf{u}-\mathbf{u}_w)}{L} \qquad \mathbf{u}_r = \omega (y,-x)
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 22, 23</div>
+</template>
+
+<template #1>
+<div class="text-sm opacity-70 mb-2">nutrient transport & consumption</div>
+
+$$
+\frac{dC}{dt} + \mathbf{u}\cdot\nabla C = D_f \nabla^2 C + r_c \qquad r_c = -\mu_c \cdot d
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 24, 25</div>
+</template>
+
+<template #2>
+<div class="text-sm opacity-70 mb-2">growth kinetics</div>
+
+$$
+\frac{\partial d}{\partial t} = k_c \cdot C \cdot d_0 \cdot e^{k_e t}
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 26</div>
+</template>
+
+<template #3>
+<div class="text-sm opacity-70 mb-2">Φ ↔ cell density</div>
+
+$$
+\Phi = \frac{\pi}{6} d\, a^3
+$$
+
+<div class="text-xs opacity-40 text-right">Eq. 28</div>
+</template>
+
+</v-switch>
+
+---
+layout: center
+---
+
+# The Complete Model
+
+<div class="text-sm space-y-3">
+
+**Momentum:** $\rho \dot{\mathbf{u}} + \rho(\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p + \nabla\cdot[\mu(\nabla\mathbf{u}+\nabla\mathbf{u}^T)] + \rho\mathbf{g}$
+
+**Mixture density / viscosity:** $\rho=(1-\Phi)\rho_f^\circ+\Phi\rho_s^\circ \quad \mu=\mu_f(1-\Phi/\Phi_{\max})^{-2.5\Phi_{\max}}$
+
+**Φ-transport (master eq.):** $\dot{\Phi} + \mathbf{u}\cdot\nabla\Phi = \kappa\,\nabla\cdot\mathbf{J}_s$
+
+**Flux closure:** $\mathbf{J}_s/\rho_s = -[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)] - f_h\mathbf{u}_{st}\Phi$
+
+**Shear rate:** $\dot{\gamma} = [\tfrac{1}{2}(\dot{\boldsymbol{\gamma}}:\dot{\boldsymbol{\gamma}})]^{1/2}$
+
+**Nutrient:** $\dot{C} + \mathbf{u}\cdot\nabla C = D_f\nabla^2 C + r_c$
+
+**Growth:** $\dot{d} = k_c\, C\, d_0\, e^{k_e t} \qquad \Phi = \tfrac{\pi}{6} d\, a^3$
+
 </div>
 
 <!--
-This is the derivation: a walkthrough of every numbered equation in the
-paper (Eq. 1-26, 28), built with Manim, embedded as a plain video with
-native controls. Play it, and pause/resume at whichever equation you want
-to talk through — that's the "keystroke-triggered" part in practice for a
-live talk: space (with the video focused) toggles play/pause exactly where
-you want to stop, no different from any video call's screen-share.
+Every equation that defines the model, together, on one screen — the
+payoff after walking through where each one came from.
 
-(This started as an interactive manim-slides + iframe embed with its own
-keystroke-driven player, matching the letter of "keystroke-triggered"
-more closely -- but that toolchain hit three separate integration bugs in
-a row when actually tested end-to-end: manim-slides' default HTML export
-depends on an external CDN for reveal.js and goes blank with no internet
-access; its --one-file asset-embedding option corrupts the video streams
-it inlines; and even its --offline mode, which does bundle reveal.js
-locally, left the video elements in a NETWORK_NO_SOURCE state that never
-started loading, for a reason I didn't track down. All three were caught
-by actually loading the page in a browser and inspecting it, not by
-reading the export code -- worth remembering next time a build step
-reports success without the output having been opened. The underlying
-Manim animation itself renders perfectly; only the interactive-player
-packaging was unreliable, so this plain-video embed keeps the former and
-drops the latter.)
+This whole section (7 slides, ~25 keystroke-driven equation steps) is
+native Slidev/KaTeX + v-switch, not a video. Each click swaps in the
+next equation via a real Vue transition; the newly-introduced or
+changed term is colored so the "how it simplifies, combines, and gets
+to where it ends up" is visible without a full re-derivation each time,
+and it's real, selectable, crisp-at-any-resolution math text, not
+rendered video frames.
 
-Structure (7 chapters, ~25 equation transforms total):
-1. Momentum (Eq. 1) + its two closures — mixture density (Eq. 2), Krieger-
-   Dougherty viscosity (Eq. 3).
-2. From two phases to one Φ-equation: solid-phase transport (Eq. 5) →
-   substitute the slip velocity (Eq. 6) → define the migration flux J_s
-   (Eq. 7) → bring in mixture continuity (Eq. 4) → rearrange it in terms of
-   ∇·J_s (Eq. 8) → combine with Eq. 7 into the master Φ-transport equation
-   (Eq. 10). The κ coefficient that falls out here is exactly where this
-   session's dimensional bug lived — flagged on-slide, not just in the repo.
-3. Closing the flux: decompose J_s (Eq. 11) into J_sc (Eq. 12) and J_sμ
-   (Eq. 13), add sedimentation with hindered settling (Eq. 14), then unpack
-   the empirical prefactors (Eq. 15-16), Stokes settling velocity (Eq. 17),
-   and hindered-settling function (Eq. 18).
-4. Shear rate: the tensor (Eq. 19) and its scalar magnitude (Eq. 20).
-5. Assemble: Eq. 10 + Eq. 14-18 + Eq. 19-20 fold into the one equation
-   (Eq. 21) that actually determines where the cells go.
-6. The rest of the model: wall shear/rotation (Eq. 22-23), nutrient
-   transport (Eq. 24-25), growth kinetics (Eq. 26), and the Φ-density
-   relation (Eq. 28).
-7. A one-screen summary: every equation that defines the model, together.
-
-Deliberately kept compact and non-verbose on-slide — a caption of a few
-words per step, the equation itself doing the explaining via the
-Transform, not a paragraph of on-screen prose. The verbal narration
-(this) carries the why; the animation carries the how.
-
-Structure (7 chapters, ~25 steps total):
-1. Momentum (Eq. 1) + its two closures — mixture density (Eq. 2), Krieger-
-   Dougherty viscosity (Eq. 3).
-2. From two phases to one Φ-equation: solid-phase transport (Eq. 5) →
-   substitute the slip velocity (Eq. 6) → define the migration flux J_s
-   (Eq. 7) → bring in mixture continuity (Eq. 4) → rearrange it in terms of
-   ∇·J_s (Eq. 8) → combine with Eq. 7 into the master Φ-transport equation
-   (Eq. 10). The κ coefficient that falls out here is exactly where this
-   session's dimensional bug lived — flagged on-slide, not just in the repo.
-2. Closing the flux: decompose J_s (Eq. 11) into J_sc (Eq. 12) and J_sμ
-   (Eq. 13), add sedimentation with hindered settling (Eq. 14), then unpack
-   the empirical prefactors (Eq. 15-16), Stokes settling velocity (Eq. 17),
-   and hindered-settling function (Eq. 18).
-4. Shear rate: the tensor (Eq. 19) and its scalar magnitude (Eq. 20).
-5. Assemble: Eq. 10 + Eq. 14-18 + Eq. 19-20 fold into the one equation
-   (Eq. 21) that actually determines where the cells go.
-6. The rest of the model: wall shear/rotation (Eq. 22-23), nutrient
-   transport (Eq. 24-25), growth kinetics (Eq. 26), and the Φ-density
-   relation (Eq. 28).
-7. A one-screen summary: every equation that defines the model, together.
-
-Deliberately kept compact and non-verbose on-slide — a caption of a few
-words per step, the equation itself doing the explaining via the
-Transform, not a paragraph of on-screen prose. The verbal narration
-(this) carries the why; the animation carries the how.
+(An earlier version of this section used Manim to bake the derivation
+into a video, embedded via an interactive manim-slides player. That
+depended on an external CDN, corrupted its own embedded video streams
+under one export mode, and left videos stuck failing to load under
+another -- three separate integration bugs, each only caught by actually
+opening the result in a browser. Dropping video entirely for what
+Slidev already does natively removed all three at once, along with the
+mismatch between "a video of equations" and what was actually asked
+for: real, live, keystroke-triggered equation transitions.)
 -->
 
 ---
