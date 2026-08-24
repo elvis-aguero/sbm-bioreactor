@@ -233,7 +233,7 @@ class Presentation(Slide):
         # needed to make Eq. 1 solvable, so the slide isn't one equation
         # sitting alone.
         self.play(FadeIn(header), Write(eq1))
-        self.play(FadeIn(closures), FadeIn(legend))
+        self.play(LaggedStartMap(FadeIn, closures, lag_ratio=0.3), FadeIn(legend))
         self.next_slide(
             notes="""
             This is the derivation, live: a keystroke-triggered walkthrough of
@@ -255,7 +255,7 @@ class Presentation(Slide):
         # that order. The trailing "g" has to move out of the way BEFORE
         # the wider bracket appears, or the new content and "g" would
         # briefly occupy the same space.
-        self.play(eq1[5].animate.set_color(ORANGE), eq2.animate.set_color(ORANGE))
+        self.play(eq1[5].animate.set_color(ORANGE), eq2.animate.set_color(ORANGE), run_time=0.5)
         rho_expr = MathTex(
             r"\left[(1-\Phi)\rho_f^\circ + \Phi \rho_s^\circ\right]", font_size=30, color=ORANGE
         )
@@ -299,7 +299,7 @@ class Presentation(Slide):
         #     definition, make room, THEN swap -- in that order, so the
         #     trailing ")=0" is already out of the way before the wider
         #     replacement appears. ---
-        self.play(eq5[2].animate.set_color(ORANGE))
+        self.play(eq5[2].animate.set_color(ORANGE), run_time=0.5)
         definition = MathTex(
             r"\mathbf{u}_s = \mathbf{u} + (1-c_s)\mathbf{u}_{slip}", font_size=26, color=ORANGE
         ).next_to(legend5, DOWN, buff=0.4, aligned_edge=LEFT)
@@ -368,7 +368,7 @@ class Presentation(Slide):
         # growing in place, so there's no trailing content to displace.
         # The isolated bracket is named J_s here and added to the on-screen
         # glossary, so it doesn't reappear "from nowhere" in the next steps.
-        self.play(eq4[1].animate.set_color(ORANGE))
+        self.play(eq4[1].animate.set_color(ORANGE), run_time=0.5)
         eq8 = VGroup(
             MathTex(r"\nabla\cdot\mathbf{u}", font_size=28, color=ORANGE),
             MathTex(
@@ -431,7 +431,7 @@ class Presentation(Slide):
 
         # Substitute Eq. 8's div(u): highlight, make room, THEN swap -- and
         # Eq. 8 fades out in the same beat since it's now used up.
-        self.play(expanded[1].animate.set_color(ORANGE))
+        self.play(expanded[1].animate.set_color(ORANGE), run_time=0.5)
         kappa_term = MathTex(
             r"+ \Phi\,\kappa\,\nabla\cdot\mathbf{J}_s", font_size=30, color=ORANGE
         ).move_to(expanded[1], aligned_edge=LEFT)
@@ -466,7 +466,7 @@ class Presentation(Slide):
             r"\,\nabla\cdot\mathbf{J}_s",
             font_size=32,
         ).move_to(expanded)
-        self.play(FadeOut(expanded), FadeIn(eq10))
+        self.play(FadeOut(expanded), FadeIn(eq10), run_time=1.3)
         self._hard_settle([expanded], [eq10])
         self.next_slide(
             notes="""
@@ -501,7 +501,7 @@ class Presentation(Slide):
             r"$\dot{\gamma}$ -- shear-rate magnitude (derived next) \quad $k_{sc}, k_\mu$ -- empirical coefficients",
         ).next_to(group_a, DOWN, buff=0.5, aligned_edge=LEFT)
 
-        self.play(FadeIn(header), FadeIn(group_a), FadeIn(legend_c))
+        self.play(FadeIn(header), LaggedStartMap(FadeIn, group_a, lag_ratio=0.2), FadeIn(legend_c))
         self.next_slide(
             notes="""
             These are independent modeling closures, not a chain where each
@@ -627,7 +627,7 @@ class Presentation(Slide):
         self.play(Write(hero))
         self.next_slide()
 
-        self.play(hero[1].animate.set_color(ORANGE))
+        self.play(hero[1].animate.set_color(ORANGE), run_time=0.5)
         step1 = MathTex(
             r"\kappa\,\rho_s\,\nabla\cdot\left\{-\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right] - f_h\mathbf{u}_{st}\Phi\right\}",
             font_size=26, color=ORANGE,
@@ -672,7 +672,7 @@ class Presentation(Slide):
         self.play(FadeOut(kappa_calc))
 
         # --- Substitute the Stokes-velocity / hindered-settling closures ---
-        self.play(hero[1].animate.set_color(ORANGE))
+        self.play(hero[1].animate.set_color(ORANGE), run_time=0.5)
         final_rhs = MathTex(
             r"\frac{\rho_f^\circ-\rho_s^\circ}{\rho_s^\circ\rho_f^\circ}\nabla\cdot \rho_s^\circ"
             r"\left\{"
@@ -694,7 +694,7 @@ class Presentation(Slide):
             "This is the one equation that determines where the cells go.",
             font_size=26, color=YELLOW,
         ).to_edge(DOWN, buff=0.5)
-        self.play(FadeIn(note))
+        self.play(FadeIn(note), run_time=1.3)
         self.next_slide(
             notes="""
             Eq. 21: Stokes velocity (Eq. 17) and the hindered-settling
@@ -717,7 +717,7 @@ class Presentation(Slide):
         legend_f1 = self._legend(
             r"$\tau_w$ -- wall shear stress \quad $\mathbf{u}_w$ -- wall velocity \quad $L$ -- gap half-width \quad $\omega$ -- vessel angular velocity",
         ).next_to(pair1, DOWN, buff=0.5, aligned_edge=LEFT)
-        self.play(FadeIn(header), FadeIn(e22), FadeIn(e23), FadeIn(legend_f1))
+        self.play(FadeIn(header), LaggedStart(FadeIn(e22), FadeIn(e23), lag_ratio=0.4), FadeIn(legend_f1))
         self.next_slide(
             notes="""
             Four independent relations round out the model -- none derived
@@ -744,7 +744,7 @@ class Presentation(Slide):
             r"$C$ -- nutrient concentration \quad $D_f$ -- nutrient diffusivity \quad $r_c$ -- consumption rate \quad $d$ -- cell diameter",
             r"$\mu_c$ -- consumption-rate constant \quad $k_c, k_e$ -- growth-rate constants \quad $d_0$ -- initial cell diameter",
         ).next_to(pair2, DOWN, buff=0.5, aligned_edge=LEFT)
-        self.play(FadeIn(e2425), FadeIn(e26), FadeIn(e28), FadeIn(legend_f2))
+        self.play(LaggedStart(FadeIn(e2425), FadeIn(e26), FadeIn(e28), lag_ratio=0.3), FadeIn(legend_f2))
         self.next_slide(
             notes="""
             Second pair: nutrient transport and consumption (Eq. 24-25),
@@ -1007,8 +1007,7 @@ class Presentation(Slide):
         )
 
         self.play(FadeIn(title))
-        for i in range(len(points)):
-            self.play(FadeIn(points[i]))
+        self.play(LaggedStart(*[FadeIn(p) for p in points], lag_ratio=0.4))
         self.next_slide(
             notes="""
             Discussion prompts, pick whichever lands with this room:
