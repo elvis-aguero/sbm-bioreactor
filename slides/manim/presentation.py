@@ -40,11 +40,6 @@ def eq(tex, font_size=EQ_FONT):
     return m
 
 
-def eqnum(n):
-    # UR, not DR -- DR is reserved for the persistent slide-number counter.
-    return Text(f"Eq. {n}", font_size=22, color=GRAY).to_corner(UR, buff=0.4)
-
-
 class Presentation(Slide):
     def construct(self):
         # Persistent slide-number counter, bottom-right, present from the
@@ -79,13 +74,6 @@ class Presentation(Slide):
         # chapter's first content (never as its own empty slide), and never
         # changed/re-captioned mid-chapter. All narration lives in notes.
         return Text(text, font_size=36, weight=BOLD).to_edge(UP, buff=0.5)
-
-    def _start_num(self, n):
-        self.num = eqnum(n)
-        return self.num
-
-    def _set_num(self, n):
-        self.play(Transform(self.num, eqnum(n)))
 
     def _start_eq(self, mobj):
         self.eq = mobj
@@ -222,23 +210,16 @@ class Presentation(Slide):
             MathTex(r"\mathbf{g}", font_size=30),
         ).arrange(RIGHT, buff=0.12)
         eq1.move_to(UP * 1.1)
-        # Positioned at a fixed corner, not next_to(eq1, ...): a label
-        # sitting adjacent to a mobject that later gets its submobjects
-        # spliced (the substitution below) was found, by rendering and
-        # inspecting frames, to corrupt that mobject's frozen final frame.
-        num1 = Text("Eq. 1", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
 
         eq2 = MathTex(r"\rho = (1-\Phi)\rho_f^\circ + \Phi \rho_s^\circ", font_size=26)
         eq3 = MathTex(r"\mu = \mu_f \left(1-\frac{\Phi}{\Phi_{\max}}\right)^{-2.5\Phi_{\max}}", font_size=26)
         closures = VGroup(eq2, eq3).arrange(DOWN, buff=0.4).next_to(eq1, DOWN, buff=0.9)
-        num2 = Text("Eq. 2", font_size=18, color=GRAY).next_to(eq2, RIGHT, buff=0.3)
-        num3 = Text("Eq. 3", font_size=18, color=GRAY).next_to(eq3, RIGHT, buff=0.3)
 
         # Momentum and its two closures appear together -- they're all
         # needed to make Eq. 1 solvable, so the slide isn't one equation
         # sitting alone.
-        self.play(FadeIn(header), Write(eq1), FadeIn(num1))
-        self.play(FadeIn(closures), FadeIn(num2), FadeIn(num3))
+        self.play(FadeIn(header), Write(eq1))
+        self.play(FadeIn(closures))
         self.next_slide(
             notes="""
             This is the derivation, live: a keystroke-triggered walkthrough of
@@ -281,7 +262,7 @@ class Presentation(Slide):
             of showing it this way instead of fading the whole line.
             """
         )
-        self.play(FadeOut(header), FadeOut(num1), FadeOut(eq1), FadeOut(closures), FadeOut(num2), FadeOut(num3))
+        self.play(FadeOut(header), FadeOut(eq1), FadeOut(closures))
 
     def chapter_2b_continuity_transport(self):
         header = self._header("Modeling. From two phases to one Φ-equation.")
@@ -293,8 +274,7 @@ class Presentation(Slide):
             MathTex(r"\mathbf{u}_s", font_size=32),
             MathTex(r") = 0", font_size=32),
         ).arrange(RIGHT, buff=0.1).move_to(UP * 2.4)
-        num = Text("Eq. 5", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
-        self.play(FadeIn(header), Write(eq5), FadeIn(num))
+        self.play(FadeIn(header), Write(eq5))
         self.next_slide()
 
         # --- Real substitution -- only u_s changes. Highlight, reveal the
@@ -343,8 +323,7 @@ class Presentation(Slide):
             MathTex(r"(\rho_s^\circ-\rho_f^\circ)\left[\nabla\cdot\left(\Phi(1-c_s)\mathbf{u}_{slip}\right)\right]", font_size=26),
             MathTex(r"- \rho_f^\circ (\nabla\cdot\mathbf{u}) = 0", font_size=26),
         ).arrange(RIGHT, buff=0.1).next_to(eq5, DOWN, buff=1.1)
-        num4 = Text("Eq. 4", font_size=18, color=GRAY).to_corner(DL, buff=0.4)
-        self.play(FadeIn(eq4), FadeIn(num4))
+        self.play(FadeIn(eq4))
         self.next_slide(
             notes="""
             Mixture continuity (Eq. 4) is not derived from Eq. 5/6 -- it's a
@@ -365,9 +344,8 @@ class Presentation(Slide):
                 font_size=28,
             ),
         ).arrange(RIGHT, buff=0.15).move_to(eq4)
-        num8 = Text("Eq. 8", font_size=18, color=GRAY).to_corner(DL, buff=0.4)
-        self.play(FadeOut(eq4), FadeOut(num4), FadeIn(eq8), FadeIn(num8))
-        self._hard_settle([eq4, num4], [eq8, num8])
+        self.play(FadeOut(eq4), FadeIn(eq8))
+        self._hard_settle([eq4], [eq8])
         self.next_slide(
             notes="""
             Isolating div(u): move the rho_f-times-div(u) term to the other
@@ -385,9 +363,8 @@ class Presentation(Slide):
             MathTex(r"\frac{\partial \Phi}{\partial t} + \nabla\cdot(\mathbf{u}\Phi)", font_size=30),
             MathTex(r"= -\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=30),
         ).arrange(RIGHT, buff=0.15).move_to(eq5)
-        num7 = Text("Eq. 7", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
-        self.play(FadeOut(eq5), FadeOut(num), FadeIn(eq7), FadeIn(num7))
-        self._hard_settle([eq5, num], [eq7, num7])
+        self.play(FadeOut(eq5), FadeIn(eq7))
+        self._hard_settle([eq5], [eq7])
         self.next_slide(
             notes="""
             J_s is defined to absorb the slip-velocity terms from Eq. 6
@@ -425,8 +402,8 @@ class Presentation(Slide):
         shift2 = kappa_term.width - expanded[1].width
         if shift2 > 1e-3:
             self.play(expanded[2].animate.shift(RIGHT * shift2))
-        self.play(FadeOut(expanded[1]), FadeIn(kappa_term), FadeOut(eq8), FadeOut(num8))
-        self._hard_settle([expanded[1], eq8, num8], [kappa_term])
+        self.play(FadeOut(expanded[1]), FadeIn(kappa_term), FadeOut(eq8))
+        self._hard_settle([expanded[1], eq8], [kappa_term])
         expanded.submobjects[1] = kappa_term
         note = Text(
             "The paper folds the remaining Φκ∇·J_s term into Eq. 10 without\n"
@@ -456,9 +433,8 @@ class Presentation(Slide):
             r"\,\nabla\cdot\mathbf{J}_s",
             font_size=32,
         ).move_to(expanded)
-        num10 = Text("Eq. 10", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
-        self.play(FadeOut(expanded), FadeOut(num7), FadeIn(eq10), FadeIn(num10))
-        self._hard_settle([expanded, num7], [eq10, num10])
+        self.play(FadeOut(expanded), FadeIn(eq10))
+        self._hard_settle([expanded], [eq10])
         dim_note = Text(
             "κ has units of inverse density -- a dimensional slip here is\n"
             "exactly the bug our own test suite caught this session.",
@@ -474,7 +450,7 @@ class Presentation(Slide):
             it's the same quantity.
             """
         )
-        self.play(FadeOut(header), FadeOut(eq10), FadeOut(num10), FadeOut(note))
+        self.play(FadeOut(header), FadeOut(eq10), FadeOut(note))
 
     def chapter_2c_flux_closure(self):
         header = self._header("Modeling. Closing the flux J_s.")
@@ -482,17 +458,11 @@ class Presentation(Slide):
         # --- The flux decomposition and its two named pieces, all at once:
         #     independent closures, not a chain derived line-by-line. ---
         e11 = MathTex(r"\mathbf{J}_s = \mathbf{J}_{s\mu} + \mathbf{J}_{sc}", font_size=32)
-        n11 = Text("Eq. 11", font_size=18, color=GRAY)
         e12 = MathTex(r"\mathbf{J}_{sc} = -a^2\Phi^2 k_{sc}\nabla(\dot{\gamma}\Phi)", font_size=26)
-        n12 = Text("Eq. 12", font_size=18, color=GRAY)
         e13 = MathTex(r"\mathbf{J}_{s\mu} = -a^2\Phi^2 k_\mu \nabla(\ln \mu)", font_size=26)
-        n13 = Text("Eq. 13", font_size=18, color=GRAY)
         group_a = VGroup(e11, e12, e13).arrange(DOWN, buff=0.4, aligned_edge=LEFT).move_to(UP * 1.6)
-        n11.next_to(e11, RIGHT, buff=0.3)
-        n12.next_to(e12, RIGHT, buff=0.3)
-        n13.next_to(e13, RIGHT, buff=0.3)
 
-        self.play(FadeIn(header), FadeIn(group_a), FadeIn(n11), FadeIn(n12), FadeIn(n13))
+        self.play(FadeIn(header), FadeIn(group_a))
         self.next_slide(
             notes="""
             These are independent modeling closures, not a chain where each
@@ -515,11 +485,7 @@ class Presentation(Slide):
             ),
             MathTex(r"- f_h \mathbf{u}_{st}\Phi", font_size=28, color=ORANGE),
         ).arrange(RIGHT, buff=0.1).move_to(UP * 1.6)
-        n14 = Text("Eq. 14", font_size=20, color=GRAY).next_to(e14, RIGHT, buff=0.3)
-        self.play(
-            FadeOut(group_a), FadeOut(n11), FadeOut(n12), FadeOut(n13),
-            FadeIn(e14), FadeIn(n14),
-        )
+        self.play(FadeOut(group_a), FadeIn(e14))
         self.next_slide(
             notes="""
             Eq. 14 is Eqs. 12-13's bracketed terms (renamed D_Phi, D_mu, and
@@ -532,17 +498,11 @@ class Presentation(Slide):
 
         # --- The definitions Eq. 14 uses, all at once, kept alongside it. ---
         e1516 = MathTex(r"D_\Phi = 0.41 a^2 \qquad D_\mu = 0.62 a^2", font_size=28)
-        n1516 = Text("Eq. 15, 16", font_size=18, color=GRAY)
         e17 = MathTex(r"\mathbf{u}_{st} = \frac{2a^2(\rho_s-\rho_f)}{9\mu}\,\mathbf{g}", font_size=28)
-        n17 = Text("Eq. 17", font_size=18, color=GRAY)
         e18 = MathTex(r"f_h = \frac{\mu_f(1-\Phi_{avg})}{\mu}", font_size=28)
-        n18 = Text("Eq. 18", font_size=18, color=GRAY)
         group_b = VGroup(e1516, e17, e18).arrange(DOWN, buff=0.5, aligned_edge=LEFT).next_to(e14, DOWN, buff=0.9)
-        n1516.next_to(e1516, RIGHT, buff=0.3)
-        n17.next_to(e17, RIGHT, buff=0.3)
-        n18.next_to(e18, RIGHT, buff=0.3)
 
-        self.play(FadeIn(group_b), FadeIn(n1516), FadeIn(n17), FadeIn(n18))
+        self.play(FadeIn(group_b))
         self.next_slide(
             notes="""
             The empirical prefactors (Eq. 15-16), the Stokes settling
@@ -554,16 +514,12 @@ class Presentation(Slide):
             replacing the last.
             """
         )
-        self.play(
-            FadeOut(header), FadeOut(e14), FadeOut(n14),
-            FadeOut(group_b), FadeOut(n1516), FadeOut(n17), FadeOut(n18),
-        )
+        self.play(FadeOut(header), FadeOut(e14), FadeOut(group_b))
 
     def chapter_2d_shear_rate(self):
         header = self._header("Modeling. Shear rate.")
         e_main = self._start_eq(eq(r"\dot{\boldsymbol{\gamma}} = \nabla\mathbf{u} + \nabla\mathbf{u}^{T}"))
-        num = self._start_num("19")
-        self.play(FadeIn(header), Write(e_main), FadeIn(num))
+        self.play(FadeIn(header), Write(e_main))
         self.next_slide()
 
         self._set_eq(
@@ -576,7 +532,6 @@ class Presentation(Slide):
                 r"\dot{\gamma} = \left[\tfrac{1}{2}\left(4u_x^2 + 2(u_y+v_x)^2 + 4v_y^2\right)\right]^{1/2}"
             )
         )
-        self._set_num("20")
         self.next_slide(
             notes="""
             The shear-rate tensor (Eq. 19) contracted with itself and
@@ -587,7 +542,7 @@ class Presentation(Slide):
             not one jump straight to the component form.
             """
         )
-        self.play(FadeOut(header), FadeOut(num), FadeOut(self.eq))
+        self.play(FadeOut(header), FadeOut(self.eq))
 
     def chapter_2e_assemble(self):
         header = self._header("Modeling. Assembling the master Φ-equation.")
@@ -598,8 +553,7 @@ class Presentation(Slide):
             MathTex(r"\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi = \kappa\,\nabla\cdot\mathbf{J}_s", font_size=28),
             MathTex(r"\frac{\mathbf{J}_s}{\rho_s} = -\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right] - f_h\mathbf{u}_{st}\Phi", font_size=28),
         ).arrange(DOWN, buff=0.5)
-        num = Text("Eq. 10, 14", font_size=20, color=GRAY).next_to(inputs, RIGHT, buff=0.3)
-        self.play(FadeIn(header), Write(inputs), FadeIn(num))
+        self.play(FadeIn(header), Write(inputs))
         self.next_slide(
             notes="""
             The two pieces going into this assembly: Eq. 10 (the master
@@ -608,7 +562,7 @@ class Presentation(Slide):
             to absorb).
             """
         )
-        self.play(FadeOut(inputs), FadeOut(num))
+        self.play(FadeOut(inputs))
 
         # --- Real chain: substitute J_s into Eq. 10's RHS term by term ---
         hero = VGroup(
@@ -682,8 +636,6 @@ class Presentation(Slide):
             hero.target.scale_to_fit_width(MAX_EQ_WIDTH)
         hero.target.move_to(UP * 1.5)
         self.play(MoveToTarget(hero))
-        num21 = Text("Eq. 21", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
-        self.play(FadeIn(num21))
         self.next_slide()
 
         note = Text(
@@ -701,7 +653,7 @@ class Presentation(Slide):
             where the cells go, and now it's visible how it got built.
             """
         )
-        self.play(FadeOut(header), FadeOut(hero), FadeOut(num21), FadeOut(note))
+        self.play(FadeOut(header), FadeOut(hero), FadeOut(note))
 
     def chapter_2f_rest_of_model(self):
         header = self._header("Modeling. Rest of the model.")
@@ -710,9 +662,7 @@ class Presentation(Slide):
         e22 = MathTex(r"\tau_w = \frac{4\mu_f(\mathbf{u}-\mathbf{u}_w)}{L}", font_size=32)
         e23 = MathTex(r"\mathbf{u}_r = \omega (y,-x)", font_size=32)
         pair1 = VGroup(e22, e23).arrange(DOWN, buff=0.5)
-        n22 = Text("Eq. 22", font_size=18, color=GRAY).next_to(e22, RIGHT, buff=0.3)
-        n23 = Text("Eq. 23", font_size=18, color=GRAY).next_to(e23, RIGHT, buff=0.3)
-        self.play(FadeIn(header), FadeIn(e22), FadeIn(n22), FadeIn(e23), FadeIn(n23))
+        self.play(FadeIn(header), FadeIn(e22), FadeIn(e23))
         self.next_slide(
             notes="""
             Four independent relations round out the model -- none derived
@@ -724,7 +674,7 @@ class Presentation(Slide):
             derived so far.
             """
         )
-        self.play(FadeOut(pair1), FadeOut(n22), FadeOut(n23))
+        self.play(FadeOut(pair1))
 
         # --- Pair 2: nutrient + growth ---
         e2425 = MathTex(
@@ -735,10 +685,7 @@ class Presentation(Slide):
         e26 = MathTex(r"\frac{\partial d}{\partial t} = k_c \cdot C \cdot d_0 \cdot e^{k_e t}", font_size=30)
         e28 = MathTex(r"\Phi = \frac{\pi}{6} d\, a^3", font_size=30)
         pair2 = VGroup(e2425, e26, e28).arrange(DOWN, buff=0.5)
-        n2425 = Text("Eq. 24, 25", font_size=18, color=GRAY).next_to(e2425, RIGHT, buff=0.3)
-        n26 = Text("Eq. 26", font_size=18, color=GRAY).next_to(e26, RIGHT, buff=0.3)
-        n28 = Text("Eq. 28", font_size=18, color=GRAY).next_to(e28, RIGHT, buff=0.3)
-        self.play(FadeIn(e2425), FadeIn(n2425), FadeIn(e26), FadeIn(n26), FadeIn(e28), FadeIn(n28))
+        self.play(FadeIn(e2425), FadeIn(e26), FadeIn(e28))
         self.next_slide(
             notes="""
             Second pair: nutrient transport and consumption (Eq. 24-25),
@@ -748,7 +695,7 @@ class Presentation(Slide):
             relations, accumulated together rather than chained by fade.
             """
         )
-        self.play(FadeOut(header), FadeOut(pair2), FadeOut(n2425), FadeOut(n26), FadeOut(n28))
+        self.play(FadeOut(header), FadeOut(pair2))
 
     def chapter_2g_summary(self):
         title = Text("Every equation that defines the model", font_size=32, weight=BOLD).to_edge(UP)
@@ -934,12 +881,9 @@ class Presentation(Slide):
 
     # ------------------------------------------------------------------
     def chapter_6_results(self):
-        title = Text("Results", font_size=40, weight=BOLD).to_edge(UP, buff=0.6)
-        self.play(FadeIn(title))
-        self.next_slide()
-        self.play(FadeOut(title))
-
-        # Zero-animation slide: the entire content is the external video.
+        # Zero-animation slide: the entire content is the external video
+        # (which already carries its own on-screen captions) -- no separate
+        # bare-title card in front of it.
         self.next_slide(
             src=RESULTS_VIDEO,
             notes="""
