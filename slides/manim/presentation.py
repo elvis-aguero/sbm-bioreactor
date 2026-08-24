@@ -291,7 +291,7 @@ class Presentation(Slide):
         eq5.to_edge(LEFT, buff=1.0).shift(UP * 2.4)
         legend5 = self._legend(
             r"$\Phi$ -- particle volume fraction \quad $\mathbf{u}_s$ -- solid-phase velocity",
-        ).next_to(eq5, DOWN, buff=0.5, aligned_edge=LEFT)
+        ).next_to(eq5, DOWN, buff=0.65, aligned_edge=LEFT)
         self.play(FadeIn(header), Write(eq5), FadeIn(legend5))
         self.next_slide()
 
@@ -465,7 +465,7 @@ class Presentation(Slide):
             r"= \underbrace{\frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}}_{\kappa}"
             r"\,\nabla\cdot\mathbf{J}_s",
             font_size=32,
-        ).move_to(expanded, aligned_edge=UP)
+        ).move_to(expanded)
         self.play(FadeOut(expanded), FadeIn(eq10))
         self._hard_settle([expanded], [eq10])
         self.next_slide(
