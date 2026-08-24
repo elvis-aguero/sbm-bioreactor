@@ -41,11 +41,21 @@ def eq(tex, font_size=EQ_FONT):
 
 
 def eqnum(n):
-    return Text(f"Eq. {n}", font_size=22, color=GRAY).to_corner(DR, buff=0.4)
+    # UR, not DR -- DR is reserved for the persistent slide-number counter.
+    return Text(f"Eq. {n}", font_size=22, color=GRAY).to_corner(UR, buff=0.4)
 
 
 class Presentation(Slide):
     def construct(self):
+        # Persistent slide-number counter, bottom-right, present from the
+        # first slide on -- a plain page number, not a paper-equation tag
+        # (those live near their own equations instead). Updated in place
+        # (never repositioned relative to another mobject), so it can't
+        # trigger the frozen-frame corruption next_to() caused elsewhere.
+        self._slide_no = 1
+        self._page = Text("1", font_size=20, color=GRAY).to_corner(DR, buff=0.4)
+        self.add(self._page)
+
         self.chapter_0_title()
         self.chapter_1_system()
         self.chapter_2_model()
@@ -54,6 +64,14 @@ class Presentation(Slide):
         self.chapter_5_verification()
         self.chapter_6_results()
         self.chapter_7_takeaways()
+
+    def next_slide(self, *args, **kwargs):
+        # Cut the current slide first (so its frozen frame keeps the OLD
+        # number), then bump the counter for whatever comes next.
+        result = super().next_slide(*args, **kwargs)
+        self._slide_no += 1
+        self._page.become(Text(str(self._slide_no), font_size=20, color=GRAY).to_corner(DR, buff=0.4))
+        return result
 
     # ------------------------------------------------------------------
     def _header(self, text):
@@ -192,7 +210,7 @@ class Presentation(Slide):
         self.chapter_2g_summary()
 
     def chapter_2a_momentum(self):
-        header = self._header("The Model -- 1. Momentum")
+        header = self._header("Modeling. Momentum.")
 
         eq1 = VGroup(
             MathTex(r"\rho \frac{\partial \mathbf{u}}{\partial t}", font_size=30),
@@ -208,7 +226,7 @@ class Presentation(Slide):
         # sitting adjacent to a mobject that later gets its submobjects
         # spliced (the substitution below) was found, by rendering and
         # inspecting frames, to corrupt that mobject's frozen final frame.
-        num1 = Text("Eq. 1", font_size=20, color=GRAY).to_corner(DR, buff=0.4)
+        num1 = Text("Eq. 1", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
 
         eq2 = MathTex(r"\rho = (1-\Phi)\rho_f^\circ + \Phi \rho_s^\circ", font_size=26)
         eq3 = MathTex(r"\mu = \mu_f \left(1-\frac{\Phi}{\Phi_{\max}}\right)^{-2.5\Phi_{\max}}", font_size=26)
@@ -266,7 +284,7 @@ class Presentation(Slide):
         self.play(FadeOut(header), FadeOut(num1), FadeOut(eq1), FadeOut(closures), FadeOut(num2), FadeOut(num3))
 
     def chapter_2b_continuity_transport(self):
-        header = self._header("The Model -- 2. From two phases to one Φ-equation")
+        header = self._header("Modeling. From two phases to one Φ-equation.")
 
         # --- Eq. 5, u_s isolated as its own addressable chunk ---
         eq5 = VGroup(
@@ -275,7 +293,7 @@ class Presentation(Slide):
             MathTex(r"\mathbf{u}_s", font_size=32),
             MathTex(r") = 0", font_size=32),
         ).arrange(RIGHT, buff=0.1).move_to(UP * 2.4)
-        num = Text("Eq. 5", font_size=20, color=GRAY).to_corner(DR, buff=0.4)
+        num = Text("Eq. 5", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
         self.play(FadeIn(header), Write(eq5), FadeIn(num))
         self.next_slide()
 
@@ -367,7 +385,7 @@ class Presentation(Slide):
             MathTex(r"\frac{\partial \Phi}{\partial t} + \nabla\cdot(\mathbf{u}\Phi)", font_size=30),
             MathTex(r"= -\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=30),
         ).arrange(RIGHT, buff=0.15).move_to(eq5)
-        num7 = Text("Eq. 7", font_size=20, color=GRAY).to_corner(DR, buff=0.4)
+        num7 = Text("Eq. 7", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
         self.play(FadeOut(eq5), FadeOut(num), FadeIn(eq7), FadeIn(num7))
         self._hard_settle([eq5, num], [eq7, num7])
         self.next_slide(
@@ -438,7 +456,7 @@ class Presentation(Slide):
             r"\,\nabla\cdot\mathbf{J}_s",
             font_size=32,
         ).move_to(expanded)
-        num10 = Text("Eq. 10", font_size=20, color=GRAY).to_corner(DR, buff=0.4)
+        num10 = Text("Eq. 10", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
         self.play(FadeOut(expanded), FadeOut(num7), FadeIn(eq10), FadeIn(num10))
         self._hard_settle([expanded, num7], [eq10, num10])
         dim_note = Text(
@@ -459,7 +477,7 @@ class Presentation(Slide):
         self.play(FadeOut(header), FadeOut(eq10), FadeOut(num10), FadeOut(note))
 
     def chapter_2c_flux_closure(self):
-        header = self._header("The Model -- 3. Closing the flux J_s")
+        header = self._header("Modeling. Closing the flux J_s.")
 
         # --- The flux decomposition and its two named pieces, all at once:
         #     independent closures, not a chain derived line-by-line. ---
@@ -542,7 +560,7 @@ class Presentation(Slide):
         )
 
     def chapter_2d_shear_rate(self):
-        header = self._header("The Model -- 4. Shear rate")
+        header = self._header("Modeling. Shear rate.")
         e_main = self._start_eq(eq(r"\dot{\boldsymbol{\gamma}} = \nabla\mathbf{u} + \nabla\mathbf{u}^{T}"))
         num = self._start_num("19")
         self.play(FadeIn(header), Write(e_main), FadeIn(num))
@@ -572,7 +590,7 @@ class Presentation(Slide):
         self.play(FadeOut(header), FadeOut(num), FadeOut(self.eq))
 
     def chapter_2e_assemble(self):
-        header = self._header("The Model -- 5. Assemble: the master Φ-equation")
+        header = self._header("Modeling. Assembling the master Φ-equation.")
 
         # --- Show the two collected inputs, stacked (no claim yet that one
         #     morphs into the other) ---
@@ -664,7 +682,7 @@ class Presentation(Slide):
             hero.target.scale_to_fit_width(MAX_EQ_WIDTH)
         hero.target.move_to(UP * 1.5)
         self.play(MoveToTarget(hero))
-        num21 = Text("Eq. 21", font_size=20, color=GRAY).to_corner(DR, buff=0.4)
+        num21 = Text("Eq. 21", font_size=20, color=GRAY).to_corner(UR, buff=0.4)
         self.play(FadeIn(num21))
         self.next_slide()
 
@@ -683,10 +701,10 @@ class Presentation(Slide):
             where the cells go, and now it's visible how it got built.
             """
         )
-        self.play(FadeOut(hero), FadeOut(num21), FadeOut(note))
+        self.play(FadeOut(header), FadeOut(hero), FadeOut(num21), FadeOut(note))
 
     def chapter_2f_rest_of_model(self):
-        header = self._header("The Model -- 6. Rest of the model")
+        header = self._header("Modeling. Rest of the model.")
 
         # --- Pair 1: boundary conditions ---
         e22 = MathTex(r"\tau_w = \frac{4\mu_f(\mathbf{u}-\mathbf{u}_w)}{L}", font_size=32)
