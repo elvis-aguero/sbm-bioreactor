@@ -81,41 +81,43 @@ them to the fluid flow and nutrient transport, self-consistently.
 -->
 
 ---
-layout: center
+layout: iframe
+url: /chao_das_derivation.html
 ---
 
-# The Model
-
-5 coupled fields: $u,\ p,\ \Phi,\ C,\ \Gamma$
-
-$$J_s = J_{s\mu} + J_{sc} + J_{st}$$
-
 <!--
-Five fields, one monolithic system, solved together every timestep:
-- u, p: momentum + incompressibility (Navier-Stokes, with a Krieger-
-  Dougherty viscosity that depends on local particle concentration Φ —
-  viscosity diverges as Φ approaches a maximum packing fraction, so it
-  physically resists over-concentration on its own)
-- Φ: particle volume fraction — the thing we actually care about
-- C: nutrient (glucose) concentration, advected, diffused, consumed by
-  cells, driving a growth-kinetics source term
-- Γ: local shear rate, carried as its OWN field rather than computed
-  on the fly — the true shear-rate expression has a singularity at zero
-  shear, and giving it its own smoothed/projected field avoids that
-  blowing up the nonlinear solve.
+This is the derivation, live: a keystroke-triggered walkthrough of every
+numbered equation in the paper (Eq. 1-26, 28), built with Manim/manim-slides
+and embedded here. Click into the iframe and use arrow keys / space to step
+through it — each step is its own keystroke, matching the rest of the deck's
+click-to-advance rhythm, just within one continuous canvas instead of across
+separate Slidev slides.
 
-The particle flux J_s is where the actual competition lives, three pieces:
-- J_sμ: migration toward regions of lower viscosity (i.e. away from where
-  particles have already crowded)
-- J_sc: migration driven by shear-rate and concentration gradients — the
-  "shear-induced migration" effect, particles literally bumping into each
-  other more in high-shear regions and getting pushed out
-- J_st: sedimentation/buoyancy — a Stokes settling velocity corrected for
-  hindered settling at higher concentrations
+Structure (7 chapters, ~25 steps total):
+1. Momentum (Eq. 1) + its two closures — mixture density (Eq. 2), Krieger-
+   Dougherty viscosity (Eq. 3).
+2. From two phases to one Φ-equation: solid-phase transport (Eq. 5) →
+   substitute the slip velocity (Eq. 6) → define the migration flux J_s
+   (Eq. 7) → bring in mixture continuity (Eq. 4) → rearrange it in terms of
+   ∇·J_s (Eq. 8) → combine with Eq. 7 into the master Φ-transport equation
+   (Eq. 10). The κ coefficient that falls out here is exactly where this
+   session's dimensional bug lived — flagged on-slide, not just in the repo.
+2. Closing the flux: decompose J_s (Eq. 11) into J_sc (Eq. 12) and J_sμ
+   (Eq. 13), add sedimentation with hindered settling (Eq. 14), then unpack
+   the empirical prefactors (Eq. 15-16), Stokes settling velocity (Eq. 17),
+   and hindered-settling function (Eq. 18).
+4. Shear rate: the tensor (Eq. 19) and its scalar magnitude (Eq. 20).
+5. Assemble: Eq. 10 + Eq. 14-18 + Eq. 19-20 fold into the one equation
+   (Eq. 21) that actually determines where the cells go.
+6. The rest of the model: wall shear/rotation (Eq. 22-23), nutrient
+   transport (Eq. 24-25), growth kinetics (Eq. 26), and the Φ-density
+   relation (Eq. 28).
+7. A one-screen summary: every equation that defines the model, together.
 
-Note there's no "the flow carries the cells" term missing — advection of
-Φ by u is in the transport equation, separately; J_s is specifically the
-extra migration on top of that advection.
+Deliberately kept compact and non-verbose on-slide — a caption of a few
+words per step, the equation itself doing the explaining via the
+Transform, not a paragraph of on-screen prose. The verbal narration
+(this) carries the why; the animation carries the how.
 -->
 
 ---
@@ -154,10 +156,19 @@ Our own explicit approximations, disclosed the same way:
 - The paper uses two distinct symbols for the growth-rate constant and
   the nutrient-consumption constant; our code currently reuses one
   parameter (kc) for both.
-- One deliberate, defensible choice: the momentum equation's buoyancy
-  term uses bare g, not ρg as literally written in the paper's Eq. 1 —
-  because density-weighted buoyancy is already fully carried by the
-  settling flux J_st, and including it twice would double-count it.
+- Caught, not disclosed-as-a-choice: the momentum equation's buoyancy
+  term used bare g instead of ρg (Eq. 1's literal form) for most of this
+  project — briefly rationalized as avoiding double-counting with the
+  settling flux J_st, but that rationalization doesn't hold: momentum
+  (bulk flow) and J_st (migration relative to the bulk) are different
+  equations, each needing its own buoyancy term. A bare, Φ-independent g
+  can always be fully absorbed into the pressure field with zero effect
+  on velocity — so this bug meant buoyancy could never actually drive
+  any flow, for any particle distribution. Found by the physical-
+  consistency test suite (an exact rigid-body-rotation steady-state
+  check), confirmed against the paper, and fixed. The right story for
+  this room isn't "we made a defensible call" — it's "our own tests
+  caught a real bug in a place hand-inspection had missed."
 
 None of this is "the model is wrong" — it's "here is exactly where we
 had to exercise judgment, and why," which is a more useful thing to tell

@@ -31,6 +31,10 @@
 ~/.julia/scratchspaces/
 docs/superpowers/plans/*.md.tmp
 docs/superpowers/specs/*.md.tmp
+slides/manim/.venv/
+slides/manim/media/
+slides/manim/__pycache__/
+slides/manim/slides/
 Manifest.toml
 results_*.pvd
 results_*.vtu
