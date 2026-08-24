@@ -1,9 +1,11 @@
 # scripts/generate_slide_videos.jl
 #
 # One-shot generator for the two synchronized slide-deck videos (particle
-# concentration Φ and velocity magnitude) used in slides/slides.md. Both are
-# rendered from the same simulation run and the same interpolated frame times,
-# so they stay frame-for-frame in sync.
+# concentration Φ and velocity magnitude) used in the Results section of
+# slides/manim/presentation.py (combined into one side-by-side clip via
+# ffmpeg, see slides/README.md). Both are rendered from the same simulation
+# run and the same interpolated frame times, so they stay frame-for-frame in
+# sync.
 #
 # Parameters, locked in after diagnosing the first (too-coarse, visually-frozen)
 # attempt against the model's own timescales (Chao & Das 2015 + Table 1):
