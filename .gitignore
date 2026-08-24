@@ -30,6 +30,10 @@
 # Test outputs and simulation artifacts
 ~/.julia/scratchspaces/
 docs/superpowers/plans/*.md.tmp
+slides/manim/.venv/
+slides/manim/media/
+slides/manim/__pycache__/
+slides/manim/slides/
 docs/superpowers/specs/*.md.tmp
 Manifest.toml
 results_*.pvd
