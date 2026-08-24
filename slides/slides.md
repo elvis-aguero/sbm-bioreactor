@@ -81,17 +81,66 @@ them to the fluid flow and nutrient transport, self-consistently.
 -->
 
 ---
-layout: iframe
-url: /chao_das_derivation.html
+layout: center
 ---
 
+# The Model
+
+<video src="/chao_das_derivation.mp4" controls class="mx-auto rounded shadow" style="max-height:70vh"></video>
+
+<div class="text-xs pt-2 opacity-50 text-center">
+click to play/pause at each equation — full derivation, Eq. 1 through the complete model
+</div>
+
 <!--
-This is the derivation, live: a keystroke-triggered walkthrough of every
-numbered equation in the paper (Eq. 1-26, 28), built with Manim/manim-slides
-and embedded here. Click into the iframe and use arrow keys / space to step
-through it — each step is its own keystroke, matching the rest of the deck's
-click-to-advance rhythm, just within one continuous canvas instead of across
-separate Slidev slides.
+This is the derivation: a walkthrough of every numbered equation in the
+paper (Eq. 1-26, 28), built with Manim, embedded as a plain video with
+native controls. Play it, and pause/resume at whichever equation you want
+to talk through — that's the "keystroke-triggered" part in practice for a
+live talk: space (with the video focused) toggles play/pause exactly where
+you want to stop, no different from any video call's screen-share.
+
+(This started as an interactive manim-slides + iframe embed with its own
+keystroke-driven player, matching the letter of "keystroke-triggered"
+more closely -- but that toolchain hit three separate integration bugs in
+a row when actually tested end-to-end: manim-slides' default HTML export
+depends on an external CDN for reveal.js and goes blank with no internet
+access; its --one-file asset-embedding option corrupts the video streams
+it inlines; and even its --offline mode, which does bundle reveal.js
+locally, left the video elements in a NETWORK_NO_SOURCE state that never
+started loading, for a reason I didn't track down. All three were caught
+by actually loading the page in a browser and inspecting it, not by
+reading the export code -- worth remembering next time a build step
+reports success without the output having been opened. The underlying
+Manim animation itself renders perfectly; only the interactive-player
+packaging was unreliable, so this plain-video embed keeps the former and
+drops the latter.)
+
+Structure (7 chapters, ~25 equation transforms total):
+1. Momentum (Eq. 1) + its two closures — mixture density (Eq. 2), Krieger-
+   Dougherty viscosity (Eq. 3).
+2. From two phases to one Φ-equation: solid-phase transport (Eq. 5) →
+   substitute the slip velocity (Eq. 6) → define the migration flux J_s
+   (Eq. 7) → bring in mixture continuity (Eq. 4) → rearrange it in terms of
+   ∇·J_s (Eq. 8) → combine with Eq. 7 into the master Φ-transport equation
+   (Eq. 10). The κ coefficient that falls out here is exactly where this
+   session's dimensional bug lived — flagged on-slide, not just in the repo.
+3. Closing the flux: decompose J_s (Eq. 11) into J_sc (Eq. 12) and J_sμ
+   (Eq. 13), add sedimentation with hindered settling (Eq. 14), then unpack
+   the empirical prefactors (Eq. 15-16), Stokes settling velocity (Eq. 17),
+   and hindered-settling function (Eq. 18).
+4. Shear rate: the tensor (Eq. 19) and its scalar magnitude (Eq. 20).
+5. Assemble: Eq. 10 + Eq. 14-18 + Eq. 19-20 fold into the one equation
+   (Eq. 21) that actually determines where the cells go.
+6. The rest of the model: wall shear/rotation (Eq. 22-23), nutrient
+   transport (Eq. 24-25), growth kinetics (Eq. 26), and the Φ-density
+   relation (Eq. 28).
+7. A one-screen summary: every equation that defines the model, together.
+
+Deliberately kept compact and non-verbose on-slide — a caption of a few
+words per step, the equation itself doing the explaining via the
+Transform, not a paragraph of on-screen prose. The verbal narration
+(this) carries the why; the animation carries the how.
 
 Structure (7 chapters, ~25 steps total):
 1. Momentum (Eq. 1) + its two closures — mixture density (Eq. 2), Krieger-
