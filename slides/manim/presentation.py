@@ -291,7 +291,7 @@ class Presentation(Slide):
         eq5.to_edge(LEFT, buff=1.0).shift(UP * 2.4)
         legend5 = self._legend(
             r"$\Phi$ -- particle volume fraction \quad $\mathbf{u}_s$ -- solid-phase velocity",
-        ).next_to(eq5, DOWN, buff=0.65, aligned_edge=LEFT)
+        ).next_to(eq5, DOWN, buff=0.9, aligned_edge=LEFT)
         self.play(FadeIn(header), Write(eq5), FadeIn(legend5))
         self.next_slide()
 
