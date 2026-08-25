@@ -32,6 +32,11 @@ EQ_FONT = 40
 MAX_EQ_WIDTH = 12.3
 
 RESULTS_VIDEO = Path(__file__).parent / "results_combined.mp4"
+# The paper's own Figures 7 and 10, cropped verbatim (no redrawing) from
+# assets/Chao_Das_2015.pdf pages 25 and 28 -- used as-is, not schematics
+# standing in for them.
+PAPER_FIGURE_7 = Path(__file__).parent.parent.parent / "assets" / "Chao_Das_2015_figure7.png"
+PAPER_FIGURE_10 = Path(__file__).parent.parent.parent / "assets" / "Chao_Das_2015_figure10.png"
 
 
 def eq(tex, font_size=EQ_FONT):
@@ -358,7 +363,7 @@ class Presentation(Slide):
         # Eq. 5's own "+".
         new_sign = MathTex(r"+ \nabla\cdot(\Phi", font_size=32).move_to(eq5[1], aligned_edge=LEFT)
         shift = replacement.width - eq5[2].width
-        if shift > 1e-3:
+        if abs(shift) > 1e-3:
             self.play(eq5[3].animate.shift(RIGHT * shift))
         self.play(
             FadeOut(definition), FadeOut(eq5[1]), FadeOut(eq5[2]),
@@ -427,12 +432,21 @@ class Presentation(Slide):
 
         # --- Eq. 4 -> Eq. 8, step 1 of 2: pure rearrangement. Move the
         #     rho_f*div(u) term across and divide through -- same symbols
-        #     as Eq. 4, nothing renamed yet. That's the next step. ---
+        #     as Eq. 4, nothing renamed yet. That's the next step.
+        #     Three persistent chunks from here through kappa's naming:
+        #     eq8_lhs ("div(u) =") never changes again once written;
+        #     eq8_frac (the fraction alone) changes twice -- gains a
+        #     rho_s^o in the denominator below, then collapses to kappa a
+        #     few beats later -- and only the fraction itself is
+        #     redrawn each time, not the whole line; eq8_tail
+        #     ("div(...)") changes once (the parenthetical becomes J_s
+        #     below) and then never again, since eq8_named still ends in
+        #     the identical "div(J_s)". ---
         self.play(eq4[0].animate.set_color(ORANGE), eq4[1].animate.set_color(ORANGE), run_time=0.5)
-        eq8_raw = VGroup(
-            MathTex(r"\nabla\cdot\mathbf{u} = \frac{\rho_s^\circ-\rho_f^\circ}{\rho_f^\circ}\,\nabla\cdot", font_size=28).set_color(ORANGE),
-            MathTex(r"\left(\Phi(1-c_s)\mathbf{u}_{slip}\right)", font_size=28).set_color(ORANGE),
-        ).arrange(RIGHT, buff=0.08).move_to(eq4, aligned_edge=LEFT)
+        eq8_lhs = MathTex(r"\nabla\cdot\mathbf{u} = ", font_size=28).set_color(ORANGE)
+        eq8_frac = MathTex(r"\frac{\rho_s^\circ-\rho_f^\circ}{\rho_f^\circ}", font_size=28).set_color(ORANGE)
+        eq8_tail = MathTex(r"\nabla\cdot\left(\Phi(1-c_s)\mathbf{u}_{slip}\right)", font_size=28).set_color(ORANGE)
+        eq8_raw = VGroup(eq8_lhs, eq8_frac, eq8_tail).arrange(RIGHT, buff=0.08).move_to(eq4, aligned_edge=LEFT)
         self.play(FadeOut(eq4), FadeOut(eq4_label), Write(eq8_raw))
         self._hard_settle([eq4, eq4_label], [eq8_raw])
         self.next_slide(
@@ -446,24 +460,31 @@ class Presentation(Slide):
 
         # --- Step 2 of 2: substitute, using J_s's definition -- still on
         #     screen, so its use here is visible rather than a symbol
-        #     appearing from nowhere. J_s stays up past this point too --
-        #     it's about to be reused again (Eq. 7's restated form below
-        #     also ends in J_s), so its definition doesn't leave until
-        #     that whole run of appearances is done. ---
-        eq8 = VGroup(
-            MathTex(r"\nabla\cdot\mathbf{u}", font_size=28),
-            MathTex(
-                r"= \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s",
-                font_size=28,
-            ).set_color(ORANGE),
-        ).arrange(RIGHT, buff=0.15).move_to(eq8_raw, aligned_edge=LEFT)
-        self.play(FadeOut(eq8_raw), Write(eq8))
-        self._hard_settle([eq8_raw], [eq8])
+        #     appearing from nowhere. Only the fraction (denominator
+        #     picks up rho_s^o) and the tail (parenthetical -> J_s) are
+        #     redrawn -- eq8_lhs is untouched, the same mobject as a beat
+        #     ago. J_s stays up past this point too -- it's about to be
+        #     reused again (Eq. 7's restated form below also ends in
+        #     J_s), so its definition doesn't leave until that whole run
+        #     of appearances is done. ---
+        self.play(eq8_frac.animate.set_color(ORANGE), eq8_tail.animate.set_color(ORANGE), run_time=0.5)
+        eq8_frac_v2 = MathTex(r"\frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}", font_size=28).set_color(ORANGE).move_to(eq8_frac, aligned_edge=LEFT)
+        eq8_Js = MathTex(r"\nabla\cdot\mathbf{J}_s", font_size=28).set_color(ORANGE)
+        shift_frac = eq8_frac_v2.width - eq8_frac.width
+        if abs(shift_frac) > 1e-3:
+            self.play(eq8_tail.animate.shift(RIGHT * shift_frac))
+        eq8_Js.next_to(eq8_frac_v2, RIGHT, buff=0.08)
+        self.play(FadeOut(eq8_frac), Write(eq8_frac_v2), FadeOut(eq8_tail), Write(eq8_Js))
+        self._hard_settle([eq8_frac, eq8_tail], [eq8_frac_v2, eq8_Js])
+        eq8_frac = eq8_frac_v2
+        eq8_tail = eq8_Js
+        eq8 = VGroup(eq8_lhs, eq8_frac, eq8_tail)
         self.next_slide(
             notes="""
             Step 2 of 2: the bracketed slip-flux term is exactly J_s/rho_s
             by the definition named a few steps ago -- substituted in
-            here. Landing on Eq. 8. J_s's own definition stays up a
+            here (the fraction's denominator picks up the matching
+            rho_s^o). Landing on Eq. 8. J_s's own definition stays up a
             little longer: it reappears again shortly in Eq. 7's
             restated form below.
             """
@@ -471,19 +492,22 @@ class Presentation(Slide):
 
         # --- Name kappa here, as its own step -- not bundled with the
         #     substitution above, so this beat is "give this fraction a
-        #     name" and nothing else. Positioned below J_s's definition
+        #     name" and nothing else. Only the fraction itself collapses
+        #     to kappa -- eq8_lhs and eq8_tail (still "div(J_s)",
+        #     unchanged) are untouched, just shift left to close the gap
+        #     the shorter kappa leaves. Positioned below J_s's definition
         #     (still on screen) rather than the bare corner, so the two
         #     don't collide. ---
         kappa_def = MathTex(
             r"\kappa := \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}", font_size=24
         ).set_color(ORANGE).next_to(js_def, DOWN, buff=0.2, aligned_edge=LEFT)
-        eq8_named = VGroup(
-            MathTex(r"\nabla\cdot\mathbf{u}", font_size=28),
-            MathTex(r"= \kappa\,\nabla\cdot\mathbf{J}_s", font_size=28).set_color(ORANGE),
-        ).arrange(RIGHT, buff=0.15).move_to(eq8, aligned_edge=LEFT)
-        self.play(FadeOut(eq8), Write(eq8_named), FadeIn(kappa_def))
-        self._hard_settle([eq8], [eq8_named])
-        eq8 = eq8_named
+        self.play(eq8_frac.animate.set_color(ORANGE), run_time=0.5)
+        eq8_kappa = MathTex(r"\kappa", font_size=28).set_color(ORANGE).move_to(eq8_frac, aligned_edge=LEFT)
+        shift_kappa = eq8_kappa.width - eq8_frac.width
+        self.play(FadeOut(eq8_frac), Write(eq8_kappa), eq8_tail.animate.shift(RIGHT * shift_kappa), FadeIn(kappa_def))
+        self._hard_settle([eq8_frac], [eq8_kappa])
+        eq8_frac = eq8_kappa
+        eq8 = VGroup(eq8_lhs, eq8_frac, eq8_tail)
         self.next_slide(
             notes="""
             Naming (rho_s-rho_f)/(rho_s*rho_f) as kappa here, right when
@@ -542,7 +566,7 @@ class Presentation(Slide):
         )
         renamed_term = MathTex(r"+ \frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=32).set_color(ORANGE).move_to(dist_b_term, aligned_edge=LEFT)
         shift_rename = renamed_term.width - dist_b_term.width
-        if shift_rename > 1e-3:
+        if abs(shift_rename) > 1e-3:
             self.play(dist_b_rhs.animate.shift(RIGHT * shift_rename))
         self.play(FadeOut(dist_b_term), Write(renamed_term))
         self._hard_settle([dist_b_term], [renamed_term])
@@ -593,7 +617,7 @@ class Presentation(Slide):
         u_dot_grad = MathTex(r"+\mathbf{u}\cdot\nabla\Phi", font_size=30).set_color(ORANGE).next_to(eq5[0], RIGHT, buff=0.1)
         new_term = MathTex(r"+ \Phi(\nabla\cdot\mathbf{u})", font_size=30).set_color(ORANGE).next_to(u_dot_grad, RIGHT, buff=0.12)
         added_width = u_dot_grad.width + 0.12 + new_term.width - piece1.width
-        if added_width > 1e-3:
+        if abs(added_width) > 1e-3:
             self.play(piece2.animate.shift(RIGHT * added_width))
         self.play(FadeOut(piece1), Write(u_dot_grad), Write(new_term))
         self._hard_settle([piece1], [u_dot_grad, new_term])
@@ -616,7 +640,7 @@ class Presentation(Slide):
             r"+ \Phi\,\kappa\,\nabla\cdot\mathbf{J}_s", font_size=30
         ).set_color(ORANGE).move_to(new_term, aligned_edge=LEFT)
         shift2 = kappa_term.width - new_term.width
-        if shift2 > 1e-3:
+        if abs(shift2) > 1e-3:
             self.play(expanded[3].animate.shift(RIGHT * shift2))
         self.play(FadeOut(new_term), Write(kappa_term), FadeOut(eq8))
         self._hard_settle([new_term, eq8], [kappa_term])
@@ -643,7 +667,7 @@ class Presentation(Slide):
         self._hard_settle([kappa_term], [rhs_term2])
         self.next_slide(
             notes="""
-            Step 1 of 4: Phi*kappa*div(J_s) crosses the equals sign, sign
+            Step 1 of 5: Phi*kappa*div(J_s) crosses the equals sign, sign
             flipping to a minus, same as any term moving sides -- landing
             next to the -div(J_s)/rho_s^o already there. Nothing combined
             yet, that's the next step.
@@ -660,16 +684,44 @@ class Presentation(Slide):
         self._hard_settle([rhs_term2], [kappa_expanded_term])
         self.next_slide(
             notes="""
-            Step 2 of 4: expanding kappa back into (rho_s^o-rho_f^o)/
+            Step 2 of 5: expanding kappa back into (rho_s^o-rho_f^o)/
             (rho_s^o*rho_f^o), the name given a few chapters back -- a
             substitution, not a new definition. Still its own separate
             term, not yet combined with -div(J_s)/rho_s^o.
             """
         )
 
-        # Step 3: combine the two RHS terms over a common denominator
-        #     rho_s^o*rho_f^o, factoring out div(J_s) -- the actual
-        #     fraction arithmetic, shown, not skipped.
+        # Step 3: put piece2 over the SAME common denominator FIRST,
+        #     on its own, before combining anything -- -1/rho_s^o
+        #     becomes -rho_f^o/(rho_s^o*rho_f^o) (multiply top and
+        #     bottom by rho_f^o). Only once both terms visibly share one
+        #     denominator does merging them into a single fraction next
+        #     become a justified step rather than a jump.
+        self.play(piece2.animate.set_color(ORANGE), run_time=0.5)
+        piece2_common = MathTex(
+            r"= -\frac{\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s", font_size=26
+        ).set_color(ORANGE).move_to(piece2, aligned_edge=LEFT)
+        shift_common = piece2_common.width - piece2.width
+        if abs(shift_common) > 1e-3:
+            self.play(kappa_expanded_term.animate.shift(RIGHT * shift_common))
+        self.play(FadeOut(piece2), Write(piece2_common))
+        self._hard_settle([piece2], [piece2_common])
+        piece2 = piece2_common
+        self.next_slide(
+            notes="""
+            Step 3 of 5: -1/rho_s^o, rewritten over the SAME denominator
+            rho_s^o*rho_f^o that kappa_expanded_term already uses --
+            multiply top and bottom by rho_f^o to get
+            -rho_f^o/(rho_s^o*rho_f^o). Nothing combined yet: this is
+            just putting the two terms on equal footing so the next step
+            (adding numerators) is a real, followable action instead of
+            an unexplained merge.
+            """
+        )
+
+        # Step 4: NOW both terms share one visible denominator -- combine
+        #     into a single fraction by adding numerators, div(J_s)
+        #     factored out.
         self.play(piece2.animate.set_color(ORANGE), kappa_expanded_term.animate.set_color(ORANGE), run_time=0.5)
         combined_frac = MathTex(
             r"= -\frac{\rho_f^\circ + \Phi(\rho_s^\circ-\rho_f^\circ)}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s",
@@ -679,17 +731,16 @@ class Presentation(Slide):
         self._hard_settle([piece2, kappa_expanded_term], [combined_frac])
         self.next_slide(
             notes="""
-            Step 3 of 4: -1/rho_s^o and -Phi*(rho_s^o-rho_f^o)/
-            (rho_s^o*rho_f^o) share a common denominator, rho_s^o*rho_f^o
-            -- -1/rho_s^o is -rho_f^o/(rho_s^o*rho_f^o) over that same
-            denominator. Adding the two numerators gives
-            -[rho_f^o + Phi*(rho_s^o-rho_f^o)] over rho_s^o*rho_f^o,
-            div(J_s) factored out. Real fraction arithmetic, shown on
-            screen, not skipped.
+            Step 4 of 5: both terms now share the same denominator
+            rho_s^o*rho_f^o (the previous step's whole point) -- so
+            adding their numerators, rho_f^o + Phi*(rho_s^o-rho_f^o),
+            over that one shared denominator is a real combination, not
+            an unexplained merge. div(J_s) factored out since both
+            terms carry it.
             """
         )
 
-        # Step 4: recognize the numerator as exactly Eq. 2's rho -- the
+        # Step 5: recognize the numerator as exactly Eq. 2's rho -- the
         #     payoff step, landing on the final, correct master equation.
         combined_rhs = MathTex(
             r"= -\frac{\rho}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s", font_size=30
@@ -699,7 +750,7 @@ class Presentation(Slide):
         master = VGroup(eq5[0], u_dot_grad, combined_rhs)
         self.next_slide(
             notes="""
-            Step 4 of 4: rho_f^o + Phi*(rho_s^o-rho_f^o) expands to
+            Step 5 of 5: rho_f^o + Phi*(rho_s^o-rho_f^o) expands to
             rho_f^o - Phi*rho_f^o + Phi*rho_s^o, exactly (1-Phi)*rho_f^o +
             Phi*rho_s^o -- Eq. 2's own rho, not a new quantity.
             Recognizing that lands on the correct master Phi-transport
@@ -999,8 +1050,14 @@ class Presentation(Slide):
             r"-\frac{\rho}{\rho_f^\circ}\,\nabla\cdot\Big\{",
             font_size=26,
         ).set_color(ORANGE).move_to(chunk0, aligned_edge=LEFT)
+        # coeff_simplified is NARROWER than chunk0 (rho_s^o cancels away),
+        # so shift3 is negative here -- this is the one spot in the deck
+        # where the replacement shrinks rather than grows. The guard
+        # below must fire in both directions (previously only handled
+        # shift3 > 0, silently skipping the leftward close-up and
+        # stranding chunk1/chunk2 with a large gap after the brace).
         shift3 = coeff_simplified.width - chunk0.width
-        if shift3 > 1e-3:
+        if abs(shift3) > 1e-3:
             self.play(chunk1.animate.shift(RIGHT * shift3), chunk2.animate.shift(RIGHT * shift3))
         self.play(FadeOut(chunk0), Write(coeff_simplified))
         self._hard_settle([chunk0], [coeff_simplified])
@@ -1322,10 +1379,17 @@ class Presentation(Slide):
 
         mesh = self._fem_mesh_graphic().next_to(headline, DOWN, buff=0.6, aligned_edge=LEFT)
 
-        fields = self._legend(
-            r"$\mathbf{u}$ -- fluid velocity \quad $p$ -- pressure \quad $\Phi$ -- particle volume fraction \quad $C$ -- nutrient concentration",
-            r"$\Gamma$ -- shear rate, solved as its own lifted field only to keep $\nabla\Gamma$ smooth in the migration flux -- not a genuine sixth physical unknown",
-        ).next_to(headline, RIGHT, buff=1.0, aligned_edge=UP)
+        # Bigger than _legend()'s small-corner default (18pt) on purpose --
+        # these five primal variables are this slide's main content, not
+        # a footnote, so they need to actually be readable.
+        fields = VGroup(
+            Tex(r"$\mathbf{u}$ -- fluid velocity", font_size=30),
+            Tex(r"$p$ -- pressure", font_size=30),
+            Tex(r"$\Phi$ -- particle volume fraction", font_size=30),
+            Tex(r"$C$ -- nutrient concentration", font_size=30),
+            Tex(r"$\Gamma$ -- shear rate, lifted into its own field", font_size=30),
+            Tex(r"(only to keep $\nabla\Gamma$ smooth -- not a 6th unknown)", font_size=24, color=GRAY_B),
+        ).arrange(DOWN, buff=0.22, aligned_edge=LEFT).next_to(headline, RIGHT, buff=1.0, aligned_edge=UP)
 
         self.play(FadeIn(title), FadeIn(headline))
         self.play(Create(mesh))
@@ -1456,30 +1520,17 @@ class Presentation(Slide):
         )
 
     # ------------------------------------------------------------------
-    def _radial_density_schematic(self, radius=1.15, rings=30):
-        # Schematic radial cell-density profile -- illustrates the paper's
-        # own description (peak density at mid-radius, not the exact
-        # centre or the wall) rather than reproducing its actual Figure
-        # 4/7, which we don't have the underlying data for. Painted as
-        # concentric filled rings, largest first so each smaller one
-        # layers on top.
-        group = VGroup()
-        for i in range(rings, 0, -1):
-            r = radius * i / rings
-            x = i / rings
-            density = float(np.exp(-((x - 0.55) ** 2) / (2 * 0.16 ** 2)))
-            color = interpolate_color(BLUE_E, YELLOW, density)
-            group.add(Circle(radius=r, color=color, fill_color=color, fill_opacity=1.0, stroke_width=0))
-        return group
-
     def chapter_6a_paper_results(self):
         title = Text("What the paper itself found", font_size=36, weight=BOLD).to_edge(UP, buff=0.6)
 
-        density = self._radial_density_schematic().to_edge(LEFT, buff=1.3).shift(DOWN * 0.2)
+        # The paper's own Figure 7, verbatim -- cropped straight from the
+        # PDF page, not redrawn or reinterpreted. Never present a
+        # schematic as if it were the paper's actual result.
+        density = ImageMobject(str(PAPER_FIGURE_7)).scale_to_fit_width(4.6).to_edge(LEFT, buff=1.0).shift(DOWN * 0.1)
         density_caption = Text(
-            "Cell density vs. radius, schematic --\nthe paper's described pattern, not its actual figure",
-            font_size=16, color=GRAY_B, line_spacing=0.9,
-        ).next_to(density, DOWN, buff=0.35, aligned_edge=LEFT)
+            "Fig. 7, Chao & Das (2015) -- cell density at t = 1, 3, 5, 7 days",
+            font_size=16, color=GRAY_B,
+        ).next_to(density, DOWN, buff=0.3, aligned_edge=LEFT)
         if density_caption.get_left()[0] < -6.9:
             density_caption.to_edge(LEFT, buff=0.4)
 
@@ -1539,41 +1590,20 @@ class Presentation(Slide):
         self.play(FadeOut(title), FadeOut(points), FadeOut(density), FadeOut(density_caption))
 
     # ------------------------------------------------------------------
-    def _growth_gap_plot(self, width=4.2, height=2.6):
-        # Schematic growth curves -- illustrates the shape of the gap the
-        # paper itself reports (real cultures keep growing 20-30h past
-        # nutrient depletion, the simulation doesn't), not digitized data
-        # from its actual Figure 10.
-        axes = Axes(
-            x_range=[0, 10, 5], y_range=[0, 1.1, 1.1],
-            x_length=width, y_length=height,
-            axis_config={"include_tip": False, "stroke_width": 1.5, "color": GRAY_B},
-        )
-        depletion_x = 4.0
-        real_curve = axes.plot(
-            lambda x: min(1.0, 0.22 * x) if x <= depletion_x else min(1.0, 0.22 * depletion_x + 0.08 * (x - depletion_x)),
-            x_range=[0, 10], color=GREEN_C, stroke_width=3,
-        )
-        sim_curve = axes.plot(
-            lambda x: 0.22 * x if x <= depletion_x else max(0.0, 0.22 * depletion_x - 0.35 * (x - depletion_x)),
-            x_range=[0, 10], color=RED_C, stroke_width=3,
-        )
-        marker = DashedLine(axes.c2p(depletion_x, 0), axes.c2p(depletion_x, 1.05), color=GRAY_B, stroke_width=1.5)
-        marker_label = Text("nutrient depleted", font_size=14, color=GRAY_B).next_to(marker, UP, buff=0.05)
-        legend = VGroup(
-            VGroup(Line(ORIGIN, RIGHT * 0.3, color=GREEN_C, stroke_width=3), Text("real culture", font_size=14, color=GRAY_B)).arrange(RIGHT, buff=0.1),
-            VGroup(Line(ORIGIN, RIGHT * 0.3, color=RED_C, stroke_width=3), Text("simulated", font_size=14, color=GRAY_B)).arrange(RIGHT, buff=0.1),
-        ).arrange(DOWN, buff=0.1, aligned_edge=LEFT).next_to(axes, UP, buff=0.15, aligned_edge=LEFT)
-        return VGroup(axes, real_curve, sim_curve, marker, marker_label, legend)
-
     def chapter_6b_paper_discussion(self):
         title = Text("What the paper concludes", font_size=36, weight=BOLD).to_edge(UP, buff=0.6)
 
-        growth = self._growth_gap_plot().to_edge(LEFT, buff=1.3).shift(DOWN * 0.2)
+        # The paper's own Figure 10, verbatim -- cropped straight from the
+        # PDF page, not redrawn. Note this is ONLY the simulated curve:
+        # the paper's own caption says it is "not compared directly to
+        # experimental measurements" -- so no real-vs-simulated
+        # comparison curve is drawn here either; that comparison isn't in
+        # the paper's own figure, only in its prose (the bullet at right).
+        growth = ImageMobject(str(PAPER_FIGURE_10)).scale_to_fit_width(4.6).to_edge(LEFT, buff=1.0).shift(DOWN * 0.1)
         growth_caption = Text(
-            "Cell density over time, schematic --\nillustrates the reported gap's shape, not digitized data",
-            font_size=16, color=GRAY_B, line_spacing=0.9,
-        ).next_to(growth, DOWN, buff=0.35, aligned_edge=LEFT)
+            "Fig. 10, Chao & Das (2015) -- simulated only, per their own caption",
+            font_size=16, color=GRAY_B,
+        ).next_to(growth, DOWN, buff=0.3, aligned_edge=LEFT)
         if growth_caption.get_left()[0] < -6.9:
             growth_caption.to_edge(LEFT, buff=0.4)
 
