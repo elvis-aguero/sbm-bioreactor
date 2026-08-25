@@ -92,7 +92,7 @@ of showing it this way instead of fading the whole line.
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/83a216d3b8f47ce104f8ee631438baf27bc455ec7c018daf4eb74a8d75f92a57.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1a127c56eb3e7e981d479a4cada4b19bb87aae11675190325e509b178051273e.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/6b90371c6bd39a92ea6f4b3d37be7154944fe2862155d63df52fbd45f20c0afb.mp4">
 <aside class="notes" data-markdown="">
 This is the derivation, live: a keystroke-triggered walkthrough of
 every numbered equation in the paper (Eq. 1-26, 28). On-screen
@@ -107,11 +107,12 @@ untouched. The sign flip on the divergence term (+ to -) matches
 the paper's own Eq. 6 exactly as written.
 
 J_s is named right here, tied to the slip-velocity term that
-just appeared: rho_s times the (1-c_s)*u_slip piece. Naming it
-now means it doesn't reappear unexplained a few steps from now.
+just appeared: rho_s times the (1-c_s)*u_slip piece. It stays
+up rather than fading immediately -- it isn't exercised until
+Eq. 4 gets rearranged in terms of it, a few steps from now.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/755a317757f908f7d5efaab1572ee850acf1c65a4b2f9cc255de0a770560e4e4.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1b73fa7c43963bc0e50d360c424353fbb91ce6ceb1b04ad164f5090ec470a2fb.mp4">
 <aside class="notes" data-markdown="">
 Mixture continuity is not derived from Eq. 5/6 -- it's a
 separate statement (conservation of total mixture mass). Kept on
@@ -119,41 +120,67 @@ screen alongside Eq. 6 because both feed into the combination
 two steps from now.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/fd547f1194d52fdb279c4edb3de36576112f3af9f883d32749846250eabd72d1.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/3cd348e09689f7c27b2bc84058fb6b1e4638b67c8d854d20ad43c17b7f3c503f.mp4">
 <aside class="notes" data-markdown="">
-Isolating div(u): move the rho_f-times-div(u) term to the other
-side and divide through by rho_f -- straightforward algebra,
-landing on Eq. 8. The bracketed slip-flux term is exactly
-(1/rho_s)*J_s by the definition two steps ago. Eq. 6 stays on
-screen above -- Eq. 8 is about to combine with it.
+Step 1 of 2, pure algebra: move the rho_f*div(u) term to the
+other side and divide through by rho_f -- same symbols as
+Eq. 4, nothing renamed. Naming the bracket is the next,
+separate step.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/047a66ba4ce4c757cea4c9e68ccd84e560e07de31576acfbff433da362ef457a.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/503a111e64c0c288e9373dd6d5a7f098bcd6e28d674bd5db87c2af7738806b8e.mp4">
 <aside class="notes" data-markdown="">
-Distributing the divergence over the sum splits Eq. 6 into a
-div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip) piece; the
-second is exactly J_s/rho_s by the definition two steps ago,
-which is what lets it be renamed and moved to the
-right-hand side as -div(J_s)/rho_s. Eq. 6's advection is
-unpacked into this div(u*Phi) form to match the
-flux-conservation style used by Rao et al., which the rest of
-the derivation builds on.
+Step 2 of 2: the bracketed slip-flux term is exactly J_s/rho_s
+by the definition named a few steps ago -- substituted in
+here, so J_s's on-screen definition has finally been
+exercised and can leave. Landing on Eq. 8.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/6ea3af27d2834e67226257a47de663ab38c601209e7c0e6bc9f160d0d449f670.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/e38148892eba4644b3d714b3b5ba1c347fd9eeed07b47f254d8878e36bc959b2.mp4">
+<aside class="notes" data-markdown="">
+Naming (rho_s-rho_f)/(rho_s*rho_f) as kappa here, right when
+it first appears in a form worth naming -- not deferred to
+Eq. 10's underbrace, which now just confirms this rather than
+introducing it for the first time.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/16f6080126d894cdbdd3a87c0d23b1c8dae5527912b8f95032f3521d2a6452b6.mp4">
+<aside class="notes" data-markdown="">
+Step 1 of 2, pure algebra: distributing the divergence over
+the sum splits the u_s-substituted transport equation into a
+div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip) piece -- same
+sign convention as Eq. 6, nothing renamed yet.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/5ba8740eac167e78518c0d5aab10da10415c0b79af3a4f4ad887d7b51d516da9.mp4">
+<aside class="notes" data-markdown="">
+Step 2 of 2 restates this in the flux form used by Rao et
+al. -- a citation, not a term-by-term derivation from Eq. 6.
+The second piece is again exactly J_s/rho_s, renamed and
+moved to the right-hand side; the advection term's sign flips
+(- to +) to match that citation's own convention, which this
+repo's transcription already flags as one of a few
+inconsistencies around equations 7-10 in the accepted-
+manuscript scan. Flagging it here rather than papering over
+it. This is the form the rest of the derivation builds on.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/767fdd0b9a362dde505c501bb9b7f1734794c95d50855f079b33b71a7560595d.mp4">
 <aside class="notes" data-markdown="">
 Product rule: div(u*Phi) = u.grad(Phi) + Phi*div(u) -- the
 first piece replaces div(u*Phi) in place, the second is a
-genuinely new term. Eq. 8 (div(u) in terms of J_s) is exactly
-what substitutes into that new term next, so it fades out here
-since it's now used up.
+genuinely new term. Eq. 8 stays on screen below: it's exactly
+what substitutes into that new term next.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/272f614c5ca580c95309faa2dc5bcdebb90e2fbc95599a9d1760a1894368aa08.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/ae1a0702926f12b1db0e38545af9c287f47ea9f1e1081fffb500ebf5c1d57c07.mp4">
 <aside class="notes" data-markdown="">
-kappa*div(J_s) substituted in, using Eq. 8, and named kappa
-right away -- (rho_s - rho_f)/(rho_s*rho_f). Two honest flags
-here, spoken rather than put on screen:
+div(u) = kappa*div(J_s), by Eq. 8, named a few steps ago --
+substituted here using that already-established name, so this
+step is a single rename, not a rename-and-define at once.
+Eq. 8 has now done its job and leaves the screen.
+
+Two honest flags here, spoken rather than put on screen:
 
 1. The Phi*kappa*div(J_s) term that appears when you expand
    div(u*Phi) via the product rule and substitute Eq. 8 isn't
@@ -168,12 +195,11 @@ here, spoken rather than put on screen:
    here, not hidden, but as a spoken aside, not a screen note.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/c6df401b4f27451015b8602b291aab7cc4066d6e53e2f975df30a621f1c9cb60.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/83d37dde72ccc815123289b05fc6339d6de8691414efe46e675e16324ac24386.mp4">
 <aside class="notes" data-markdown="">
 Landing on Eq. 10, the master Phi-transport equation -- kappa
-(underbraced) is (rho_s - rho_f)/(rho_s*rho_f), confirming the
-definition from two steps ago rather than introducing it for
-the first time.
+carried forward as the name established a few steps ago,
+(rho_s - rho_f)/(rho_s*rho_f).
 
 Kappa has units of inverse density, which is worth a mental
 note but isn't a red flag about this derivation -- it's just
@@ -185,7 +211,7 @@ chapter, where it has its proper context; raising it here would
 wrongly suggest this equation has a problem it doesn't.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/cdf99488c4af984cb2229cc08ff56593c4b4bc09740c4ce6efbadda386b9ea5e.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/fd9aafa97ad78737e200e60d8ee5e9ab5341b55921ea596ff6f5360b23be2ae8.mp4">
 <aside class="notes" data-markdown="">
 These are independent modeling closures, not a chain where each
 line is derived from the last -- accumulated on screen together
@@ -196,7 +222,7 @@ shear-induced migration flux (Eq. 12), and J_sμ, the flux from
 spatial viscosity variation (Eq. 13).
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/3dc732fe050e9bc063a7097c408a1d3e82d4f1aa4732c6dc41ece1b9623d4f8f.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/2658a80d609d646f6628731c6fb8b01e4d844eb0db8769e953238f0ada7427ea.mp4">
 <aside class="notes" data-markdown="">
 The physical picture in one sentence: particles get pushed out
 of high-shear regions toward low-shear ones (J_sc -- this is
@@ -205,7 +231,7 @@ buoyancy), and separately pushed toward locally less-viscous
 fluid (J_sμ, a much smaller secondary effect in this geometry).
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/20f83167f7d35048a5d13af737e936bb9acae0f6f0eb50ff58c56f04ddb8d99e.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/8c20e8941b7d1c4bfb184dd021ba6319b4f06c37eedde640924c8c575738ecb6.mp4">
 <aside class="notes" data-markdown="">
 Eq. 14 is Eqs. 12-13's bracketed terms (renamed D_Phi, D_mu, and
 divided through by rho_s) with one new physical effect added --
@@ -214,7 +240,7 @@ Eq. 11's decomposition at all. This is the hindered-settling
 closure the rest of the derivation uses.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/15910cbc70896880f154c9b8719395e1c7d341d0828c0db3a8e3fbe1ebe356e9.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/47900da6d21c6d78af09240a40da9f1ff6a2f040e43adff137bb684aa2c12b86.mp4">
 <aside class="notes" data-markdown="">
 The empirical prefactors (Eq. 15-16), the Stokes settling
 velocity (Eq. 17, from balancing drag against buoyancy for a
@@ -225,7 +251,7 @@ on, accumulated together and kept alongside it rather than each
 replacing the last.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/411b8fb404563a97d38c81cf659bcec40549f844aa5bd8e61f9171f67ad4e98e.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/3878cc451914b1f47ecc808bf0ea5d2151a5b76fd96c691c72793e6617af2883.mp4">
 <aside class="notes" data-markdown="">
 The shear-rate tensor (Eq. 19) contracted with itself and
 square-rooted gives its scalar magnitude -- the general
@@ -235,24 +261,42 @@ forms of the same quantity, together rather than paced one at
 a time: the tensor, its contraction, and the component form.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/75a4ab2decd3d707c1d933e67d947e8f0d7f8b359067de5f4e2986aa2b491b79.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/2230648acc9a725fd6cdc0f6c64382c63a679344633148311dc81b72107cb888.mp4">
 <aside class="notes" data-markdown="">
 The two pieces going into this assembly: Eq. 10 (the master
 Phi-transport equation, with kappa left as a symbol) and Eq. 14
 (the hindered-settling flux closure that kappa*div(J_s) is about
-to absorb).
+to absorb). Eq. 14 stays on screen through the substitution just
+below -- it isn't exercised yet.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/75a20bd89f5393d8062fc67dc6c273d61611df6ad005229801e64a1ca67122fa.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/efcdcf0b07d4c8a4227fd4f5299e112e5449e3ec74e06aaa4677aca2122d492f.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/9234d49c05972f13110fb1d0b586b1cf256d3e3c409a791995443a0fc9c230fa.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1841529b46f858649ed81efd37d395bdeee36017adc6141d9e01a899c2170a09.mp4">
 <aside class="notes" data-markdown="">
 J_s (divided by rho_s in Eq. 14) becomes rho_s times that same
 bracket once multiplied back through -- substituting it into
-kappa*div(J_s) is what starts turning Eq. 10 into Eq. 21.
+kappa*div(J_s) is what starts turning Eq. 10 into Eq. 21. Eq. 14
+has now been exercised, so it leaves the screen. Kappa itself
+stays a symbol for now -- expanding it is the next, separate
+step.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/375e99d6b0da4a5440a1a6f535b09fcef101aed943aa6a7a4799dc52eac5481d.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/970019a96baa869846512bc91eba63fb10d2dbbe77c3fab27685d718b9fc522f.mp4">
+<aside class="notes" data-markdown="">
+Expanding kappa back into (rho_f-rho_s)/(rho_s*rho_f) -- the
+name established in the previous chapter, not a new
+definition. Paired with rho_s from the J_s substitution just
+now, this is exactly Eq. 21's leading coefficient as printed
+in the paper, uncancelled.
+
+kappa*rho_s does algebraically simplify to (rho_f-rho_s)/rho_f
+-- the rho_s cancels -- but the paper's own Eq. 21 keeps it
+uncancelled, so it's shown that way here too, matching the
+source. (See the aside on the next beat.)
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/920e92dc4803c472b354988a72c57a37bb7373207d14571c796bf8ca3a1deaff.mp4">
 <aside class="notes" data-markdown="">
 kappa = (rho_s - rho_f)/(rho_s*rho_f), so kappa*rho_s simplifies
 to (rho_f - rho_s)/rho_f -- the rho_s cancels. Eq. 21 as printed
@@ -263,19 +307,22 @@ it's clear they match rather than presenting the paper's more
 roundabout form as if it were the only way to write it.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/9918b430469112da01e0a7b969dfa0716983da264206c01b4834b6faa3221fca.mp4">
-</section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/a4d3a129b714892fc60234859bb2584a1a91d7c61be945ccd2f258cbe8d793d0.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/b4d35aa8817e6d364060c24afe98348df0b062447c10f17481568a84b925f1d7.mp4">
 <aside class="notes" data-markdown="">
 Eq. 21: Stokes velocity (Eq. 17) and the hindered-settling
-function (Eq. 18) substituted into the settling term finishes
-the assembly. Every step from Eq. 10 to here was a concrete
-substitution or simplification, shown on the same line rather
-than skipped past -- this is the one equation that determines
-where the cells go, and now it's visible how it got built.
+function (Eq. 18), recalled here from the flux-closure
+chapter, substituted into the sedimentation term -- the other
+half of finishing the assembly, kept as its own step rather
+than bundled with expanding kappa above. Every step from
+Eq. 10 to here was a concrete substitution or simplification,
+shown on the same line rather than skipped past -- this is the
+one equation that determines where the cells go, and now it's
+visible how it got built.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/102266b972363eef755250aebfe80833cbafb64b6aa475a6791046ff3d4ac969.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/d9fd7ca9e2bca4271200794f8de3dd67bb14f6f2769f7b0e975d85ad93fa593b.mp4">
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1a9ddfa88251630a8b1fa74eed6d2b1dd6c991a5e56a6b886a3144f3acbe15a7.mp4">
 <aside class="notes" data-markdown="">
 Four more independent relations round out the model -- none
 derived from each other, so they accumulate on screen together
@@ -290,7 +337,7 @@ cell density and volume fraction that feeds growth back into
 Phi.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/6f12090bb4ebfec2fe61d26754904755d8e4992404496b99faf9c7c1a93df852.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/5bc8fab5efefca3356d553d4d31c643799e9c7b1e9f652c8efd56a674a2f530d.mp4">
 <aside class="notes" data-markdown="">
 The complete model, all in one place: momentum, mixture
 density/viscosity, the master Phi-transport equation, the flux
@@ -299,7 +346,7 @@ these was built on screen earlier in this section -- nothing
 here is new, this is just the full picture side by side.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/3141e89bae12cbe98685b8858f26fe58ccd54509238e217b767b7e56a02001f8.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/cad278f563d4dd5ddaecbfd8f4caf7d1ce915ea72acc7d6bf673863cf19d757b.mp4">
 <aside class="notes" data-markdown="">
 This is the credibility slide, and it's worth real time here
 because an audience like this will (rightly) ask "how do you know
@@ -350,7 +397,7 @@ useful thing to tell a room of experts than a claim of perfect
 fidelity.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/6a90e205312b43f47eb63b1e6be3528c6c8efc69d954f8b6b3995a6957f44e2c.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/51bd5c524d0fa98cdc2b837c278a778582a98b02614784ac5945896a58dced2b.mp4">
 <aside class="notes" data-markdown="">
 Rewritten from scratch as a monolithic finite-element solver: all
 five fields, one coupled nonlinear system, solved together each
@@ -375,7 +422,7 @@ for this room is the next slide: however we got the Jacobian, we
 checked it.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/0d3a887f505a878ab32ff731d77bb895bf0660069ddd56908cef1d4bf8ed786c.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/f7f826ca2c3c365c4c21a76a98ac599b36ff078bc44a5f72900a4d381a656975.mp4">
 <aside class="notes" data-markdown="">
 Two independent checks, both load-bearing:
 
@@ -456,7 +503,7 @@ distinction matters to this audience and I'd rather say it than
 have someone ask.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/eeb876c6a679733c54d0a4dd98a02dfa6d168a54f5e4101627cf06af32956af5.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1b0f94b6456adf71333aeb28bf42391494d1ffb8ec0d68118a269aa18192a700.mp4">
 </section>
 </div>
 </div>
