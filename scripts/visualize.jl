@@ -182,7 +182,8 @@ function plot_bare_scalar_snapshot(field; radius, n=121, post=identity, color=:v
     return heatmap(
         xs, ys, values;
         aspect_ratio=:equal, colorbar=false, title="", legend=false,
-        axis=false, ticks=false, framestyle=:none, color=color, kwargs...,
+        axis=false, ticks=false, framestyle=:none, color=color,
+        background_color=:black, background_color_outside=:black, kwargs...,
     )
 end
 
@@ -267,7 +268,8 @@ function animate_bare_scalar(fields; radius, output_path, n=121, fps=30, post=id
         plt = heatmap(
             xs, ys, values;
             aspect_ratio=:equal, colorbar=false, title="", legend=false,
-            axis=false, ticks=false, framestyle=:none, color=color, kwargs...,
+            axis=false, ticks=false, framestyle=:none, color=color,
+            background_color=:black, background_color_outside=:black, kwargs...,
         )
         display(plt)
     end

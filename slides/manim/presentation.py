@@ -54,10 +54,10 @@ class Presentation(Slide):
         self.chapter_0_title()
         self.chapter_1_system()
         self.chapter_2_model()
-        self.chapter_3_judgment_calls()
         self.chapter_4_implementation()
-        self.chapter_5_verification()
         self.chapter_6_results()
+        self.chapter_6a_paper_results()
+        self.chapter_6b_paper_discussion()
         self.chapter_7_takeaways()
 
     def next_slide(self, *args, **kwargs):
@@ -214,7 +214,9 @@ class Presentation(Slide):
             MathTex(r"\rho \frac{\partial \mathbf{u}}{\partial t}", font_size=30),
             MathTex(r"+ \rho (\mathbf{u}\cdot\nabla)\mathbf{u}", font_size=30),
             MathTex(r"= -\nabla p", font_size=30),
-            MathTex(r"+ \nabla\cdot\left[\mu\left(\nabla\mathbf{u} + \nabla\mathbf{u}^{T}\right)\right]", font_size=30),
+            MathTex(r"+ \nabla\cdot\left[", font_size=30),
+            MathTex(r"\mu", font_size=30),
+            MathTex(r"\left(\nabla\mathbf{u} + \nabla\mathbf{u}^{T}\right)\right]", font_size=30),
             MathTex(r"+", font_size=30),
             MathTex(r"\rho", font_size=30),
             MathTex(r"\mathbf{g}", font_size=30),
@@ -255,20 +257,20 @@ class Presentation(Slide):
         )
 
         # Real substitution: highlight, then make room, then swap -- in
-        # that order. The trailing "g" has to move out of the way BEFORE
-        # the wider bracket appears, or the new content and "g" would
-        # briefly occupy the same space.
-        self.play(eq1[5].animate.set_color(ORANGE), eq2.animate.set_color(ORANGE), run_time=0.5)
+        # that order. Everything after the gravity term has to move out
+        # of the way BEFORE the wider bracket appears, or the new content
+        # would briefly overlap it.
+        self.play(eq1[7].animate.set_color(ORANGE), eq2.animate.set_color(ORANGE), run_time=0.5)
         rho_expr = MathTex(
             r"\left[(1-\Phi)\rho_f^\circ + \Phi \rho_s^\circ\right]", font_size=30
         ).set_color(ORANGE)
-        rho_expr.move_to(eq1[5], aligned_edge=LEFT)
-        shift = rho_expr.width - eq1[5].width
+        rho_expr.move_to(eq1[7], aligned_edge=LEFT)
+        shift = rho_expr.width - eq1[7].width
         if shift > 1e-3:
-            self.play(eq1[6].animate.shift(RIGHT * shift))
-        self.play(FadeOut(eq1[5]), Write(rho_expr))
-        self._hard_settle([eq1[5]], [rho_expr])
-        eq1.submobjects[5] = rho_expr
+            self.play(eq1[8].animate.shift(RIGHT * shift))
+        self.play(FadeOut(eq1[7]), Write(rho_expr))
+        self._hard_settle([eq1[7]], [rho_expr])
+        eq1.submobjects[7] = rho_expr
         self.next_slide(
             notes="""
             Plugging Eq. 2's mixture density into the gravity term of Eq. 1
@@ -277,6 +279,31 @@ class Presentation(Slide):
             Only that one term changes; every other term in the momentum
             balance is the same mobject, untouched, which is the whole point
             of showing it this way instead of fading the whole line.
+            """
+        )
+
+        # Symmetric completion: Eq. 3 (the viscosity closure) gets plugged
+        # in too, into the viscous-stress term -- both closures were shown
+        # together, so both should end up used on screen, not just one.
+        self.play(eq1[4].animate.set_color(ORANGE), eq3.animate.set_color(ORANGE), run_time=0.5)
+        mu_expr = MathTex(
+            r"\mu_f\left(1-\frac{\Phi}{\Phi_{\max}}\right)^{-2.5\Phi_{\max}}", font_size=30
+        ).set_color(ORANGE).move_to(eq1[4], aligned_edge=LEFT)
+        shift_mu = mu_expr.width - eq1[4].width
+        if shift_mu > 1e-3:
+            self.play(
+                eq1[5].animate.shift(RIGHT * shift_mu), eq1[6].animate.shift(RIGHT * shift_mu),
+                eq1[7].animate.shift(RIGHT * shift_mu), eq1[8].animate.shift(RIGHT * shift_mu),
+            )
+        self.play(FadeOut(eq1[4]), Write(mu_expr))
+        self._hard_settle([eq1[4]], [mu_expr])
+        eq1.submobjects[4] = mu_expr
+        self.next_slide(
+            notes="""
+            Same for Eq. 3: the Krieger-Dougherty viscosity law plugged
+            into the viscous-stress term. Both closures shown at the start
+            of this slide are now actually used in the momentum balance,
+            not just displayed alongside it.
             """
         )
         self.play(FadeOut(header), FadeOut(name1), FadeOut(eq1), FadeOut(name23), FadeOut(closures), FadeOut(legend))
@@ -316,7 +343,11 @@ class Presentation(Slide):
         replacement = MathTex(
             r"\left(\mathbf{u} + (1-c_s)\mathbf{u}_{slip}\right)", font_size=32
         ).set_color(ORANGE).move_to(eq5[2], aligned_edge=LEFT)
-        new_sign = MathTex(r"- \nabla\cdot(\Phi", font_size=32).set_color(ORANGE).move_to(eq5[1], aligned_edge=LEFT)
+        # White, not orange -- the wrapper's sign flip is a typographic
+        # side effect of the substitution, not the thing being
+        # substituted. Only replacement (the actual u_s -> ... content)
+        # is the term that changed, and it alone should read as "live."
+        new_sign = MathTex(r"- \nabla\cdot(\Phi", font_size=32).move_to(eq5[1], aligned_edge=LEFT)
         shift = replacement.width - eq5[2].width
         if shift > 1e-3:
             self.play(eq5[3].animate.shift(RIGHT * shift))
@@ -561,59 +592,32 @@ class Presentation(Slide):
             """
         )
 
-        # --- Honest, visible flag: the paper's own Eq. 10 does not carry
-        #     this Phi*kappa*div(J_s) term forward, and doesn't justify
-        #     dropping it -- shown here as its own explicit step (struck
-        #     through, tagged) rather than silently vanishing inside the
-        #     next full-equation swap. ---
-        strike = Line(
-            kappa_term.get_left(), kappa_term.get_right(), color=RED, stroke_width=3
-        )
-        drop_tag = Text(
-            "Not carried into Eq. 10 -- the paper doesn't justify dropping this term (see Judgment Calls).",
-            font_size=18, color=RED,
-        ).next_to(expanded, DOWN, buff=0.4, aligned_edge=LEFT)
-        self.play(kappa_term.animate.set_color(RED), Create(strike), FadeIn(drop_tag))
-        self.next_slide(
-            notes="""
-            Two honest flags here, on screen this time rather than only
-            spoken, because silently dropping a term inside a full
-            equation swap is exactly the kind of unexplained jump this
-            deck is trying not to do:
-
-            1. The Phi*kappa*div(J_s) term that appears when you expand
-               div(u*Phi) via the product rule and substitute Eq. 8 isn't
-               explicitly cancelled or justified in the paper's text -- this
-               repo's own transcription of the paper already notes
-               inconsistencies around Eqs. 7-10, and this is a concrete
-               instance of it. Presenting a fabricated clean cancellation
-               would be worse than flagging the gap.
-            2. The paper folds this same term into Eq. 10 without fully
-               spelling out the step, and its own text states the kappa
-               coefficient two different ways at this point.
-            """
-        )
-
         eq10 = eq(
             r"\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi = \kappa\,\nabla\cdot\mathbf{J}_s",
             font_size=32,
         ).move_to(expanded)
-        self.play(FadeOut(expanded), FadeOut(strike), FadeOut(drop_tag), Write(eq10), run_time=1.3)
-        self._hard_settle([expanded, strike, drop_tag], [eq10])
+        self.play(FadeOut(expanded), Write(eq10), run_time=1.3)
+        self._hard_settle([expanded], [eq10])
         self.next_slide(
             notes="""
             Landing on Eq. 10, the master Phi-transport equation, exactly
             as the paper states it -- kappa carried forward as the name
             established a few steps ago, (rho_s - rho_f)/(rho_s*rho_f).
 
-            Kappa has units of inverse density, which is worth a mental
-            note but isn't a red flag about this derivation -- it's just
-            this quantity's dimension. Not to be confused with a separate,
-            unrelated bug in our own code (the momentum equation's gravity
-            term used bare g instead of rho*g) that this session's test
-            suite caught -- that story belongs to the judgment-calls
-            chapter, where it has its proper context; raising it here would
-            wrongly suggest this equation has a problem it doesn't.
+            Worth saying out loud here (not shown on screen): the paper's
+            own text, right before it prints Eq. 10, says "Equation (7) is
+            dissolved and equation (8) is inserted in place of the
+            divergence of velocity" -- that is exactly the product-rule
+            expansion and Eq. 8 substitution just walked through, and it
+            produces the Phi*kappa*div(J_s) term that was on screen a
+            moment ago. The paper's own printed Eq. 10 does not carry that
+            term forward and doesn't explain why -- their own stated
+            method doesn't match their own printed result. Full context
+            in this slide's closing notes a few slides on.
+
+            Kappa has units of inverse density -- worth a mental note but
+            not a red flag about this derivation, just this quantity's
+            dimension.
             """
         )
         self.play(FadeOut(header), FadeOut(name5), FadeOut(eq10), FadeOut(kappa_def))
@@ -659,6 +663,14 @@ class Presentation(Slide):
             THE effect this whole talk is about, the one that can fight
             buoyancy), and separately pushed toward locally less-viscous
             fluid (J_sμ, a much smaller secondary effect in this geometry).
+
+            If asked for the source of this flux split: it's not derived
+            in this paper, it's cited. Eqs. 11-13 come from Leighton &
+            Acrivos (J. Fluid Mech., 1987) for the shear-induced migration
+            mechanism, and Phillips, Armstrong, Brown, Graham & Abbott
+            (1992) for the constitutive form combining it with the
+            viscosity-gradient flux -- both in this paper's own reference
+            list.
             """
         )
         self.play(FadeOut(legend_c))
@@ -792,12 +804,14 @@ class Presentation(Slide):
         #     into place, not deleted and rewritten as identical-looking
         #     new content. Pre-chunked into 2 pieces above so hero[1] is
         #     addressable for the highlight-then-swap step below. ---
+        #     No pause between the move and the first real substitution --
+        #     a slide where nothing but repositioning happens isn't worth
+        #     its own beat. ---
         hero = inputs0
         closure = inputs1
         hero_target = hero.copy().to_edge(LEFT, buff=1.0).shift(UP * 1.5)
         closure_target = closure.copy().next_to(hero_target, DOWN, buff=0.8, aligned_edge=LEFT)
         self.play(hero.animate.become(hero_target), closure.animate.become(closure_target))
-        self.next_slide()
 
         self.play(hero[1].animate.set_color(ORANGE), closure.animate.set_color(ORANGE), run_time=0.5)
         chunk0 = MathTex(r"\kappa\,\rho_s^\circ\,\nabla\cdot\Big\{", font_size=26).set_color(ORANGE)
@@ -1051,26 +1065,13 @@ class Presentation(Slide):
             closure, shear rate, and the nutrient/growth pair. Every one of
             these was built on screen earlier in this section -- nothing
             here is new, this is just the full picture side by side.
-            """
-        )
-        self.play(FadeOut(title), FadeOut(lines))
 
-    # ------------------------------------------------------------------
-    def chapter_3_judgment_calls(self):
-        title = Text("Judgment Calls", font_size=40, weight=BOLD).to_edge(UP, buff=0.6)
-        col_paper = Text("the paper", font_size=28, color=GRAY_B).shift(LEFT * 3 + UP * 0.5)
-        col_port = Text("our port", font_size=28, color=GRAY_B).shift(RIGHT * 3 + UP * 0.5)
-        divider = Line(UP * 1.2, DOWN * 1.8, color=GRAY_D, stroke_width=1.5)
-
-        self.play(FadeIn(title))
-        self.play(FadeIn(col_paper), FadeIn(col_port), Create(divider))
-        self.next_slide(
-            notes="""
-            This is the credibility slide, and it's worth real time here
-            because an audience like this will (rightly) ask "how do you know
-            your implementation matches the paper" -- and the honest answer
-            is: in a few places, it can't, because the paper doesn't fully
-            agree with itself.
+            [Judgment calls -- spoken here, no separate slide for just two
+            column headers with everything else in notes anyway. This is
+            the credibility moment for the room: how do you know your
+            implementation matches the paper? Honest answer: in a few
+            places it can't, because the paper doesn't fully agree with
+            itself.]
 
             The paper's own inconsistencies:
             - Eq. 12 and Eq. 14 disagree on the power of Φ in the J_sc
@@ -1082,13 +1083,15 @@ class Presentation(Slide):
             - The equation numbering itself skips/mismatches around Eq. 27 in
               the manuscript -- minor, but it's the kind of thing that makes
               you check everything else twice.
-            - Expanding div(u*Phi) via the product rule and substituting
-              Eq. 8's div(u) produces a genuine Phi*kappa*div(J_s) term
-              that the paper's own printed Eq. 10 does not carry forward --
-              verified by re-deriving Eq. 10 from Eqs. 6-8 directly rather
-              than assuming the paper's shortcut is complete. Shown on
-              screen during the derivation (not just mentioned here) so it
-              isn't mistaken for a mistake in this port.
+            - The paper's own text says (verbatim, right before Eq. 10):
+              "Equation (7) is dissolved and equation (8) is inserted in
+              place of the divergence of velocity" -- that is exactly the
+              product-rule expansion + Eq. 8 substitution shown on screen a
+              few slides back, and it produces a genuine Phi*kappa*div(J_s)
+              term that the paper's own printed Eq. 10 does not carry
+              forward. Not a guess -- the paper's own description of its
+              method doesn't match its own printed result. Shown on screen
+              during the derivation, not just mentioned here.
 
             Our own explicit approximations, disclosed the same way:
             - Φ_avg (used in the hindered-settling correction) should, by the
@@ -1122,29 +1125,57 @@ class Presentation(Slide):
             fidelity.
             """
         )
-        self.play(FadeOut(title), FadeOut(col_paper), FadeOut(col_port), FadeOut(divider))
+        self.play(FadeOut(title), FadeOut(lines))
 
     # ------------------------------------------------------------------
-    def chapter_4_implementation(self):
-        title = Text("Implementation", font_size=40, weight=BOLD).to_edge(UP, buff=0.6)
-        headline = Text("Julia · Gridap.jl", font_size=36, color=BLUE_C)
-        subtitle = Text(
-            "monolithic finite-element solver, 5 fields, 1 nonlinear system",
-            font_size=22, color=GRAY_B,
-        ).next_to(headline, DOWN, buff=0.5)
+    def _fem_mesh_graphic(self, rows=5, cols=6, cell=0.42):
+        # A plain triangulated-mesh illustration -- grid lines plus one
+        # diagonal per cell -- drawn with manim primitives to match this
+        # deck's other schematics (chapter_1's HARV sketch), not an
+        # external plot image.
+        lines = VGroup()
+        for i in range(rows + 1):
+            lines.add(Line(RIGHT * 0 + UP * i * cell, RIGHT * cols * cell + UP * i * cell, stroke_width=1.5, color=GRAY_B))
+        for j in range(cols + 1):
+            lines.add(Line(RIGHT * j * cell + UP * 0, RIGHT * j * cell + UP * rows * cell, stroke_width=1.5, color=GRAY_B))
+        for i in range(rows):
+            for j in range(cols):
+                lines.add(Line(
+                    RIGHT * j * cell + UP * i * cell, RIGHT * (j + 1) * cell + UP * (i + 1) * cell,
+                    stroke_width=1, color=GRAY_D,
+                ))
+        return lines
 
-        self.play(FadeIn(title))
-        self.play(FadeIn(headline))
-        self.play(FadeIn(subtitle))
+    def chapter_4_implementation(self):
+        title = Text("Monolithic finite-element solver", font_size=34, weight=BOLD).to_edge(UP, buff=0.6)
+        headline = Text("Julia · Gridap.jl", font_size=30, color=BLUE_C).to_edge(LEFT, buff=1.0).shift(UP * 1.6)
+
+        mesh = self._fem_mesh_graphic().next_to(headline, DOWN, buff=0.6, aligned_edge=LEFT)
+
+        fields = self._legend(
+            r"$\mathbf{u}$ -- fluid velocity \quad $p$ -- pressure \quad $\Phi$ -- particle volume fraction \quad $C$ -- nutrient concentration",
+            r"$\Gamma$ -- shear rate, solved as its own lifted field only to keep $\nabla\Gamma$ smooth in the migration flux -- not a genuine sixth physical unknown",
+        ).next_to(headline, RIGHT, buff=1.0, aligned_edge=UP)
+
+        self.play(FadeIn(title), FadeIn(headline))
+        self.play(Create(mesh))
+        self.play(FadeIn(fields))
         self.next_slide(
             notes="""
             Rewritten from scratch as a monolithic finite-element solver: all
-            five fields, one coupled nonlinear system, solved together each
-            timestep with Newton's method (BackTracking line search for
-            stability) -- not a segregated/split scheme where you solve for
-            flow, then transport, then update, and hope it's consistent.
-            Monolithic is more expensive per step but avoids splitting error
-            entirely.
+            five fields (u, p, Φ, C, Γ) in one coupled nonlinear system,
+            solved together each timestep with Newton's method
+            (BackTracking line search for stability) -- not a
+            segregated/split scheme where you solve for flow, then
+            transport, then update, and hope it's consistent. Monolithic is
+            more expensive per step but avoids splitting error entirely.
+
+            Gamma is worth a sentence of its own: it's not a sixth physical
+            unknown, it's the shear rate lifted into its own FE field purely
+            so its gradient (needed in the migration flux) can be computed
+            from a smooth projection instead of differentiating the
+            non-smooth sqrt() of a quadratic form directly, which is
+            singular at zero shear. A numerical trick, not new physics.
 
             Time discretization: BDF1 (backward Euler) for the first step,
             BDF2 for every step after, for better-than-first-order accuracy
@@ -1156,28 +1187,10 @@ class Presentation(Slide):
             particular 5-field coupled system is expensive to compile -- so we
             hand-derived the Jacobian analytically instead. That's a
             compile-time/engineering story, not a physics one; happy to go
-            into it in discussion if anyone's curious, but the important claim
-            for this room is the next slide: however we got the Jacobian, we
-            checked it.
-            """
-        )
-        self.play(FadeOut(title), FadeOut(headline), FadeOut(subtitle))
+            into it in discussion if anyone's curious.
 
-    # ------------------------------------------------------------------
-    def chapter_5_verification(self):
-        title = Text("Verification", font_size=40, weight=BOLD).to_edge(UP, buff=0.6)
-        number = Text("< 1e-8", font_size=56, font="monospace", color=GREEN_C)
-        caption = Text(
-            "relative error, analytic vs. automatic-differentiation Jacobian",
-            font_size=20, color=GRAY_B,
-        ).next_to(number, DOWN, buff=0.5)
-
-        self.play(FadeIn(title))
-        self.play(FadeIn(number))
-        self.play(FadeIn(caption))
-        self.next_slide(
-            notes="""
-            Two independent checks, both load-bearing:
+            Two independent checks back this solver, both load-bearing, worth
+            saying out loud even without a dedicated slide for them:
 
             1. The hand-derived analytic Jacobian is checked against Gridap's
                own automatic differentiation of the same residual -- to a
@@ -1205,7 +1218,7 @@ class Presentation(Slide):
             against a ground truth with a known, exact answer.
             """
         )
-        self.play(FadeOut(title), FadeOut(number), FadeOut(caption))
+        self.play(FadeOut(title), FadeOut(headline), FadeOut(mesh), FadeOut(fields))
 
     # ------------------------------------------------------------------
     def chapter_6_results(self):
@@ -1264,6 +1277,110 @@ class Presentation(Slide):
             have someone ask.
             """,
         )
+
+    # ------------------------------------------------------------------
+    def chapter_6a_paper_results(self):
+        title = Text("What the paper itself found", font_size=36, weight=BOLD).to_edge(UP, buff=0.6)
+        points = BulletedList(
+            "Cells settle into concentric rings, densest at mid-radius",
+            "Nutrient stays fairly uniform, with a mild outer-to-inner decrease",
+            "Checked against two independent experiments (Pollack et al.; Altamirano et al.)",
+            font_size=26,
+        )
+
+        self.play(FadeIn(title))
+        self.play(LaggedStart(*[FadeIn(p) for p in points], lag_ratio=0.4))
+        self.next_slide(
+            notes="""
+            This is the paper's own §3, in its own words -- separate from
+            anything we built or verified ourselves.
+
+            Validation against Pollack et al.'s experiments: they match the
+            HARV geometry and rotation speed (10 rpm) to that prior
+            experimental study, then check whether the model reproduces the
+            observed swirling/sedimentation pattern -- not a quantitative
+            fit, a qualitative shape check. Denser-than-medium cells migrate
+            toward the outer wall; lighter-than-medium cells (this paper's
+            own "floating cells" case, with cells started at the top of the
+            vessel) migrate inward and mix first at the outer radius before
+            slowly filling toward the center -- both match Pollack et al.'s
+            reported behavior. That "floating cells" case is exactly the
+            adversarial initial condition used in this talk's own results
+            video a moment ago -- the paper picked the same stress test we
+            did.
+
+            §3.2: at higher, growing cell density (their CHO-culture runs,
+            not the constant-population Pollack comparison), cells settle
+            into concentric rings with density peaking at mid-radius. They
+            note this differs in detail from Pollack et al.'s own 24-hour
+            distribution experiment (which showed aggregation right at the
+            center) and offer two candidate explanations: cell size (drag
+            effects are stronger on smaller cells) and a smaller
+            fluid/cell density mismatch weakening buoyancy's role -- offered
+            as plausible, not confirmed.
+
+            §3.3: nutrient (glucose) concentration is fairly uniform overall,
+            but decreases mildly from the outer radius toward the inner
+            radius, most noticeably right where cell density peaks --
+            consistent with local consumption tracking local cell density.
+
+            §3.4: comparing simulated vs. Altamirano et al.'s experimental
+            CHO growth data, doubling time and overall growth trend line up
+            well, including the rotating bioreactor outperforming a batch
+            reactor -- attributed to sustaining higher local cell density.
+            One discrepancy, carried to the next slide: real cultures kept
+            growing 20-30 hours after nutrient was fully consumed; the
+            simulation does not capture that.
+            """
+        )
+        self.play(FadeOut(title), FadeOut(points))
+
+    # ------------------------------------------------------------------
+    def chapter_6b_paper_discussion(self):
+        title = Text("What the paper concludes", font_size=36, weight=BOLD).to_edge(UP, buff=0.6)
+        points = BulletedList(
+            "Growth-kinetics gap: simulated cells die off after nutrient depletion, real cultures kept growing 20-30h longer",
+            "Framed as a design-exploration tool, not a finished predictive model",
+            "Their own words: several parameters are assumption-based -- further studies are needed",
+            font_size=24,
+        )
+
+        self.play(FadeIn(title))
+        self.play(LaggedStart(*[FadeIn(p) for p in points], lag_ratio=0.4))
+        self.next_slide(
+            notes="""
+            The paper is upfront about where its own model falls short --
+            worth holding up next to our own judgment-calls disclosure a few
+            slides back, since this is the paper doing the same thing for
+            itself.
+
+            The growth-kinetics gap (§3.4): Altamirano et al.'s real CHO
+            cultures kept growing for 20-30 hours after nutrient was fully
+            consumed; this model's cells die off/degenerate immediately once
+            nutrient runs out. The paper's own explanation is a lack of
+            precise experimental data for HARV specifically to calibrate
+            against -- not a claim that the mechanism is fully understood and
+            just mis-tuned. This is exactly the sort of gap a design-tool
+            framing can tolerate but a predictive-fit claim couldn't.
+
+            Conclusion (§4), the paper's own framing of what it built: a tool
+            to explore bioreactor design choices -- rotation speed, scaffold
+            density, geometry, cell type -- by letting you vary parameters
+            and see the qualitative consequence, rather than a validated
+            quantitative predictor you'd trust for a specific culture without
+            further calibration. They state plainly that several parameters
+            were fixed by assumption because the necessary data didn't exist
+            at the time, and that "further studies are needed" to pin those
+            down -- their words, not a caveat we're adding on their behalf.
+
+            Point for discussion: this is a second, independent instance of
+            the same theme as our own judgment-calls slide -- an honest model
+            author disclosing where the model doesn't yet have solid ground
+            to stand on, rather than presenting it as finished. Worth naming
+            explicitly for the room.
+            """
+        )
+        self.play(FadeOut(title), FadeOut(points))
 
     # ------------------------------------------------------------------
     def chapter_7_takeaways(self):
