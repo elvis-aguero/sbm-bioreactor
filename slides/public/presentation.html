@@ -148,7 +148,7 @@ little longer: it reappears again shortly in Eq. 7's
 restated form below.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/9f4392075f5db69659cceb35d6fac1d9f29197c0dc2d1b28ac36c1c74e5b4593.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/dfccf84a20f73b3fb42ea324ac4a9cfee2f69239568b6c556b3c01097c0612c7.mp4">
 <aside class="notes" data-markdown="">
 Naming (rho_s-rho_f)/(rho_s*rho_f) as kappa here, right when
 it first appears in a form worth naming. Kappa has units of
@@ -161,33 +161,40 @@ scripts/verify_paper_equations.py -- not just carried over
 from the paper's own Eq. 8 on trust.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/43f2c25381f5d7e2a026d0e256e7a821f6ddba32dbaa9dd9fe7b61fa481f7c90.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/01f0693d304be0b947a772133802d9e426e93e086bc7e7e02b3355bfeb170fdd.mp4">
 <aside class="notes" data-markdown="">
-Step 1 of 2, pure algebra: distributing the divergence over
-the sum splits the u_s-substituted transport equation into a
-div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip) piece -- same
-"+" sign as the now-corrected Eq. 6, nothing renamed yet.
+Pure algebra, not the product rule (that's a later, separate
+step): distributing the divergence over the sum -- div(A+B) =
+div(A) + div(B) -- splits the u_s-substituted transport
+equation into a div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip)
+piece, both still added on the left, "=0" on the right
+untouched. Nothing renamed yet, nothing moved yet -- that's
+the next two steps, kept separate on purpose.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/16cdbdd499c34980bad732f4e0ecf71b15637c9715582d2336e42cdad8f9a3fb.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/c4621e96f0ca2b7e92d7ac8dbe042869040f8daf66c69466087321ae2334dfcd.mp4">
 <aside class="notes" data-markdown="">
-Step 2 of 2 restates this in the flux form used by Rao et al.
--- with Eq. 6's sign now corrected, this is a genuine,
-verified term-by-term derivation, not a citation-based
-reinterpretation: div(u*Phi) stays on the left, and the
-second piece (exactly J_s/rho_s by the definition named
-earlier) moves to the right-hand side, picking up the minus
-sign that crossing the equals sign always does. Independently
-re-derived and checked in
-scripts/verify_paper_equations.py -- this reproduces the
-paper's own Eq. 7 exactly.
+Renaming div(Phi*(1-c_s)*u_slip) to div(J_s)/rho_s^o, using
+the definition still visible below -- a rename, nothing more:
+still added, still on the left, "=0" still on the right,
+untouched.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/bc815b54da376e91356ae74436d0223acf39b9bf0a62de6a4a1708a4af6f4fb6.mp4">
+<aside class="notes" data-markdown="">
+The renamed term crosses the equals sign, picking up the
+minus sign that always comes with crossing -- landing on
+Eq. 7 exactly: div(u*Phi) stays on the left, div(J_s)/rho_s^o
+on the right with a minus. Independently re-derived and
+checked in scripts/verify_paper_equations.py -- this
+reproduces the paper's own Eq. 7 exactly.
 
 J_s's definition has now been visible through every one of
-its appearances in this run (Eq. 8, kappa, and here) and can
-finally leave.
+its appearances in this run (Eq. 8, kappa, and here, right up
+through the rename that used it) and can finally leave.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/31e35745ec340064e9d950a4c02bfc3dc0c8d55ccefceaf86fcc00293e3437c4.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/0b52d1a9670ae36b65621a065421939aa1485be9a4b02d356cd3e4a8f022efc8.mp4">
 <aside class="notes" data-markdown="">
 Product rule: div(u*Phi) = u.grad(Phi) + Phi*div(u) -- the
 first piece replaces div(u*Phi) in place, the second is a
@@ -195,7 +202,7 @@ genuinely new term. Eq. 8 stays on screen below: it's exactly
 what substitutes into that new term next.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/99513e43d7138a8094a57f288ca414f22138f1ff8e2f0a3ab4996bc3ccdbdee3.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/c0837eac8ac48d2be2f9d9ea17488feff46ba521db85b2406b8c0fad76483055.mp4">
 <aside class="notes" data-markdown="">
 div(u) = kappa*div(J_s), by Eq. 8, named a few steps ago --
 substituted here using that already-established name, so this
@@ -203,48 +210,70 @@ step is a single rename, not a rename-and-define at once.
 Eq. 8 has now done its job and leaves the screen.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/87154aaa1741f6ad07a7b147c2772f8d98c876109fa042d2e024ac218e21172b.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/7ab06973466c6872e8b0539dfd0d3b19496a09cd94ed5d0613d95ef4e3e62b55.mp4">
 <aside class="notes" data-markdown="">
-Real algebra, not a skipped step: moving Phi*kappa*div(J_s) to
-the right and combining it with -div(J_s)/rho_s over a common
-denominator collapses exactly to -[rho/(rho_s*rho_f)]*div(J_s)
--- machine-verified in scripts/verify_paper_equations.py. This
-IS the correct master Phi-transport equation, re-derived from
+Step 1 of 4: Phi*kappa*div(J_s) crosses the equals sign, sign
+flipping to a minus, same as any term moving sides -- landing
+next to the -div(J_s)/rho_s^o already there. Nothing combined
+yet, that's the next step.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/7d0243a68cc0a58a382daae319ef80fedb9c030582133a81962ffb8f8fd368e8.mp4">
+<aside class="notes" data-markdown="">
+Step 2 of 4: expanding kappa back into (rho_s^o-rho_f^o)/
+(rho_s^o*rho_f^o), the name given a few chapters back -- a
+substitution, not a new definition. Still its own separate
+term, not yet combined with -div(J_s)/rho_s^o.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/7ef2f61da10bc8fe446355fe0bcecb4d41562620a16070ce6949cf96100fbc01.mp4">
+<aside class="notes" data-markdown="">
+Step 3 of 4: -1/rho_s^o and -Phi*(rho_s^o-rho_f^o)/
+(rho_s^o*rho_f^o) share a common denominator, rho_s^o*rho_f^o
+-- -1/rho_s^o is -rho_f^o/(rho_s^o*rho_f^o) over that same
+denominator. Adding the two numerators gives
+-[rho_f^o + Phi*(rho_s^o-rho_f^o)] over rho_s^o*rho_f^o,
+div(J_s) factored out. Real fraction arithmetic, shown on
+screen, not skipped.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/8e17c91645b256fe05bafef1408c668da9a0ab4db7108b0898768104d818c536.mp4">
+<aside class="notes" data-markdown="">
+Step 4 of 4: rho_f^o + Phi*(rho_s^o-rho_f^o) expands to
+rho_f^o - Phi*rho_f^o + Phi*rho_s^o, exactly (1-Phi)*rho_f^o +
+Phi*rho_s^o -- Eq. 2's own rho, not a new quantity.
+Recognizing that lands on the correct master Phi-transport
+equation: -[rho/(rho_s^o*rho_f^o)]*div(J_s), re-derived from
 Eq. 5 with nothing borrowed from the paper's own Eq. 10.
-</aside>
-</section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/5671661d58be425b9ff8391fad2a464074ce2098c663dfbf8b9cb7baebd20256.mp4">
-<aside class="notes" data-markdown="">
-Shown in red because this is a paper-side error we caught, not
-a judgment call on our part: the paper's own Eq. 10 writes its
-right-hand side two different ways and asserts they're equal
-(kappa*div(J_s) and rho/(rho_s*rho_f)*div(J_s)). Plugging in
-their own Table 1 densities (rho_s=1000, rho_f=1050 kg/m^3),
-kappa is about -4.76e-5 and rho/(rho_s*rho_f) is about
-+9.7e-4 to +1.0e-3 depending on Phi -- roughly 20x apart, not
-equal, confirmed symbolically and numerically in
+Every one of these four steps is machine-verified in
 scripts/verify_paper_equations.py.
-
-Separately, Eq. 21 (which the paper's own text says is just
-Eq. 10 with the flux closure substituted in) prints yet a
-THIRD version of this same coefficient, (rho_f-rho_s)/
-(rho_s*rho_f) -- the negative of Eq. 10's own kappa, with no
-algebraic step that would flip that sign. Also verified in
-the same script.
-
-Our own re-derived equation just above matches the paper's
-second form in magnitude but not sign, and doesn't match
-their first form (kappa) at all -- kappa isn't even
-Phi-dependent, so it can't be the right coefficient for an
-equation whose correct coefficient (rho) genuinely varies
-with Phi.
-
-This is exactly what "the paper as a starting point, not
-ground truth" means in practice: re-derive it, don't just
-transcribe it.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/76b01fd6940e45208daa7493579f63ac1ba0440707cfd976c6574900f892d900.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/07f81864ffb82eac716521a6f688f88c0259556e77cff29b03e7dc93be5c18a3.mp4">
+<aside class="notes" data-markdown="">
+The paper's own Eq. 10 uses kappa here instead of rho/
+(rho_s^o*rho_f^o) -- shown in red as the actual conflicting
+term, not narrated as a sentence on screen.
+
+Worth saying out loud: their own Eq. 10 states BOTH forms
+(kappa*div(J_s) and rho/(rho_s^o*rho_f^o)*div(J_s)) and
+claims they're equal. They aren't, in general -- confirmed
+symbolically and numerically about 20x apart at their own
+Table 1 densities, in scripts/verify_paper_equations.py.
+Separately, Eq. 21 (claimed to be Eq. 10 with the flux
+closure substituted in) prints yet a third, sign-flipped
+version of this same coefficient, with no algebraic step
+that should flip a sign. Our own re-derived coefficient here
+matches the paper's rho/(rho_s^o*rho_f^o) form in magnitude
+but not sign, and doesn't match kappa at all -- kappa isn't
+even Phi-dependent, so it can't be right for a coefficient
+that genuinely varies with Phi through rho.
+
+This is what "the paper as a starting point, not ground
+truth" means in practice: re-derive it, don't transcribe it.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/bf7468c1f87be3ec6d28b5a27d9efcb2e65b8e65c035a4a87ed90e5bdaf94095.mp4">
 <aside class="notes" data-markdown="">
 These are independent modeling closures, not a chain where each
 line is derived from the last -- accumulated on screen together
@@ -269,7 +298,7 @@ viscosity-gradient flux -- both in this paper's own reference
 list.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/d9680b2c8e3023fceecd285a16c9126dd7a8d25272429248f39831dbe1d4f851.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/82d8be2cded1a73f01170338cf8823b91160ebdf1dac72526cc352a0e3da9464.mp4">
 <aside class="notes" data-markdown="">
 Eq. 14 is Eqs. 12-13's bracketed terms (renamed D_Phi, D_mu, and
 divided through by rho_s) with one new physical effect added --
@@ -278,18 +307,19 @@ plus in the paper, checked directly against the PDF page
 image) -- that isn't in Eq. 11's decomposition at all. This is
 the hindered-settling closure the rest of the derivation uses.
 
-The red note is a genuine, self-contained inconsistency in the
-paper's own printed equations, not an interpretation on our
-part: Eq. 12 says J_sc scales as Phi^2; the term Eq. 14 claims
-is that same J_sc (its own text says Eq. 14 comes from
-"combining equations 11-13") scales as Phi^1 instead. Separately,
-Eq. 14's viscosity-gradient term carries an extra gammadot
-factor that Eq. 13's own J_smu simply doesn't have. Both
-confirmed by directly comparing the printed powers/factors --
-see scripts/verify_paper_equations.py, Block 2.
+The two red terms are a genuine, self-contained inconsistency
+in the paper's own printed equations, not an interpretation on
+our part: Eq. 12 says J_sc scales as Phi^2; the Phi shown in
+red here (the term Eq. 14 claims is that same J_sc -- its own
+text says Eq. 14 comes from "combining equations 11-13") is
+only Phi^1. Separately, the gammadot shown in red is an extra
+factor on the viscosity-gradient term that Eq. 13's own J_smu
+simply doesn't have. Both confirmed by directly comparing the
+printed powers/factors -- see
+scripts/verify_paper_equations.py, Block 2.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/322a32cce34b1827d70f60bbd06f69d9fc0d9c9a1271e3b3d28e9c29ff610899.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/65bc2299e19db3ad608c206f4d37a4dcd213855cdf931125c2efb9b725adcc21.mp4">
 <aside class="notes" data-markdown="">
 The empirical prefactors (Eq. 15-16), the Stokes settling
 velocity (Eq. 17, from balancing drag against buoyancy for a
@@ -300,7 +330,7 @@ on, accumulated together and kept alongside it rather than each
 replacing the last.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/d9a9d1896b772f075e59175355a64616543d3d8fad903246a15e521bcc93c3d4.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/f6219e2970b0da932f8e67141bfe6607eb44cf45804d2d942e0ef8b1d54c2fed.mp4">
 <aside class="notes" data-markdown="">
 The shear-rate tensor (Eq. 19) contracted with itself and
 square-rooted gives its scalar magnitude -- the general
@@ -315,7 +345,7 @@ responds to how fast the fluid is shearing, not to velocity
 itself.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/d7b2bbff2a326bc841adbfb4e175d17b177fa692dd1393d7f1a7ed1e5488ef88.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/0077bb87fb3e86371e4072eb349027ad1b4ebb458f618da7767b8add11451ff6.mp4">
 <aside class="notes" data-markdown="">
 The two pieces going into this assembly: our own verified
 Phi-transport equation from the previous chapter (with
@@ -325,7 +355,7 @@ div(J_s) is about to absorb). Eq. 14 stays on screen through
 the substitution just below -- it isn't exercised yet.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/aefdffdfbff62d77cb50ff968500ffdce0626b40f7402ca4d4ef2bf7e71d4a0f.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/071fd9e159f0086d945f9e0bee7d57641aa964f8766da998cc3d17c7d237d7a0.mp4">
 <aside class="notes" data-markdown="">
 J_s (divided by rho_s in Eq. 14) becomes rho_s times that same
 bracket once multiplied back through. Eq. 14 has now been
@@ -335,7 +365,7 @@ the denominator -- that cancellation is the next, separate
 step, not bundled in here.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/97989ee72c65fd8a75986ad78ae6bb5b8d5737440773c5efaa90154e8d9c9886.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1f0611ffdffbc18eec35d88e3e873740cf4350c2911e13058d531cd1327596a0.mp4">
 <aside class="notes" data-markdown="">
 rho_s^o cancels cleanly, top and bottom -- leaving
 -rho/rho_f^o as the whole coefficient. This is the payoff of
@@ -347,7 +377,7 @@ AND, per the previous chapter's finding, carries a sign error
 relative to its own Eq. 10.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/7503e3a765967ad0c47ba227a93c4b7b641a4d925a0eb5e00bea99c91b724a19.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/740c42deba030f72276b9ee558c84c269b684283682014562d1cf39ca12746ee.mp4">
 <aside class="notes" data-markdown="">
 Stokes velocity (Eq. 17) and the hindered-settling function
 (Eq. 18), recalled here from the flux-closure chapter,
@@ -361,7 +391,7 @@ that determines where the cells go, and now it's visible how
 it got built, correctly.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/90bce247322889df0df925c4281b3e04e21ad050dbe7c0564b5413de7151a4b8.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/3e8f72c3cbee28933db2f271785f7e6a25ed00a3a3301223ee676fa8041f4f81.mp4">
 <aside class="notes" data-markdown="">
 Flagged in red because this is another paper-side error we
 caught, continuing directly from the previous chapter's
@@ -380,9 +410,9 @@ it was obtained -- not a print-time inconsistency to explain
 away.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/28768bba4f45d4e5f5d4b255652253cd1a91913e32fc8d61649051855644c743.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/0e73eda30fc01e8f1a233a8208eedf3b9ba338bb0f4f40b1aee7c83af0c7fb03.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/cb08df69af356e583ee1f7c316d1a424e57c223618321403498425c9a0f3a4f8.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/9596f5750303ce077880157bff9953078cc56bcd97001dd9978f04516c77742e.mp4">
 <aside class="notes" data-markdown="">
 Two boundary conditions close the momentum equation at the
 vessel wall: wall shear stress (a linear drag law toward the
@@ -390,7 +420,7 @@ wall's own velocity) and the rotational wall velocity itself,
 solid-body rotation at angular speed omega.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/caff1544737d466a9d8cfa554fed9c2b9e6e7f0cd44f2c711d8005188e75ad38.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/30b97152167df5d25fe63cef5caf72f49c43c2e2aa53c729de5cd013d956412e.mp4">
 <aside class="notes" data-markdown="">
 Nutrient: transport and consumption, standard advection-
 diffusion with a sink term. Growth: the cell-growth kinetics
@@ -400,7 +430,7 @@ diameter and volume fraction that feeds growth back into Phi
 particle concentration the rest of the model tracks.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/62da9b67b9a47c248c4b8fddbd437043a533011364c4d655404e97c08d681688.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/b7b0e1b934c5aff44f16d6d2ad4b8cd20a8d7daefd611c167df7be0a84af3db6.mp4">
 <aside class="notes" data-markdown="">
 The complete model, all in one place: momentum, mixture
 density/viscosity, the master Phi-transport equation, the flux
@@ -474,7 +504,7 @@ useful thing to tell a room of experts than a claim of perfect
 fidelity.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/ea67e05f117a19737050b1eb243c88e84258d90c7b5c7fc9e0ff81935aaaf150.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1ee2970557b6210622a9bff18a60c03c8d9b488c90b3029caa20244df303eb2c.mp4">
 <aside class="notes" data-markdown="">
 Rewritten from scratch as a monolithic finite-element solver: all
 five fields (u, p, Φ, C, Γ) in one coupled nonlinear system,
@@ -583,9 +613,9 @@ distinction matters to this audience and I'd rather say it than
 have someone ask.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/9ca37f4d919fba4081f1cbfd2085586e027943a8f3d81554b62fa177965d6704.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/63aa2dd67a9fcc44814f88c75e91fa65842ce61d35d4f2fd5808f77a2f99d26b.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/be1cdffa1c2c405a9c3f8475383d9e1e8ac64e57bcbc00e8adef54818e449132.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/3f58ca32a71500f109001a92b45e1cad208bcd103382bb2d2e608fce22f7c6b3.mp4">
 <aside class="notes" data-markdown="">
 This is the paper's own §3, in its own words -- separate from
 anything we built or verified ourselves.
@@ -628,7 +658,7 @@ growing 20-30 hours after nutrient was fully consumed; the
 simulation does not capture that.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/3760ab5d382d5bfbe8460f01c0b9a22258414cdd1f837169339a802085d8931d.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/f4fa66cbff86e57765ca448a7ced48aa84669dcacf36f9a8f37ecb9cec9c1ddf.mp4">
 <aside class="notes" data-markdown="">
 The paper is upfront about where its own model falls short --
 worth holding up next to our own judgment-calls disclosure a few

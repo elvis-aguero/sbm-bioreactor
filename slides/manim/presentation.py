@@ -508,53 +508,77 @@ class Presentation(Slide):
         #     relative to it, instead of being refreshed for no reason. ---
         self.play(eq5[1].animate.set_color(ORANGE), eq5[2].animate.set_color(ORANGE), run_time=0.5)
         dist_a = MathTex(r"+ \nabla\cdot(\mathbf{u}\Phi)", font_size=32).set_color(ORANGE).next_to(eq5[0], RIGHT, buff=0.1)
-        dist_b = MathTex(
-            r"+ \nabla\cdot\left(\Phi(1-c_s)\mathbf{u}_{slip}\right) = 0", font_size=32
+        # dist_b is split into the term itself and the "=0" separately
+        # (rather than one bundled chunk) so the next two steps can
+        # animate them independently: rename the term in place first,
+        # THEN move it across the equals sign as its own, later action.
+        dist_b_term = MathTex(
+            r"+ \nabla\cdot\left(\Phi(1-c_s)\mathbf{u}_{slip}\right)", font_size=32
         ).set_color(ORANGE).next_to(dist_a, RIGHT, buff=0.1)
-        self.play(FadeOut(eq5[1]), FadeOut(eq5[2]), FadeOut(eq5[3]), Write(dist_a), Write(dist_b))
-        self._hard_settle([eq5[1], eq5[2], eq5[3]], [dist_a, dist_b])
+        dist_b_rhs = MathTex(r"= 0", font_size=32).set_color(ORANGE).next_to(dist_b_term, RIGHT, buff=0.1)
+        self.play(FadeOut(eq5[1]), FadeOut(eq5[2]), FadeOut(eq5[3]), Write(dist_a), Write(dist_b_term), Write(dist_b_rhs))
+        self._hard_settle([eq5[1], eq5[2], eq5[3]], [dist_a, dist_b_term, dist_b_rhs])
         self.next_slide(
             notes="""
-            Step 1 of 2, pure algebra: distributing the divergence over
-            the sum splits the u_s-substituted transport equation into a
-            div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip) piece -- same
-            "+" sign as the now-corrected Eq. 6, nothing renamed yet.
+            Pure algebra, not the product rule (that's a later, separate
+            step): distributing the divergence over the sum -- div(A+B) =
+            div(A) + div(B) -- splits the u_s-substituted transport
+            equation into a div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip)
+            piece, both still added on the left, "=0" on the right
+            untouched. Nothing renamed yet, nothing moved yet -- that's
+            the next two steps, kept separate on purpose.
             """
         )
 
-        # --- Step 2 of 2: restate in the flux form used by Rao et al.
-        #     (Eq. 7). The second piece is exactly J_s/rho_s by the same
-        #     definition, moved to the right-hand side with a sign flip
-        #     (it's isolated by itself now, so it crosses the equals
-        #     sign) -- and, now that Eq. 6's own sign is corrected, this
-        #     really is a clean, term-by-term derivation, not a
-        #     citation-based reformulation papering over an inconsistency
-        #     the way it had to be described before that fix. Verified
-        #     independently in scripts/verify_paper_equations.py (Block 1,
-        #     equation B): re-deriving Eq. 5 through this exact route
-        #     with J_s := rho_s^o*Phi*(1-c_s)*u_slip reproduces the
-        #     paper's own Eq. 7 exactly. ---
-        piece1 = MathTex(r"+ \nabla\cdot(\mathbf{u}\Phi)", font_size=32).next_to(eq5[0], RIGHT, buff=0.1)
+        # --- Rename the second piece to J_s/rho_s^o, IN PLACE (still
+        #     added, on the left, "=0" still on the right) -- the
+        #     definition (js_def) is still fully visible while this
+        #     rename happens, so the connection is never asserted off
+        #     screen. Moving it across the equals sign is the NEXT,
+        #     separate beat -- not bundled with the rename. ---
+        self.play(
+            dist_a.animate.set_color(WHITE), dist_b_term.animate.set_color(ORANGE),
+            js_def.animate.set_color(ORANGE), run_time=0.5,
+        )
+        renamed_term = MathTex(r"+ \frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=32).set_color(ORANGE).move_to(dist_b_term, aligned_edge=LEFT)
+        shift_rename = renamed_term.width - dist_b_term.width
+        if shift_rename > 1e-3:
+            self.play(dist_b_rhs.animate.shift(RIGHT * shift_rename))
+        self.play(FadeOut(dist_b_term), Write(renamed_term))
+        self._hard_settle([dist_b_term], [renamed_term])
+        self.next_slide(
+            notes="""
+            Renaming div(Phi*(1-c_s)*u_slip) to div(J_s)/rho_s^o, using
+            the definition still visible below -- a rename, nothing more:
+            still added, still on the left, "=0" still on the right,
+            untouched.
+            """
+        )
+
+        # --- NOW move it across the equals sign -- a real "term crosses,
+        #     sign flips" action, its own beat. Eq. 6's sign is correct
+        #     (fixed earlier this pass), so this is a genuine, verified
+        #     term-by-term derivation, not a citation-based reformulation
+        #     papering over a discrepancy. Verified independently in
+        #     scripts/verify_paper_equations.py (Block 1, equation B). ---
+        self.play(renamed_term.animate.set_color(ORANGE), dist_b_rhs.animate.set_color(ORANGE), run_time=0.5)
+        piece1 = dist_a
         piece2 = MathTex(r"= -\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=32).next_to(piece1, RIGHT, buff=0.1)
-        self.play(FadeOut(dist_a), FadeOut(dist_b), Write(piece1), Write(piece2), FadeOut(js_def))
-        self._hard_settle([dist_a, dist_b, js_def], [piece1, piece2])
+        self.play(FadeOut(renamed_term), FadeOut(dist_b_rhs), Write(piece2), FadeOut(js_def))
+        self._hard_settle([renamed_term, dist_b_rhs, js_def], [piece2])
         eq7 = VGroup(eq5[0], piece1, piece2)
         self.next_slide(
             notes="""
-            Step 2 of 2 restates this in the flux form used by Rao et al.
-            -- with Eq. 6's sign now corrected, this is a genuine,
-            verified term-by-term derivation, not a citation-based
-            reinterpretation: div(u*Phi) stays on the left, and the
-            second piece (exactly J_s/rho_s by the definition named
-            earlier) moves to the right-hand side, picking up the minus
-            sign that crossing the equals sign always does. Independently
-            re-derived and checked in
-            scripts/verify_paper_equations.py -- this reproduces the
-            paper's own Eq. 7 exactly.
+            The renamed term crosses the equals sign, picking up the
+            minus sign that always comes with crossing -- landing on
+            Eq. 7 exactly: div(u*Phi) stays on the left, div(J_s)/rho_s^o
+            on the right with a minus. Independently re-derived and
+            checked in scripts/verify_paper_equations.py -- this
+            reproduces the paper's own Eq. 7 exactly.
 
             J_s's definition has now been visible through every one of
-            its appearances in this run (Eq. 8, kappa, and here) and can
-            finally leave.
+            its appearances in this run (Eq. 8, kappa, and here, right up
+            through the rename that used it) and can finally leave.
             """
         )
 
@@ -606,87 +630,122 @@ class Presentation(Slide):
             """
         )
 
-        # --- Real simplification, not a skip: Phi*kappa*div(J_s) moves to
-        #     the right-hand side and combines with the existing
-        #     -div(J_s)/rho_s term. Expanding kappa and collecting terms
-        #     over a common denominator, this collapses EXACTLY to
-        #     -rho/(rho_s*rho_f)*div(J_s) -- verified symbolically in
-        #     scripts/verify_paper_equations.py (Block 1). This is the
-        #     genuinely correct master equation: the coefficient is
-        #     rho-dependent (varies with Phi through rho=rho(Phi)), not
-        #     the Phi-independent kappa the paper's own Eq. 10 uses. ---
-        self.play(kappa_term.animate.set_color(ORANGE), piece2.animate.set_color(ORANGE), run_time=0.5)
-        combined_rhs = MathTex(
-            r"= -\frac{\rho}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s", font_size=30
-        ).set_color(ORANGE).next_to(u_dot_grad, RIGHT, buff=0.1)
-        self.play(FadeOut(kappa_term), FadeOut(piece2), Write(combined_rhs))
-        self._hard_settle([kappa_term, piece2], [combined_rhs])
-        master = VGroup(eq5[0], u_dot_grad, combined_rhs)
+        # --- Real simplification, shown in four separate, genuine algebra
+        #     steps -- nothing skipped, nothing asserted without the work
+        #     shown. Verified end to end in
+        #     scripts/verify_paper_equations.py (Block 1). ---
+
+        # Step 1: cross the equals sign (sign flip), same pattern as the
+        #     rename-then-move used a few beats ago for J_s itself.
+        self.play(kappa_term.animate.set_color(ORANGE), run_time=0.5)
+        rhs_term2 = MathTex(r"- \Phi\,\kappa\,\nabla\cdot\mathbf{J}_s", font_size=28).set_color(ORANGE).next_to(piece2, RIGHT, buff=0.1)
+        self.play(FadeOut(kappa_term), Write(rhs_term2))
+        self._hard_settle([kappa_term], [rhs_term2])
         self.next_slide(
             notes="""
-            Real algebra, not a skipped step: moving Phi*kappa*div(J_s) to
-            the right and combining it with -div(J_s)/rho_s over a common
-            denominator collapses exactly to -[rho/(rho_s*rho_f)]*div(J_s)
-            -- machine-verified in scripts/verify_paper_equations.py. This
-            IS the correct master Phi-transport equation, re-derived from
-            Eq. 5 with nothing borrowed from the paper's own Eq. 10.
+            Step 1 of 4: Phi*kappa*div(J_s) crosses the equals sign, sign
+            flipping to a minus, same as any term moving sides -- landing
+            next to the -div(J_s)/rho_s^o already there. Nothing combined
+            yet, that's the next step.
             """
         )
 
-        # --- Honest, explicit comparison against the paper's own printed
-        #     Eq. 10 -- shown on screen in red, per an explicit request to
-        #     flag terms/coefficients the paper appears to get wrong
-        #     rather than only mention it in notes. Eq. 10 states its RHS
-        #     TWO ways and claims they're equal (kappa*div(J_s) =
-        #     rho/(rho_s*rho_f)*div(J_s)); they aren't, in general -- at
-        #     the paper's own Table 1 densities they differ by about 20x,
-        #     verified numerically in the same script. Neither of the
-        #     paper's two forms matches what we just derived: the first
-        #     (kappa) has the wrong Phi-dependence entirely, and the
-        #     second has the right magnitude but the wrong sign. ---
-        paper_eq10 = MathTex(
-            r"\text{Paper's Eq.\,10: }\;\kappa\,\nabla\cdot\mathbf{J}_s \;=\; +\frac{\rho}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s",
-            font_size=24,
-        ).set_color(RED).next_to(master, DOWN, buff=0.5, aligned_edge=LEFT)
-        paper_eq10_note = Text(
-            "Their own two RHS forms aren't equal -- ~20x apart at their own Table 1 densities.",
-            font_size=18, color=RED,
-        ).next_to(paper_eq10, DOWN, buff=0.15, aligned_edge=LEFT)
-        self.play(FadeIn(paper_eq10), FadeIn(paper_eq10_note))
+        # Step 2: expand kappa's own definition inline, in place, within
+        #     this newly-moved term only.
+        self.play(rhs_term2.animate.set_color(ORANGE), run_time=0.5)
+        kappa_expanded_term = MathTex(
+            r"- \Phi\,\frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s", font_size=24
+        ).set_color(ORANGE).move_to(rhs_term2, aligned_edge=LEFT)
+        self.play(FadeOut(rhs_term2), Write(kappa_expanded_term))
+        self._hard_settle([rhs_term2], [kappa_expanded_term])
         self.next_slide(
             notes="""
-            Shown in red because this is a paper-side error we caught, not
-            a judgment call on our part: the paper's own Eq. 10 writes its
-            right-hand side two different ways and asserts they're equal
-            (kappa*div(J_s) and rho/(rho_s*rho_f)*div(J_s)). Plugging in
-            their own Table 1 densities (rho_s=1000, rho_f=1050 kg/m^3),
-            kappa is about -4.76e-5 and rho/(rho_s*rho_f) is about
-            +9.7e-4 to +1.0e-3 depending on Phi -- roughly 20x apart, not
-            equal, confirmed symbolically and numerically in
+            Step 2 of 4: expanding kappa back into (rho_s^o-rho_f^o)/
+            (rho_s^o*rho_f^o), the name given a few chapters back -- a
+            substitution, not a new definition. Still its own separate
+            term, not yet combined with -div(J_s)/rho_s^o.
+            """
+        )
+
+        # Step 3: combine the two RHS terms over a common denominator
+        #     rho_s^o*rho_f^o, factoring out div(J_s) -- the actual
+        #     fraction arithmetic, shown, not skipped.
+        self.play(piece2.animate.set_color(ORANGE), kappa_expanded_term.animate.set_color(ORANGE), run_time=0.5)
+        combined_frac = MathTex(
+            r"= -\frac{\rho_f^\circ + \Phi(\rho_s^\circ-\rho_f^\circ)}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s",
+            font_size=26,
+        ).set_color(ORANGE).move_to(piece2, aligned_edge=LEFT)
+        self.play(FadeOut(piece2), FadeOut(kappa_expanded_term), Write(combined_frac))
+        self._hard_settle([piece2, kappa_expanded_term], [combined_frac])
+        self.next_slide(
+            notes="""
+            Step 3 of 4: -1/rho_s^o and -Phi*(rho_s^o-rho_f^o)/
+            (rho_s^o*rho_f^o) share a common denominator, rho_s^o*rho_f^o
+            -- -1/rho_s^o is -rho_f^o/(rho_s^o*rho_f^o) over that same
+            denominator. Adding the two numerators gives
+            -[rho_f^o + Phi*(rho_s^o-rho_f^o)] over rho_s^o*rho_f^o,
+            div(J_s) factored out. Real fraction arithmetic, shown on
+            screen, not skipped.
+            """
+        )
+
+        # Step 4: recognize the numerator as exactly Eq. 2's rho -- the
+        #     payoff step, landing on the final, correct master equation.
+        combined_rhs = MathTex(
+            r"= -\frac{\rho}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s", font_size=30
+        ).set_color(ORANGE).next_to(u_dot_grad, RIGHT, buff=0.1)
+        self.play(FadeOut(combined_frac), Write(combined_rhs))
+        self._hard_settle([combined_frac], [combined_rhs])
+        master = VGroup(eq5[0], u_dot_grad, combined_rhs)
+        self.next_slide(
+            notes="""
+            Step 4 of 4: rho_f^o + Phi*(rho_s^o-rho_f^o) expands to
+            rho_f^o - Phi*rho_f^o + Phi*rho_s^o, exactly (1-Phi)*rho_f^o +
+            Phi*rho_s^o -- Eq. 2's own rho, not a new quantity.
+            Recognizing that lands on the correct master Phi-transport
+            equation: -[rho/(rho_s^o*rho_f^o)]*div(J_s), re-derived from
+            Eq. 5 with nothing borrowed from the paper's own Eq. 10.
+            Every one of these four steps is machine-verified in
             scripts/verify_paper_equations.py.
+            """
+        )
 
-            Separately, Eq. 21 (which the paper's own text says is just
-            Eq. 10 with the flux closure substituted in) prints yet a
-            THIRD version of this same coefficient, (rho_f-rho_s)/
-            (rho_s*rho_f) -- the negative of Eq. 10's own kappa, with no
-            algebraic step that would flip that sign. Also verified in
-            the same script.
+        # --- Term-level comparison against the paper's own printed Eq.
+        #     10, in red -- the term itself (what the paper calls this
+        #     same coefficient), not a sentence about it. The label
+        #     naming what's being compared is plain text; only the
+        #     paper's actual term is colored. ---
+        paper_label = Text("Paper's Eq. 10 instead:", font_size=18, color=GRAY_B)
+        paper_kappa_term = MathTex(r"\kappa\,\nabla\cdot\mathbf{J}_s", font_size=24).set_color(RED)
+        paper_tag = VGroup(paper_label, paper_kappa_term).arrange(RIGHT, buff=0.15).next_to(master, DOWN, buff=0.5, aligned_edge=LEFT)
+        self.play(FadeIn(paper_tag))
+        self.next_slide(
+            notes="""
+            The paper's own Eq. 10 uses kappa here instead of rho/
+            (rho_s^o*rho_f^o) -- shown in red as the actual conflicting
+            term, not narrated as a sentence on screen.
 
-            Our own re-derived equation just above matches the paper's
-            second form in magnitude but not sign, and doesn't match
-            their first form (kappa) at all -- kappa isn't even
-            Phi-dependent, so it can't be the right coefficient for an
-            equation whose correct coefficient (rho) genuinely varies
-            with Phi.
+            Worth saying out loud: their own Eq. 10 states BOTH forms
+            (kappa*div(J_s) and rho/(rho_s^o*rho_f^o)*div(J_s)) and
+            claims they're equal. They aren't, in general -- confirmed
+            symbolically and numerically about 20x apart at their own
+            Table 1 densities, in scripts/verify_paper_equations.py.
+            Separately, Eq. 21 (claimed to be Eq. 10 with the flux
+            closure substituted in) prints yet a third, sign-flipped
+            version of this same coefficient, with no algebraic step
+            that should flip a sign. Our own re-derived coefficient here
+            matches the paper's rho/(rho_s^o*rho_f^o) form in magnitude
+            but not sign, and doesn't match kappa at all -- kappa isn't
+            even Phi-dependent, so it can't be right for a coefficient
+            that genuinely varies with Phi through rho.
 
-            This is exactly what "the paper as a starting point, not
-            ground truth" means in practice: re-derive it, don't just
-            transcribe it.
+            This is what "the paper as a starting point, not ground
+            truth" means in practice: re-derive it, don't transcribe it.
             """
         )
         self.play(
             FadeOut(header), FadeOut(name5), FadeOut(kappa_def),
-            FadeOut(master), FadeOut(paper_eq10), FadeOut(paper_eq10_note),
+            FadeOut(master), FadeOut(paper_tag),
         )
 
     def chapter_2c_flux_closure(self):
@@ -743,15 +802,19 @@ class Presentation(Slide):
         self.play(FadeOut(legend_c))
 
         # --- Real step: add sedimentation to get the hindered-settling
-        #     form. group_a and its prose fade since folded into this. ---
-        e14 = VGroup(
-            MathTex(
-                r"\frac{\mathbf{J}_s}{\rho_s} = "
-                r"-\left[\Phi D_\Phi \nabla(\dot{\gamma}\Phi) + \Phi^2 D_\mu \dot{\gamma}\nabla(\ln \mu)\right]",
-                font_size=28,
-            ),
-            MathTex(r"+ f_h \mathbf{u}_{st}\Phi", font_size=28).set_color(ORANGE),
-        ).arrange(RIGHT, buff=0.1)
+        #     form. group_a and its prose fade since folded into this.
+        #     The two terms that don't match Eq. 12/13 above are colored
+        #     red IN PLACE, within the equation itself -- not a separate
+        #     sentence -- per an explicit request for red terms, not red
+        #     prose. Verified in scripts/verify_paper_equations.py
+        #     (Block 2). ---
+        e14_a = MathTex(r"\frac{\mathbf{J}_s}{\rho_s} = -\Big[", font_size=28)
+        e14_phi1 = MathTex(r"\Phi", font_size=28).set_color(RED)
+        e14_b = MathTex(r"D_\Phi \nabla(\dot{\gamma}\Phi) + \Phi^2 D_\mu\,", font_size=28)
+        e14_gammadot = MathTex(r"\dot{\gamma}", font_size=28).set_color(RED)
+        e14_c = MathTex(r"\nabla(\ln \mu)\Big]", font_size=28)
+        e14_sediment = MathTex(r"+ f_h \mathbf{u}_{st}\Phi", font_size=28).set_color(ORANGE)
+        e14 = VGroup(e14_a, e14_phi1, e14_b, e14_gammadot, e14_c, e14_sediment).arrange(RIGHT, buff=0.05)
         e14.to_edge(LEFT, buff=1.0).shift(UP * 1.6)
         name_14 = self._name("Flux closure", e14)
         physics_14 = Text(
@@ -762,20 +825,9 @@ class Presentation(Slide):
         legend_c2 = self._legend(
             r"$D_\Phi, D_\mu$ -- empirical prefactors (below) \quad $f_h$ -- hindered-settling factor \quad $\mathbf{u}_{st}$ -- Stokes settling velocity",
         ).to_corner(DL, buff=0.4)
-        # Paper-side inconsistency, flagged in red directly against the
-        # Eq. 11-13 terms still visible one beat ago: Eq. 12's J_sc term is
-        # Phi^2, but the term Eq. 14 presents as the same J_sc is Phi^1 --
-        # and Eq. 14's viscosity-gradient term carries a gammadot factor
-        # Eq. 13's own J_smu doesn't have. Verified in
-        # scripts/verify_paper_equations.py (Block 2).
-        mismatch_note = Text(
-            "Φ-power doesn't match Eq. 12 above (Φ¹ here vs Φ² there), and this\n"
-            "μ-gradient term has a γ̇ factor Eq. 13 doesn't -- the paper's own inconsistency.",
-            font_size=16, color=RED,
-        ).next_to(physics_14, DOWN, buff=0.3, aligned_edge=LEFT)
         self.play(
             FadeOut(group_a), FadeOut(name_a), FadeOut(physics_a),
-            FadeIn(name_14), FadeIn(e14), FadeIn(physics_14), FadeIn(legend_c2), FadeIn(mismatch_note),
+            FadeIn(name_14), FadeIn(e14), FadeIn(physics_14), FadeIn(legend_c2),
         )
         self.next_slide(
             notes="""
@@ -786,15 +838,16 @@ class Presentation(Slide):
             image) -- that isn't in Eq. 11's decomposition at all. This is
             the hindered-settling closure the rest of the derivation uses.
 
-            The red note is a genuine, self-contained inconsistency in the
-            paper's own printed equations, not an interpretation on our
-            part: Eq. 12 says J_sc scales as Phi^2; the term Eq. 14 claims
-            is that same J_sc (its own text says Eq. 14 comes from
-            "combining equations 11-13") scales as Phi^1 instead. Separately,
-            Eq. 14's viscosity-gradient term carries an extra gammadot
-            factor that Eq. 13's own J_smu simply doesn't have. Both
-            confirmed by directly comparing the printed powers/factors --
-            see scripts/verify_paper_equations.py, Block 2.
+            The two red terms are a genuine, self-contained inconsistency
+            in the paper's own printed equations, not an interpretation on
+            our part: Eq. 12 says J_sc scales as Phi^2; the Phi shown in
+            red here (the term Eq. 14 claims is that same J_sc -- its own
+            text says Eq. 14 comes from "combining equations 11-13") is
+            only Phi^1. Separately, the gammadot shown in red is an extra
+            factor on the viscosity-gradient term that Eq. 13's own J_smu
+            simply doesn't have. Both confirmed by directly comparing the
+            printed powers/factors -- see
+            scripts/verify_paper_equations.py, Block 2.
             """
         )
 
@@ -809,7 +862,7 @@ class Presentation(Slide):
             r"$\Phi_{avg}$ -- domain-average particle volume fraction",
         ).to_corner(DL, buff=0.4)
 
-        self.play(FadeOut(mismatch_note), FadeIn(group_b), Transform(legend_c2, legend_c3))
+        self.play(FadeIn(group_b), Transform(legend_c2, legend_c3))
         self.next_slide(
             notes="""
             The empirical prefactors (Eq. 15-16), the Stokes settling
@@ -1008,19 +1061,13 @@ class Presentation(Slide):
             """
         )
 
-        # --- Explicit, on-screen comparison against the paper's own
-        #     printed Eq. 21 -- in red, per an explicit request to flag
-        #     what the paper appears to get wrong rather than only note it
-        #     verbally. Eq. 21's own leading coefficient, as printed, is
-        #     (rho_f-rho_s)/(rho_s*rho_f) -- the negative of Eq. 10's own
-        #     kappa, with no algebraic step in going from Eq. 10 to Eq. 21
-        #     that would flip that sign. Verified in
+        # --- Term-level comparison against the paper's own printed Eq.
+        #     21 -- the term itself (their printed leading coefficient),
+        #     in red, not a sentence about it. Verified in
         #     scripts/verify_paper_equations.py, Block 1. ---
-        paper_eq21 = Text(
-            "Paper's Eq. 21 uses (ρf-ρs)/(ρsρf) as this leading coefficient --\n"
-            "the negative of their own Eq. 10's κ, with no step that should flip its sign.",
-            font_size=16, color=RED,
-        ).next_to(hero, DOWN, buff=0.6, aligned_edge=LEFT)
+        paper21_label = Text("Paper's Eq. 21 instead:", font_size=18, color=GRAY_B)
+        paper21_term = MathTex(r"\frac{\rho_f^\circ-\rho_s^\circ}{\rho_s^\circ\rho_f^\circ}", font_size=24).set_color(RED)
+        paper_eq21 = VGroup(paper21_label, paper21_term).arrange(RIGHT, buff=0.15).next_to(hero, DOWN, buff=0.6, aligned_edge=LEFT)
         self.play(FadeIn(paper_eq21))
         self.next_slide(
             notes="""
