@@ -331,9 +331,10 @@ class Presentation(Slide):
         self._hard_settle([definition, eq5[1], eq5[2]], [new_sign, replacement])
         eq5.submobjects[1] = new_sign
         eq5.submobjects[2] = replacement
-        # Name J_s explicitly, tied to the slip term that just landed --
-        # defined here, before it's used again in the next few steps,
-        # instead of appearing unexplained later.
+        # Name J_s explicitly, tied to the slip term that just landed.
+        # It stays on screen -- not faded on the next beat -- until it's
+        # actually exercised in the div(u) rearrangement several steps
+        # below, so it never appears to vanish before being used.
         js_def = MathTex(
             r"\mathbf{J}_s := \rho_s^\circ\,\Phi\,(1-c_s)\,\mathbf{u}_{slip}", font_size=24, color=ORANGE
         ).next_to(legend5, UP, buff=0.25, aligned_edge=LEFT)
@@ -353,26 +354,29 @@ class Presentation(Slide):
             the paper's own Eq. 6 exactly as written.
 
             J_s is named right here, tied to the slip-velocity term that
-            just appeared: rho_s times the (1-c_s)*u_slip piece. Naming it
-            now means it doesn't reappear unexplained a few steps from now.
+            just appeared: rho_s times the (1-c_s)*u_slip piece. It stays
+            up rather than fading immediately -- it isn't exercised until
+            Eq. 4 gets rearranged in terms of it, a few steps from now.
             """
         )
 
-        # Definitions have done their job -- clear them before the next
-        # independent relation appears, rather than carrying them for the
-        # rest of the chapter.
-        self.play(FadeOut(legend5), FadeOut(js_def))
-
         # --- Mixture continuity: an independent relation, named plainly
-        #     (no claim about why it's separate -- just what it is). Kept
-        #     visible alongside Eq. 6 since it's needed again two steps
-        #     from now. Chunked so div(u) can be isolated in place. ---
+        #     (no claim about why it's separate -- just what it is). J_s's
+        #     own definition stays up too: only the symbol legend's job is
+        #     done here. A different, independent equation is now the
+        #     focus, so the transport equation's just-substituted terms
+        #     settle back to white -- orange should only ever mean "this
+        #     is what's live right now." ---
         eq4 = VGroup(
             MathTex(r"(\rho_s^\circ-\rho_f^\circ)\left[\nabla\cdot\left(\Phi(1-c_s)\mathbf{u}_{slip}\right)\right]", font_size=26),
             MathTex(r"- \rho_f^\circ (\nabla\cdot\mathbf{u}) = 0", font_size=26),
         ).arrange(RIGHT, buff=0.1).next_to(eq5, DOWN, buff=1.2, aligned_edge=LEFT)
         eq4_label = self._name("Mixture continuity", eq4)
-        self.play(FadeIn(eq4_label), FadeIn(eq4))
+        self.play(
+            FadeOut(legend5),
+            FadeIn(eq4_label), FadeIn(eq4),
+            eq5[1].animate.set_color(WHITE), eq5[2].animate.set_color(WHITE),
+        )
         self.next_slide(
             notes="""
             Mixture continuity is not derived from Eq. 5/6 -- it's a
@@ -382,102 +386,179 @@ class Presentation(Slide):
             """
         )
 
-        # Isolate div(u): highlight the bracket that J_s already names,
-        # then swap Eq. 4 for its rearranged form (Eq. 8) -- a structural
-        # rearrangement (move a term across, divide through), not a single
-        # term growing in place, so there's no trailing content to
-        # displace. J_s was already defined two steps ago, so its
-        # reappearance here is a recall, not a surprise.
-        self.play(eq4[0].animate.set_color(ORANGE), run_time=0.5)
-        eq8 = VGroup(
-            MathTex(r"\nabla\cdot\mathbf{u}", font_size=28, color=ORANGE),
-            MathTex(
-                r"= \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s",
-                font_size=28,
-            ),
-        ).arrange(RIGHT, buff=0.15).move_to(eq4)
-        self.play(FadeOut(eq4), FadeOut(eq4_label), Write(eq8))
-        self._hard_settle([eq4, eq4_label], [eq8])
+        # --- Eq. 4 -> Eq. 8, step 1 of 2: pure rearrangement. Move the
+        #     rho_f*div(u) term across and divide through -- same symbols
+        #     as Eq. 4, nothing renamed yet. That's the next step. ---
+        self.play(eq4[0].animate.set_color(ORANGE), eq4[1].animate.set_color(ORANGE), run_time=0.5)
+        eq8_raw = VGroup(
+            MathTex(r"\nabla\cdot\mathbf{u} = \frac{\rho_s^\circ-\rho_f^\circ}{\rho_f^\circ}\,\nabla\cdot", font_size=28, color=ORANGE),
+            MathTex(r"\left(\Phi(1-c_s)\mathbf{u}_{slip}\right)", font_size=28, color=ORANGE),
+        ).arrange(RIGHT, buff=0.08).move_to(eq4, aligned_edge=LEFT)
+        self.play(FadeOut(eq4), FadeOut(eq4_label), Write(eq8_raw))
+        self._hard_settle([eq4, eq4_label], [eq8_raw])
+        self.wait(0.1)
         self.next_slide(
             notes="""
-            Isolating div(u): move the rho_f-times-div(u) term to the other
-            side and divide through by rho_f -- straightforward algebra,
-            landing on Eq. 8. The bracketed slip-flux term is exactly
-            (1/rho_s)*J_s by the definition two steps ago. Eq. 6 stays on
-            screen above -- Eq. 8 is about to combine with it.
+            Step 1 of 2, pure algebra: move the rho_f*div(u) term to the
+            other side and divide through by rho_f -- same symbols as
+            Eq. 4, nothing renamed. Naming the bracket is the next,
+            separate step.
             """
         )
 
-        # --- Eq. 6 -> Eq. 7 (flux form): distribute the divergence over
-        #     the sum and rename the slip piece via J_s's definition,
-        #     already established -- with Eq. 8 still visible below as
-        #     the thing about to be substituted in. Pre-chunked into 3
-        #     pieces (not 2) so the product-rule step after this one can
-        #     isolate just the flux term instead of fading the whole line. ---
-        eq7 = VGroup(
-            MathTex(r"\frac{\partial \Phi}{\partial t} +", font_size=30),
-            MathTex(r"\nabla\cdot(\mathbf{u}\Phi)", font_size=30),
-            MathTex(r"= -\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=30),
-        ).arrange(RIGHT, buff=0.12).move_to(eq5)
-        self.play(FadeOut(eq5), Write(eq7))
-        self._hard_settle([eq5], [eq7])
+        # --- Step 2 of 2: substitute, using J_s's definition -- still on
+        #     screen, so its use here is visible rather than a symbol
+        #     appearing from nowhere. A single rename now that the algebra
+        #     is already done; J_s has finally been exercised, so it
+        #     leaves the screen along with it. ---
+        eq8 = VGroup(
+            MathTex(r"\nabla\cdot\mathbf{u}", font_size=28),
+            MathTex(
+                r"= \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s",
+                font_size=28, color=ORANGE,
+            ),
+        ).arrange(RIGHT, buff=0.15).move_to(eq8_raw, aligned_edge=LEFT)
+        self.play(FadeOut(eq8_raw), Write(eq8), FadeOut(js_def))
+        self._hard_settle([eq8_raw, js_def], [eq8])
+        self.wait(0.1)
         self.next_slide(
             notes="""
-            Distributing the divergence over the sum splits Eq. 6 into a
-            div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip) piece; the
-            second is exactly J_s/rho_s by the definition two steps ago,
-            which is what lets it be renamed and moved to the
-            right-hand side as -div(J_s)/rho_s. Eq. 6's advection is
-            unpacked into this div(u*Phi) form to match the
-            flux-conservation style used by Rao et al., which the rest of
-            the derivation builds on.
+            Step 2 of 2: the bracketed slip-flux term is exactly J_s/rho_s
+            by the definition named a few steps ago -- substituted in
+            here, so J_s's on-screen definition has finally been
+            exercised and can leave. Landing on Eq. 8.
+            """
+        )
+
+        # --- Name kappa here, as its own step -- not bundled with the
+        #     substitution above, so this beat is "give this fraction a
+        #     name" and nothing else. ---
+        kappa_def = MathTex(
+            r"\kappa := \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}", font_size=24, color=ORANGE
+        ).to_corner(DL, buff=0.4)
+        eq8_named = VGroup(
+            MathTex(r"\nabla\cdot\mathbf{u}", font_size=28),
+            MathTex(r"= \kappa\,\nabla\cdot\mathbf{J}_s", font_size=28, color=ORANGE),
+        ).arrange(RIGHT, buff=0.15).move_to(eq8, aligned_edge=LEFT)
+        self.play(FadeOut(eq8), Write(eq8_named), FadeIn(kappa_def))
+        self._hard_settle([eq8], [eq8_named])
+        self.wait(0.1)
+        eq8 = eq8_named
+        self.next_slide(
+            notes="""
+            Naming (rho_s-rho_f)/(rho_s*rho_f) as kappa here, right when
+            it first appears in a form worth naming -- not deferred to
+            Eq. 10's underbrace, which now just confirms this rather than
+            introducing it for the first time.
+            """
+        )
+
+        # --- Eq. 6, step 1 of 2: distribute the divergence over the sum
+        #     -- pure algebra (linearity of divergence), same sign
+        #     convention as Eq. 6 itself, nothing renamed. The transport
+        #     equation is the focus again, so its substituted terms come
+        #     back to orange before being rewritten. eq5[0] (the time
+        #     derivative) never changes across this whole chapter, so it
+        #     stays put as a fixed anchor and the new pieces are built
+        #     relative to it, instead of being refreshed for no reason. ---
+        self.play(eq5[1].animate.set_color(ORANGE), eq5[2].animate.set_color(ORANGE), run_time=0.5)
+        dist_a = MathTex(r"- \nabla\cdot(\mathbf{u}\Phi)", font_size=32, color=ORANGE).next_to(eq5[0], RIGHT, buff=0.1)
+        dist_b = MathTex(
+            r"- \nabla\cdot\left(\Phi(1-c_s)\mathbf{u}_{slip}\right) = 0", font_size=32, color=ORANGE
+        ).next_to(dist_a, RIGHT, buff=0.1)
+        self.play(FadeOut(eq5[1]), FadeOut(eq5[2]), FadeOut(eq5[3]), Write(dist_a), Write(dist_b))
+        self._hard_settle([eq5[1], eq5[2], eq5[3]], [dist_a, dist_b])
+        self.wait(0.1)
+        self.next_slide(
+            notes="""
+            Step 1 of 2, pure algebra: distributing the divergence over
+            the sum splits the u_s-substituted transport equation into a
+            div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip) piece -- same
+            sign convention as Eq. 6, nothing renamed yet.
+            """
+        )
+
+        # --- Step 2 of 2: restate in the flux form used by Rao et al.
+        #     (Eq. 7). The second piece is exactly J_s/rho_s by the same
+        #     definition, renamed and moved to the right-hand side -- but
+        #     unlike the Eq. 4 -> Eq. 8 step above, this genuinely isn't a
+        #     term-by-term derivation from Eq. 6: it's a citation-based
+        #     reformulation (the paper's own section header calls it "the
+        #     flux form used by Rao et al", separate from the section
+        #     that derives Eq. 6), and this repo's transcription of the
+        #     paper already flags equations 7-10 as having sign/notation
+        #     inconsistencies. The advection term's sign flip here (- to
+        #     +) is a concrete instance -- said here in notes, not
+        #     dressed up as a clean derivation on screen. ---
+        piece1 = MathTex(r"+ \nabla\cdot(\mathbf{u}\Phi)", font_size=32).next_to(eq5[0], RIGHT, buff=0.1)
+        piece2 = MathTex(r"= -\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=32).next_to(piece1, RIGHT, buff=0.1)
+        self.play(FadeOut(dist_a), FadeOut(dist_b), Write(piece1), Write(piece2))
+        self._hard_settle([dist_a, dist_b], [piece1, piece2])
+        self.wait(0.1)
+        eq7 = VGroup(eq5[0], piece1, piece2)
+        self.next_slide(
+            notes="""
+            Step 2 of 2 restates this in the flux form used by Rao et
+            al. -- a citation, not a term-by-term derivation from Eq. 6.
+            The second piece is again exactly J_s/rho_s, renamed and
+            moved to the right-hand side; the advection term's sign flips
+            (- to +) to match that citation's own convention, which this
+            repo's transcription already flags as one of a few
+            inconsistencies around equations 7-10 in the accepted-
+            manuscript scan. Flagging it here rather than papering over
+            it. This is the form the rest of the derivation builds on.
             """
         )
 
         # --- Expand div(u*Phi) via the product rule: highlight it, shift
         #     the RHS out of the way to make room, THEN swap it for
         #     u.grad(Phi) and fade in the new Phi*div(u) term alongside --
-        #     a genuine term-isolated insertion, not a whole-line fade. ---
-        self.play(eq7[1].animate.set_color(ORANGE), run_time=0.5)
-        u_dot_grad = MathTex(r"\mathbf{u}\cdot\nabla\Phi", font_size=30, color=ORANGE).move_to(eq7[1], aligned_edge=LEFT)
+        #     a genuine term-isolated insertion, not a whole-line fade.
+        #     Eq. 8 (still on screen) is what substitutes into the new
+        #     term next, so it stays visible through this step instead of
+        #     fading before it's used. ---
+        self.play(piece1.animate.set_color(ORANGE), piece2.animate.set_color(WHITE), run_time=0.5)
+        u_dot_grad = MathTex(r"+\mathbf{u}\cdot\nabla\Phi", font_size=30, color=ORANGE).next_to(eq5[0], RIGHT, buff=0.1)
         new_term = MathTex(r"+ \Phi(\nabla\cdot\mathbf{u})", font_size=30, color=ORANGE).next_to(u_dot_grad, RIGHT, buff=0.12)
-        added_width = u_dot_grad.width + 0.12 + new_term.width - eq7[1].width
+        added_width = u_dot_grad.width + 0.12 + new_term.width - piece1.width
         if added_width > 1e-3:
-            self.play(eq7[2].animate.shift(RIGHT * added_width))
-        self.play(FadeOut(eq7[1]), Write(u_dot_grad), Write(new_term), FadeOut(eq8))
-        self._hard_settle([eq7[1], eq8], [u_dot_grad, new_term])
-        expanded = VGroup(eq7[0], u_dot_grad, new_term, eq7[2])
+            self.play(piece2.animate.shift(RIGHT * added_width))
+        self.play(FadeOut(piece1), Write(u_dot_grad), Write(new_term))
+        self._hard_settle([piece1], [u_dot_grad, new_term])
+        self.wait(0.1)
+        expanded = VGroup(eq5[0], u_dot_grad, new_term, piece2)
         self.next_slide(
             notes="""
             Product rule: div(u*Phi) = u.grad(Phi) + Phi*div(u) -- the
             first piece replaces div(u*Phi) in place, the second is a
-            genuinely new term. Eq. 8 (div(u) in terms of J_s) is exactly
-            what substitutes into that new term next, so it fades out here
-            since it's now used up.
+            genuinely new term. Eq. 8 stays on screen below: it's exactly
+            what substitutes into that new term next.
             """
         )
 
-        # Substitute Eq. 8's div(u), naming kappa right here (before Eq.
-        # 10's underbrace, which is now a confirming callback rather than
-        # kappa's first appearance): highlight, make room, THEN swap.
-        self.play(expanded[2].animate.set_color(ORANGE), run_time=0.5)
+        # --- Substitute Eq. 8 (already named with kappa) into the new
+        #     term -- a single rename, kappa already established, nothing
+        #     new introduced here. Eq. 8 is finally exercised, so it
+        #     fades along with it. ---
+        self.play(new_term.animate.set_color(ORANGE), eq8.animate.set_color(ORANGE), run_time=0.5)
         kappa_term = MathTex(
             r"+ \Phi\,\kappa\,\nabla\cdot\mathbf{J}_s", font_size=30, color=ORANGE
-        ).move_to(expanded[2], aligned_edge=LEFT)
-        shift2 = kappa_term.width - expanded[2].width
+        ).move_to(new_term, aligned_edge=LEFT)
+        shift2 = kappa_term.width - new_term.width
         if shift2 > 1e-3:
             self.play(expanded[3].animate.shift(RIGHT * shift2))
-        kappa_def = MathTex(
-            r"\kappa := \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}", font_size=24, color=ORANGE
-        ).to_corner(DL, buff=0.4)
-        self.play(FadeOut(expanded[2]), Write(kappa_term), FadeIn(kappa_def))
-        self._hard_settle([expanded[2]], [kappa_term])
+        self.play(FadeOut(new_term), Write(kappa_term), FadeOut(eq8))
+        self._hard_settle([new_term, eq8], [kappa_term])
+        self.wait(0.1)
         expanded.submobjects[2] = kappa_term
         self.next_slide(
             notes="""
-            kappa*div(J_s) substituted in, using Eq. 8, and named kappa
-            right away -- (rho_s - rho_f)/(rho_s*rho_f). Two honest flags
-            here, spoken rather than put on screen:
+            div(u) = kappa*div(J_s), by Eq. 8, named a few steps ago --
+            substituted here using that already-established name, so this
+            step is a single rename, not a rename-and-define at once.
+            Eq. 8 has now done its job and leaves the screen.
+
+            Two honest flags here, spoken rather than put on screen:
 
             1. The Phi*kappa*div(J_s) term that appears when you expand
                div(u*Phi) via the product rule and substitute Eq. 8 isn't
@@ -494,19 +575,17 @@ class Presentation(Slide):
         )
 
         eq10 = eq(
-            r"\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi"
-            r"= \underbrace{\frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}}_{\kappa}"
-            r"\,\nabla\cdot\mathbf{J}_s",
+            r"\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi = \kappa\,\nabla\cdot\mathbf{J}_s",
             font_size=32,
         ).move_to(expanded)
         self.play(FadeOut(expanded), Write(eq10), run_time=1.3)
         self._hard_settle([expanded], [eq10])
+        self.wait(0.1)
         self.next_slide(
             notes="""
             Landing on Eq. 10, the master Phi-transport equation -- kappa
-            (underbraced) is (rho_s - rho_f)/(rho_s*rho_f), confirming the
-            definition from two steps ago rather than introducing it for
-            the first time.
+            carried forward as the name established a few steps ago,
+            (rho_s - rho_f)/(rho_s*rho_f).
 
             Kappa has units of inverse density, which is worth a mental
             note but isn't a red flag about this derivation -- it's just
@@ -649,7 +728,9 @@ class Presentation(Slide):
         header = self._header("Modeling. Assembling the master Φ-equation.")
 
         # --- Show the two collected inputs, stacked (no claim yet that one
-        #     morphs into the other) ---
+        #     morphs into the other). The closure (inputs[1]) is about to
+        #     be substituted in below, so only inputs[0] is retired here --
+        #     the closure stays on screen until it's actually exercised. ---
         inputs = VGroup(
             MathTex(r"\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi = \kappa\,\nabla\cdot\mathbf{J}_s", font_size=28),
             MathTex(r"\frac{\mathbf{J}_s}{\rho_s} = -\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right] - f_h\mathbf{u}_{st}\Phi", font_size=28),
@@ -660,27 +741,32 @@ class Presentation(Slide):
             The two pieces going into this assembly: Eq. 10 (the master
             Phi-transport equation, with kappa left as a symbol) and Eq. 14
             (the hindered-settling flux closure that kappa*div(J_s) is about
-            to absorb).
+            to absorb). Eq. 14 stays on screen through the substitution just
+            below -- it isn't exercised yet.
             """
         )
-        self.play(FadeOut(inputs))
 
-        # --- Real chain: substitute J_s into Eq. 10's RHS term by term ---
+        # --- Real chain: substitute J_s into Eq. 10's RHS term by term.
+        #     Only the master equation is refreshed into the working
+        #     "hero" line; the closure keeps its place below it. ---
         hero = VGroup(
             MathTex(r"\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi =", font_size=30),
             MathTex(r"\kappa\,\nabla\cdot\mathbf{J}_s", font_size=30),
-        ).arrange(RIGHT, buff=0.15)
-        hero.to_edge(LEFT, buff=1.0).shift(UP * 1.5)
-        self.play(Write(hero))
+        ).arrange(RIGHT, buff=0.15).to_edge(LEFT, buff=1.0).shift(UP * 1.5)
+        closure = inputs[1]
+        self.play(FadeOut(inputs[0]), Write(hero), closure.animate.next_to(hero, DOWN, buff=0.8, aligned_edge=LEFT))
         self.next_slide()
 
-        self.play(hero[1].animate.set_color(ORANGE), run_time=0.5)
-        step1 = MathTex(
-            r"\kappa\,\rho_s\,\nabla\cdot\left\{-\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right] - f_h\mathbf{u}_{st}\Phi\right\}",
+        self.play(hero[1].animate.set_color(ORANGE), closure.animate.set_color(ORANGE), run_time=0.5)
+        chunk0 = MathTex(r"\kappa\,\rho_s^\circ\,\nabla\cdot\Big\{", font_size=26, color=ORANGE)
+        chunk1 = MathTex(
+            r"-\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right]",
             font_size=26, color=ORANGE,
-        ).move_to(hero[1], aligned_edge=LEFT)
-        self.play(FadeOut(hero[1]), Write(step1))
-        self._hard_settle([hero[1]], [step1])
+        )
+        chunk2 = MathTex(r"- f_h\mathbf{u}_{st}\Phi\Big\}", font_size=26, color=ORANGE)
+        step1 = VGroup(chunk0, chunk1, chunk2).arrange(RIGHT, buff=0.05).move_to(hero[1], aligned_edge=LEFT)
+        self.play(FadeOut(hero[1]), Write(step1), FadeOut(closure))
+        self._hard_settle([hero[1], closure], [chunk0, chunk1, chunk2])
         hero.submobjects[1] = step1
         # hero[0] is a fixed left anchor and every swap above preserves it
         # (aligned_edge=LEFT), so the group's LEFT edge never needs to
@@ -690,19 +776,58 @@ class Presentation(Slide):
             hero.generate_target()
             hero.target.scale_to_fit_width(MAX_EQ_WIDTH, about_edge=LEFT)
             self.play(MoveToTarget(hero))
+        self.wait(0.1)
         self.next_slide(
             notes="""
             J_s (divided by rho_s in Eq. 14) becomes rho_s times that same
             bracket once multiplied back through -- substituting it into
-            kappa*div(J_s) is what starts turning Eq. 10 into Eq. 21.
+            kappa*div(J_s) is what starts turning Eq. 10 into Eq. 21. Eq. 14
+            has now been exercised, so it leaves the screen. Kappa itself
+            stays a symbol for now -- expanding it is the next, separate
+            step.
             """
         )
 
-        # --- Simplify kappa * rho_s -> a single coefficient ---
+        # --- Expand kappa into its fraction -- a single step, not bundled
+        #     with the sedimentation substitution below. chunk1/chunk2
+        #     settle to white since they aren't the focus of this beat. ---
+        self.play(chunk1.animate.set_color(WHITE), chunk2.animate.set_color(WHITE), run_time=0.5)
+        kappa_expanded = MathTex(
+            r"\frac{\rho_f^\circ-\rho_s^\circ}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\rho_s^\circ\Big\{",
+            font_size=24, color=ORANGE,
+        ).move_to(chunk0, aligned_edge=LEFT)
+        shift3 = kappa_expanded.width - chunk0.width
+        if shift3 > 1e-3:
+            self.play(chunk1.animate.shift(RIGHT * shift3), chunk2.animate.shift(RIGHT * shift3))
+        self.play(FadeOut(chunk0), Write(kappa_expanded))
+        self._hard_settle([chunk0], [kappa_expanded])
+        step1.submobjects[0] = kappa_expanded
+        if hero.width > MAX_EQ_WIDTH:
+            hero.generate_target()
+            hero.target.scale_to_fit_width(MAX_EQ_WIDTH, about_edge=LEFT)
+            self.play(MoveToTarget(hero))
+        self.wait(0.1)
+        self.next_slide(
+            notes="""
+            Expanding kappa back into (rho_f-rho_s)/(rho_s*rho_f) -- the
+            name established in the previous chapter, not a new
+            definition. Paired with rho_s from the J_s substitution just
+            now, this is exactly Eq. 21's leading coefficient as printed
+            in the paper, uncancelled.
+
+            kappa*rho_s does algebraically simplify to (rho_f-rho_s)/rho_f
+            -- the rho_s cancels -- but the paper's own Eq. 21 keeps it
+            uncancelled, so it's shown that way here too, matching the
+            source. (See the aside on the next beat.)
+            """
+        )
+
+        # --- Simplify kappa * rho_s -> a single coefficient (a validation
+        #     aside, not something folded into the equation above). ---
         kappa_calc = MathTex(
             r"\kappa\,\rho_s^\circ = \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}\,\rho_s^\circ"
             r"= \frac{\rho_f^\circ-\rho_s^\circ}{\rho_f^\circ}",
-            font_size=26, color=ORANGE,
+            font_size=26, color=GRAY_B,
         ).next_to(hero, DOWN, buff=0.8, aligned_edge=LEFT)
         self.play(FadeIn(kappa_calc))
         self.next_slide(
@@ -718,40 +843,51 @@ class Presentation(Slide):
         )
         self.play(FadeOut(kappa_calc))
 
-        # --- Substitute the Stokes-velocity / hindered-settling closures ---
-        self.play(hero[1].animate.set_color(ORANGE), run_time=0.5)
-        final_rhs = MathTex(
-            r"\frac{\rho_f^\circ-\rho_s^\circ}{\rho_s^\circ\rho_f^\circ}\nabla\cdot \rho_s^\circ"
-            r"\left\{"
-            r"\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right]"
-            r"- \Phi \frac{2\mu_f a^2(1-\Phi_{avg})(\rho_s-\rho_f)}{9\mu^2}\mathbf{g}"
-            r"\right\}",
-            font_size=24,
-        ).move_to(hero[1], aligned_edge=LEFT)
-        self.play(FadeOut(hero[1]), Write(final_rhs))
-        self._hard_settle([hero[1]], [final_rhs])
-        hero.submobjects[1] = final_rhs
+        # --- Substitute the Stokes-velocity / hindered-settling closures
+        #     into the sedimentation term -- the other, independent
+        #     substitution, kept separate from expanding kappa above.
+        #     Recall those two closures briefly, alongside the term
+        #     they're about to replace, rather than reaching for them from
+        #     memory several chapters back. ---
+        recall = VGroup(
+            MathTex(r"\mathbf{u}_{st} = \frac{2a^2(\rho_s-\rho_f)}{9\mu}\,\mathbf{g}", font_size=22, color=GRAY_B),
+            MathTex(r"f_h = \frac{\mu_f(1-\Phi_{avg})}{\mu}", font_size=22, color=GRAY_B),
+        ).arrange(RIGHT, buff=0.6).to_corner(DL, buff=0.4)
+        self.play(chunk2.animate.set_color(ORANGE), FadeIn(recall))
+        sediment_sub = MathTex(
+            r"- \Phi\frac{2\mu_f a^2(1-\Phi_{avg})(\rho_s-\rho_f)}{9\mu^2}\mathbf{g}\Big\}",
+            font_size=24, color=ORANGE,
+        ).move_to(chunk2, aligned_edge=LEFT)
+        # chunk2 is the last piece on the line, so no trailing content
+        # needs to be displaced to make room for it.
+        self.play(FadeOut(chunk2), Write(sediment_sub), FadeOut(recall))
+        self._hard_settle([chunk2], [sediment_sub])
+        step1.submobjects[2] = sediment_sub
         if hero.width > MAX_EQ_WIDTH:
             hero.generate_target()
             hero.target.scale_to_fit_width(MAX_EQ_WIDTH, about_edge=LEFT)
             self.play(MoveToTarget(hero))
-        self.next_slide()
+        self.wait(0.1)
+        self.next_slide(
+            notes="""
+            Eq. 21: Stokes velocity (Eq. 17) and the hindered-settling
+            function (Eq. 18), recalled here from the flux-closure
+            chapter, substituted into the sedimentation term -- the other
+            half of finishing the assembly, kept as its own step rather
+            than bundled with expanding kappa above. Every step from
+            Eq. 10 to here was a concrete substitution or simplification,
+            shown on the same line rather than skipped past -- this is the
+            one equation that determines where the cells go, and now it's
+            visible how it got built.
+            """
+        )
 
         note = Text(
             "This is the coupled Φ-transport equation.",
             font_size=26, color=YELLOW,
         ).to_edge(DOWN, buff=0.5)
         self.play(FadeIn(note), run_time=1.3)
-        self.next_slide(
-            notes="""
-            Eq. 21: Stokes velocity (Eq. 17) and the hindered-settling
-            function (Eq. 18) substituted into the settling term finishes
-            the assembly. Every step from Eq. 10 to here was a concrete
-            substitution or simplification, shown on the same line rather
-            than skipped past -- this is the one equation that determines
-            where the cells go, and now it's visible how it got built.
-            """
-        )
+        self.next_slide()
         self.play(FadeOut(header), FadeOut(hero), FadeOut(note))
 
     def chapter_2f_rest_of_model(self):
