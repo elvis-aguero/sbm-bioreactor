@@ -76,21 +76,22 @@ class Presentation(Slide):
         return Text(text, font_size=36, weight=BOLD).to_edge(UP, buff=0.5)
 
     def _legend(self, *lines, font_size=18):
-        # Small, gray, left-aligned term definitions shown below an
-        # equation -- symbols get spelled out on-screen instead of only in
-        # speaker notes. Tex (not MathTex) so each line can mix $...$
-        # symbols with plain words.
+        # Small, gray, left-aligned term definitions. Callers position
+        # this with .to_corner(DL, buff=0.4) -- flush to the bottom of the
+        # frame, never mid-screen -- and fade it out after a couple of
+        # slides once the symbols are established, not for the whole
+        # chapter. Tex (not MathTex) so each line can mix $...$ symbols
+        # with plain words.
         rows = VGroup(*[Tex(line, font_size=font_size, color=GRAY_B) for line in lines])
         rows.arrange(DOWN, buff=0.15, aligned_edge=LEFT)
         return rows
 
-    def _start_eq(self, mobj):
-        self.eq = mobj
-        return self.eq
-
-    def _set_eq(self, new_mobj, anim=TransformMatchingTex):
-        self.play(anim(self.eq, new_mobj))
-        self.eq = new_mobj
+    def _name(self, text, target):
+        # A short name label shown above an equation the FIRST time it's
+        # introduced -- e.g. "Momentum". Later derivations/substitutions
+        # of that same equation inherit the name silently; they never get
+        # a new label of their own.
+        return Text(text, font_size=20, color=BLUE_C).next_to(target, UP, buff=0.2, aligned_edge=LEFT)
 
     def _hard_settle(self, fade_outs, fade_ins):
         # FadeOut's default remover only removes top-level scene mobjects; a
@@ -219,21 +220,23 @@ class Presentation(Slide):
             MathTex(r"\mathbf{g}", font_size=30),
         ).arrange(RIGHT, buff=0.12)
         eq1.to_edge(LEFT, buff=1.0).shift(UP * 1.1)
+        name1 = self._name("Momentum", eq1)
 
         eq2 = MathTex(r"\rho = (1-\Phi)\rho_f^\circ + \Phi \rho_s^\circ", font_size=26)
         eq3 = MathTex(r"\mu = \mu_f \left(1-\frac{\Phi}{\Phi_{\max}}\right)^{-2.5\Phi_{\max}}", font_size=26)
-        closures = VGroup(eq2, eq3).arrange(DOWN, buff=0.4, aligned_edge=LEFT).next_to(eq1, DOWN, buff=0.7, aligned_edge=LEFT)
+        closures = VGroup(eq2, eq3).arrange(DOWN, buff=0.4, aligned_edge=LEFT).next_to(eq1, DOWN, buff=0.9, aligned_edge=LEFT)
+        name23 = self._name("Mixture density / viscosity", closures)
 
         legend = self._legend(
             r"$\rho$ -- mixture density \quad $\mathbf{u}$ -- velocity \quad $p$ -- pressure \quad $\mu$ -- mixture viscosity \quad $\mathbf{g}$ -- gravity",
             r"$\Phi$ -- particle volume fraction \quad $\rho_f^\circ,\ \rho_s^\circ$ -- fluid / particle density \quad $\mu_f$ -- fluid viscosity \quad $\Phi_{\max}$ -- max packing fraction",
-        ).next_to(closures, DOWN, buff=0.5, aligned_edge=LEFT)
+        ).to_corner(DL, buff=0.4)
 
         # Momentum and its two closures appear together -- they're all
         # needed to make Eq. 1 solvable, so the slide isn't one equation
         # sitting alone.
-        self.play(FadeIn(header), Write(eq1))
-        self.play(LaggedStartMap(FadeIn, closures, lag_ratio=0.3), FadeIn(legend))
+        self.play(FadeIn(header), FadeIn(name1), Write(eq1))
+        self.play(FadeIn(name23), LaggedStartMap(FadeIn, closures, lag_ratio=0.3), FadeIn(legend))
         self.next_slide(
             notes="""
             This is the derivation, live: a keystroke-triggered walkthrough of
@@ -263,7 +266,7 @@ class Presentation(Slide):
         shift = rho_expr.width - eq1[5].width
         if shift > 1e-3:
             self.play(eq1[6].animate.shift(RIGHT * shift))
-        self.play(FadeOut(eq1[5]), FadeIn(rho_expr))
+        self.play(FadeOut(eq1[5]), Write(rho_expr))
         self._hard_settle([eq1[5]], [rho_expr])
         eq1.submobjects[5] = rho_expr
         self.next_slide(
@@ -276,12 +279,15 @@ class Presentation(Slide):
             of showing it this way instead of fading the whole line.
             """
         )
-        self.play(FadeOut(header), FadeOut(eq1), FadeOut(closures), FadeOut(legend))
+        self.play(FadeOut(header), FadeOut(name1), FadeOut(eq1), FadeOut(name23), FadeOut(closures), FadeOut(legend))
 
     def chapter_2b_continuity_transport(self):
         header = self._header("Modeling. From two phases to one Φ-equation.")
 
-        # --- Eq. 5, u_s isolated as its own addressable chunk ---
+        # --- Eq. 5, u_s isolated as its own addressable chunk. Named once
+        #     here as "Phi-transport (master eq.)" -- every later step in
+        #     this chapter is the SAME equation being rewritten, so it
+        #     never gets a second name label. ---
         eq5 = VGroup(
             MathTex(r"\frac{\partial \Phi}{\partial t}", font_size=32),
             MathTex(r"+ \nabla\cdot(\Phi", font_size=32),
@@ -289,10 +295,11 @@ class Presentation(Slide):
             MathTex(r") = 0", font_size=32),
         ).arrange(RIGHT, buff=0.1)
         eq5.to_edge(LEFT, buff=1.0).shift(UP * 2.4)
+        name5 = self._name("Φ-transport (master eq.)", eq5)
         legend5 = self._legend(
             r"$\Phi$ -- particle volume fraction \quad $\mathbf{u}_s$ -- solid-phase velocity",
-        ).next_to(eq5, DOWN, buff=0.9, aligned_edge=LEFT)
-        self.play(FadeIn(header), Write(eq5), FadeIn(legend5))
+        ).to_corner(DL, buff=0.4)
+        self.play(FadeIn(header), FadeIn(name5), Write(eq5), FadeIn(legend5))
         self.next_slide()
 
         # --- Real substitution -- only u_s changes. Highlight, reveal the
@@ -302,7 +309,7 @@ class Presentation(Slide):
         self.play(eq5[2].animate.set_color(ORANGE), run_time=0.5)
         definition = MathTex(
             r"\mathbf{u}_s = \mathbf{u} + (1-c_s)\mathbf{u}_{slip}", font_size=26, color=ORANGE
-        ).next_to(legend5, DOWN, buff=0.4, aligned_edge=LEFT)
+        ).next_to(eq5, DOWN, buff=0.6, aligned_edge=LEFT)
         self.play(FadeIn(definition))
         self.next_slide()
 
@@ -315,7 +322,7 @@ class Presentation(Slide):
             self.play(eq5[3].animate.shift(RIGHT * shift))
         new_legend5 = self._legend(
             r"$\Phi$ -- particle volume fraction \quad $c_s$ -- local solid fraction \quad $\mathbf{u}_{slip}$ -- slip velocity (solid $-$ fluid)",
-        ).move_to(legend5, aligned_edge=LEFT)
+        ).to_corner(DL, buff=0.4)
         self.play(
             FadeOut(definition), FadeOut(eq5[1]), FadeOut(eq5[2]),
             FadeIn(new_sign), FadeIn(replacement),
@@ -324,6 +331,13 @@ class Presentation(Slide):
         self._hard_settle([definition, eq5[1], eq5[2]], [new_sign, replacement])
         eq5.submobjects[1] = new_sign
         eq5.submobjects[2] = replacement
+        # Name J_s explicitly, tied to the slip term that just landed --
+        # defined here, before it's used again in the next few steps,
+        # instead of appearing unexplained later.
+        js_def = MathTex(
+            r"\mathbf{J}_s := \rho_s^\circ\,\Phi\,(1-c_s)\,\mathbf{u}_{slip}", font_size=24, color=ORANGE
+        ).next_to(legend5, UP, buff=0.25, aligned_edge=LEFT)
+        self.play(FadeIn(js_def))
         self.next_slide(
             notes="""
             This is the derivation, live: a keystroke-triggered walkthrough of
@@ -333,26 +347,31 @@ class Presentation(Slide):
             carries the why.
 
             Substituting u_s = u + (1-c_s) u_slip turns the solid-phase
-            transport equation (Eq. 5) into Eq. 6. Only the u_s term changes
-            -- the time-derivative and divergence wrapper are the same
-            mobjects, untouched. The sign flip on the divergence term (+ to
-            -) matches the paper's own Eq. 6 exactly as written.
+            transport equation into Eq. 6. Only the u_s term changes -- the
+            time-derivative and divergence wrapper are the same mobjects,
+            untouched. The sign flip on the divergence term (+ to -) matches
+            the paper's own Eq. 6 exactly as written.
+
+            J_s is named right here, tied to the slip-velocity term that
+            just appeared: rho_s times the (1-c_s)*u_slip piece. Naming it
+            now means it doesn't reappear unexplained a few steps from now.
             """
         )
 
-        # --- Mixture continuity: an independent relation (not derived from
-        #     Eq. 5/6) -- named on-screen so its appearance here doesn't
-        #     read as an unmotivated jump. Kept visible alongside Eq. 6
-        #     since it's needed again two steps from now. Chunked so div(u)
-        #     can be isolated in place. ---
+        # Definitions have done their job -- clear them before the next
+        # independent relation appears, rather than carrying them for the
+        # rest of the chapter.
+        self.play(FadeOut(legend5), FadeOut(js_def))
+
+        # --- Mixture continuity: an independent relation, named plainly
+        #     (no claim about why it's separate -- just what it is). Kept
+        #     visible alongside Eq. 6 since it's needed again two steps
+        #     from now. Chunked so div(u) can be isolated in place. ---
         eq4 = VGroup(
             MathTex(r"(\rho_s^\circ-\rho_f^\circ)\left[\nabla\cdot\left(\Phi(1-c_s)\mathbf{u}_{slip}\right)\right]", font_size=26),
             MathTex(r"- \rho_f^\circ (\nabla\cdot\mathbf{u}) = 0", font_size=26),
-        ).arrange(RIGHT, buff=0.1).next_to(legend5, DOWN, buff=0.7, aligned_edge=LEFT)
-        eq4_label = Text(
-            "Mixture continuity -- an independent relation, not derived from Eq. 6",
-            font_size=18, color=GRAY_B,
-        ).next_to(eq4, UP, buff=0.15, aligned_edge=LEFT)
+        ).arrange(RIGHT, buff=0.1).next_to(eq5, DOWN, buff=1.2, aligned_edge=LEFT)
+        eq4_label = self._name("Mixture continuity", eq4)
         self.play(FadeIn(eq4_label), FadeIn(eq4))
         self.next_slide(
             notes="""
@@ -363,12 +382,13 @@ class Presentation(Slide):
             """
         )
 
-        # Isolate div(u): highlight, then swap Eq. 4 for its rearranged
-        # form (Eq. 8) -- a structural rearrangement, not a single term
-        # growing in place, so there's no trailing content to displace.
-        # The isolated bracket is named J_s here and added to the on-screen
-        # glossary, so it doesn't reappear "from nowhere" in the next steps.
-        self.play(eq4[1].animate.set_color(ORANGE), run_time=0.5)
+        # Isolate div(u): highlight the bracket that J_s already names,
+        # then swap Eq. 4 for its rearranged form (Eq. 8) -- a structural
+        # rearrangement (move a term across, divide through), not a single
+        # term growing in place, so there's no trailing content to
+        # displace. J_s was already defined two steps ago, so its
+        # reappearance here is a recall, not a surprise.
+        self.play(eq4[0].animate.set_color(ORANGE), run_time=0.5)
         eq8 = VGroup(
             MathTex(r"\nabla\cdot\mathbf{u}", font_size=28, color=ORANGE),
             MathTex(
@@ -376,74 +396,87 @@ class Presentation(Slide):
                 font_size=28,
             ),
         ).arrange(RIGHT, buff=0.15).move_to(eq4)
-        legend5b = self._legend(
-            r"$\Phi$ -- particle volume fraction \quad $c_s$ -- local solid fraction \quad $\mathbf{u}_{slip}$ -- slip velocity (solid $-$ fluid)",
-            r"$\mathbf{J}_s$ -- solid-phase (particle) mass flux -- closed explicitly in the next section",
-        ).move_to(legend5, aligned_edge=LEFT)
-        self.play(FadeOut(eq4), FadeOut(eq4_label), FadeIn(eq8), Transform(legend5, legend5b))
+        self.play(FadeOut(eq4), FadeOut(eq4_label), Write(eq8))
         self._hard_settle([eq4, eq4_label], [eq8])
         self.next_slide(
             notes="""
             Isolating div(u): move the rho_f-times-div(u) term to the other
             side and divide through by rho_f -- straightforward algebra,
-            landing on Eq. 8. The bracketed slip-flux term is named J_s
-            here (added to the on-screen glossary) -- the same quantity the
-            next chapter closes explicitly. Eq. 6 stays on screen above --
-            Eq. 8 is about to combine with it.
+            landing on Eq. 8. The bracketed slip-flux term is exactly
+            (1/rho_s)*J_s by the definition two steps ago. Eq. 6 stays on
+            screen above -- Eq. 8 is about to combine with it.
             """
         )
 
-        # --- Eq. 6 -> Eq. 7 (flux form, defines J_s), with Eq. 8 still
-        #     visible below as the thing about to be substituted in. ---
+        # --- Eq. 6 -> Eq. 7 (flux form): distribute the divergence over
+        #     the sum and rename the slip piece via J_s's definition,
+        #     already established -- with Eq. 8 still visible below as
+        #     the thing about to be substituted in. Pre-chunked into 3
+        #     pieces (not 2) so the product-rule step after this one can
+        #     isolate just the flux term instead of fading the whole line. ---
         eq7 = VGroup(
-            MathTex(r"\frac{\partial \Phi}{\partial t} + \nabla\cdot(\mathbf{u}\Phi)", font_size=30),
+            MathTex(r"\frac{\partial \Phi}{\partial t} +", font_size=30),
+            MathTex(r"\nabla\cdot(\mathbf{u}\Phi)", font_size=30),
             MathTex(r"= -\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=30),
-        ).arrange(RIGHT, buff=0.15).move_to(eq5)
-        self.play(FadeOut(eq5), FadeIn(eq7))
+        ).arrange(RIGHT, buff=0.12).move_to(eq5)
+        self.play(FadeOut(eq5), Write(eq7))
         self._hard_settle([eq5], [eq7])
         self.next_slide(
             notes="""
-            J_s is defined to absorb the slip-velocity terms from Eq. 6
-            (J_s := rho_s * Phi * (1-c_s) * u_slip), dividing through by
-            rho_s. Eq. 6's u.grad(Phi) advection term is unpacked into the
-            div(u*Phi) form here to match the flux-conservation style used
-            by Rao et al., which is the form the rest of the derivation
-            builds on.
+            Distributing the divergence over the sum splits Eq. 6 into a
+            div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip) piece; the
+            second is exactly J_s/rho_s by the definition two steps ago,
+            which is what lets it be renamed and moved to the
+            right-hand side as -div(J_s)/rho_s. Eq. 6's advection is
+            unpacked into this div(u*Phi) form to match the
+            flux-conservation style used by Rao et al., which the rest of
+            the derivation builds on.
             """
         )
 
-        # --- Expand via the product rule (adds a term -- Eq. 8 is still
-        #     on screen, about to be substituted into it). ---
-        expanded = VGroup(
-            MathTex(r"\frac{\partial \Phi}{\partial t} + \mathbf{u}\cdot\nabla\Phi", font_size=30),
-            MathTex(r"+ \Phi(\nabla\cdot\mathbf{u})", font_size=30, color=ORANGE),
-            MathTex(r"= -\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=30),
-        ).arrange(RIGHT, buff=0.12).move_to(eq7)
-        self.play(FadeOut(eq7), FadeIn(expanded))
-        self._hard_settle([eq7], [expanded])
+        # --- Expand div(u*Phi) via the product rule: highlight it, shift
+        #     the RHS out of the way to make room, THEN swap it for
+        #     u.grad(Phi) and fade in the new Phi*div(u) term alongside --
+        #     a genuine term-isolated insertion, not a whole-line fade. ---
+        self.play(eq7[1].animate.set_color(ORANGE), run_time=0.5)
+        u_dot_grad = MathTex(r"\mathbf{u}\cdot\nabla\Phi", font_size=30, color=ORANGE).move_to(eq7[1], aligned_edge=LEFT)
+        new_term = MathTex(r"+ \Phi(\nabla\cdot\mathbf{u})", font_size=30, color=ORANGE).next_to(u_dot_grad, RIGHT, buff=0.12)
+        added_width = u_dot_grad.width + 0.12 + new_term.width - eq7[1].width
+        if added_width > 1e-3:
+            self.play(eq7[2].animate.shift(RIGHT * added_width))
+        self.play(FadeOut(eq7[1]), Write(u_dot_grad), Write(new_term), FadeOut(eq8))
+        self._hard_settle([eq7[1], eq8], [u_dot_grad, new_term])
+        expanded = VGroup(eq7[0], u_dot_grad, new_term, eq7[2])
         self.next_slide(
             notes="""
-            Expanding div(u*Phi) via the product rule adds this new term --
-            Eq. 8 (still visible below) is exactly what substitutes into it
-            next.
+            Product rule: div(u*Phi) = u.grad(Phi) + Phi*div(u) -- the
+            first piece replaces div(u*Phi) in place, the second is a
+            genuinely new term. Eq. 8 (div(u) in terms of J_s) is exactly
+            what substitutes into that new term next, so it fades out here
+            since it's now used up.
             """
         )
 
-        # Substitute Eq. 8's div(u): highlight, make room, THEN swap -- and
-        # Eq. 8 fades out in the same beat since it's now used up.
-        self.play(expanded[1].animate.set_color(ORANGE), run_time=0.5)
+        # Substitute Eq. 8's div(u), naming kappa right here (before Eq.
+        # 10's underbrace, which is now a confirming callback rather than
+        # kappa's first appearance): highlight, make room, THEN swap.
+        self.play(expanded[2].animate.set_color(ORANGE), run_time=0.5)
         kappa_term = MathTex(
             r"+ \Phi\,\kappa\,\nabla\cdot\mathbf{J}_s", font_size=30, color=ORANGE
-        ).move_to(expanded[1], aligned_edge=LEFT)
-        shift2 = kappa_term.width - expanded[1].width
+        ).move_to(expanded[2], aligned_edge=LEFT)
+        shift2 = kappa_term.width - expanded[2].width
         if shift2 > 1e-3:
-            self.play(expanded[2].animate.shift(RIGHT * shift2))
-        self.play(FadeOut(expanded[1]), FadeIn(kappa_term), FadeOut(eq8))
-        self._hard_settle([expanded[1], eq8], [kappa_term])
-        expanded.submobjects[1] = kappa_term
+            self.play(expanded[3].animate.shift(RIGHT * shift2))
+        kappa_def = MathTex(
+            r"\kappa := \frac{\rho_s^\circ-\rho_f^\circ}{\rho_s^\circ\rho_f^\circ}", font_size=24, color=ORANGE
+        ).to_corner(DL, buff=0.4)
+        self.play(FadeOut(expanded[2]), Write(kappa_term), FadeIn(kappa_def))
+        self._hard_settle([expanded[2]], [kappa_term])
+        expanded.submobjects[2] = kappa_term
         self.next_slide(
             notes="""
-            kappa*div(J_s) substituted in, using Eq. 8. Two honest flags
+            kappa*div(J_s) substituted in, using Eq. 8, and named kappa
+            right away -- (rho_s - rho_f)/(rho_s*rho_f). Two honest flags
             here, spoken rather than put on screen:
 
             1. The Phi*kappa*div(J_s) term that appears when you expand
@@ -466,13 +499,14 @@ class Presentation(Slide):
             r"\,\nabla\cdot\mathbf{J}_s",
             font_size=32,
         ).move_to(expanded)
-        self.play(FadeOut(expanded), FadeIn(eq10), run_time=1.3)
+        self.play(FadeOut(expanded), Write(eq10), run_time=1.3)
         self._hard_settle([expanded], [eq10])
         self.next_slide(
             notes="""
             Landing on Eq. 10, the master Phi-transport equation -- kappa
-            (underbraced) is (rho_s - rho_f)/(rho_s*rho_f), the same
-            combination that showed up isolating div(u) two steps ago.
+            (underbraced) is (rho_s - rho_f)/(rho_s*rho_f), confirming the
+            definition from two steps ago rather than introducing it for
+            the first time.
 
             Kappa has units of inverse density, which is worth a mental
             note but isn't a red flag about this derivation -- it's just
@@ -484,24 +518,31 @@ class Presentation(Slide):
             wrongly suggest this equation has a problem it doesn't.
             """
         )
-        self.play(FadeOut(header), FadeOut(eq10), FadeOut(legend5))
+        self.play(FadeOut(header), FadeOut(name5), FadeOut(eq10), FadeOut(kappa_def))
 
     def chapter_2c_flux_closure(self):
         header = self._header("Modeling. Closing the flux J_s.")
 
         # --- The flux decomposition and its two named pieces, all at once:
-        #     independent closures, not a chain derived line-by-line. ---
+        #     independent closures, not a chain derived line-by-line. A
+        #     sentence of physics, not just symbols: what each flux IS. ---
         e11 = MathTex(r"\mathbf{J}_s = \mathbf{J}_{s\mu} + \mathbf{J}_{sc}", font_size=32)
         e12 = MathTex(r"\mathbf{J}_{sc} = -a^2\Phi^2 k_{sc}\nabla(\dot{\gamma}\Phi)", font_size=26)
         e13 = MathTex(r"\mathbf{J}_{s\mu} = -a^2\Phi^2 k_\mu \nabla(\ln \mu)", font_size=26)
         group_a = VGroup(e11, e12, e13).arrange(DOWN, buff=0.4, aligned_edge=LEFT)
         group_a.to_edge(LEFT, buff=1.0).shift(UP * 1.6)
+        name_a = self._name("Flux decomposition", group_a)
+        physics_a = Text(
+            "Particles migrate two ways: pushed from high-shear regions toward low-shear\n"
+            "ones (J_sc), and pushed toward locally less-viscous fluid (J_sμ).",
+            font_size=20, color=GRAY_B,
+        ).next_to(group_a, DOWN, buff=0.5, aligned_edge=LEFT)
         legend_c = self._legend(
             r"$\mathbf{J}_{sc}$ -- shear-induced migration flux \quad $\mathbf{J}_{s\mu}$ -- viscosity-gradient flux \quad $a$ -- particle radius",
             r"$\dot{\gamma}$ -- shear-rate magnitude (derived next) \quad $k_{sc}, k_\mu$ -- empirical coefficients",
-        ).next_to(group_a, DOWN, buff=0.5, aligned_edge=LEFT)
+        ).to_corner(DL, buff=0.4)
 
-        self.play(FadeIn(header), LaggedStartMap(FadeIn, group_a, lag_ratio=0.2), FadeIn(legend_c))
+        self.play(FadeIn(header), FadeIn(name_a), LaggedStartMap(FadeIn, group_a, lag_ratio=0.2), FadeIn(legend_c))
         self.next_slide(
             notes="""
             These are independent modeling closures, not a chain where each
@@ -513,9 +554,20 @@ class Presentation(Slide):
             spatial viscosity variation (Eq. 13).
             """
         )
+        self.play(FadeIn(physics_a))
+        self.next_slide(
+            notes="""
+            The physical picture in one sentence: particles get pushed out
+            of high-shear regions toward low-shear ones (J_sc -- this is
+            THE effect this whole talk is about, the one that can fight
+            buoyancy), and separately pushed toward locally less-viscous
+            fluid (J_sμ, a much smaller secondary effect in this geometry).
+            """
+        )
+        self.play(FadeOut(legend_c))
 
         # --- Real step: add sedimentation to get the hindered-settling
-        #     form. group_a fades since it's now folded into this. ---
+        #     form. group_a and its prose fade since folded into this. ---
         e14 = VGroup(
             MathTex(
                 r"\frac{\mathbf{J}_s}{\rho_s} = "
@@ -525,10 +577,11 @@ class Presentation(Slide):
             MathTex(r"- f_h \mathbf{u}_{st}\Phi", font_size=28, color=ORANGE),
         ).arrange(RIGHT, buff=0.1)
         e14.to_edge(LEFT, buff=1.0).shift(UP * 1.6)
+        name_14 = self._name("Flux closure", e14)
         legend_c2 = self._legend(
             r"$D_\Phi, D_\mu$ -- empirical prefactors (below) \quad $f_h$ -- hindered-settling factor \quad $\mathbf{u}_{st}$ -- Stokes settling velocity",
-        ).move_to(legend_c, aligned_edge=LEFT)
-        self.play(FadeOut(group_a), FadeIn(e14), Transform(legend_c, legend_c2))
+        ).to_corner(DL, buff=0.4)
+        self.play(FadeOut(group_a), FadeOut(name_a), FadeOut(physics_a), FadeIn(name_14), FadeIn(e14), FadeIn(legend_c2))
         self.next_slide(
             notes="""
             Eq. 14 is Eqs. 12-13's bracketed terms (renamed D_Phi, D_mu, and
@@ -544,12 +597,13 @@ class Presentation(Slide):
         e17 = MathTex(r"\mathbf{u}_{st} = \frac{2a^2(\rho_s-\rho_f)}{9\mu}\,\mathbf{g}", font_size=28)
         e18 = MathTex(r"f_h = \frac{\mu_f(1-\Phi_{avg})}{\mu}", font_size=28)
         group_b = VGroup(e1516, e17, e18).arrange(DOWN, buff=0.5, aligned_edge=LEFT)
-        group_b.next_to(legend_c, DOWN, buff=0.5, aligned_edge=LEFT)
+        group_b.next_to(e14, DOWN, buff=0.9, aligned_edge=LEFT)
         legend_c3 = self._legend(
+            r"$D_\Phi, D_\mu$ -- empirical prefactors \quad $f_h$ -- hindered-settling factor \quad $\mathbf{u}_{st}$ -- Stokes settling velocity",
             r"$\Phi_{avg}$ -- domain-average particle volume fraction",
-        ).next_to(group_b, DOWN, buff=0.3, aligned_edge=LEFT)
+        ).to_corner(DL, buff=0.4)
 
-        self.play(FadeIn(group_b), FadeIn(legend_c3))
+        self.play(FadeIn(group_b), Transform(legend_c2, legend_c3))
         self.next_slide(
             notes="""
             The empirical prefactors (Eq. 15-16), the Stokes settling
@@ -561,42 +615,35 @@ class Presentation(Slide):
             replacing the last.
             """
         )
-        self.play(FadeOut(header), FadeOut(e14), FadeOut(group_b), FadeOut(legend_c), FadeOut(legend_c3))
+        self.play(FadeOut(header), FadeOut(name_14), FadeOut(e14), FadeOut(group_b), FadeOut(legend_c2))
 
     def chapter_2d_shear_rate(self):
+        # Condensed to one slide: all three equivalent forms of the same
+        # quantity shown together, rather than paced one at a time.
         header = self._header("Modeling. Shear rate.")
-        e_main = self._start_eq(eq(r"\dot{\boldsymbol{\gamma}} = \nabla\mathbf{u} + \nabla\mathbf{u}^{T}").to_edge(LEFT, buff=1.0))
+        e1 = eq(r"\dot{\boldsymbol{\gamma}} = \nabla\mathbf{u} + \nabla\mathbf{u}^{T}", font_size=32)
+        e2 = eq(r"\dot{\gamma} = \left[\tfrac{1}{2}\left(\dot{\boldsymbol{\gamma}}\cdot\dot{\boldsymbol{\gamma}}\right)\right]^{1/2}", font_size=32)
+        e3 = eq(r"\dot{\gamma} = \left[\tfrac{1}{2}\left(4u_x^2 + 2(u_y+v_x)^2 + 4v_y^2\right)\right]^{1/2}", font_size=32)
+        group = VGroup(e1, e2, e3).arrange(DOWN, buff=0.5, aligned_edge=LEFT).to_edge(LEFT, buff=1.0)
+        name_d = self._name("Shear rate", group)
         legend_d = self._legend(
             r"$\dot{\boldsymbol{\gamma}}$ -- shear-rate tensor \quad $\mathbf{u}$ -- velocity field",
-        ).next_to(e_main, DOWN, buff=0.5, aligned_edge=LEFT)
-        self.play(FadeIn(header), Write(e_main), FadeIn(legend_d))
-        self.next_slide()
+            r"$u,v$ -- velocity components (x, y) \quad subscripts -- partial derivatives, e.g. $u_x=\partial u/\partial x$",
+        ).to_corner(DL, buff=0.4)
 
-        self._set_eq(
-            eq(r"\dot{\gamma} = \left[\tfrac{1}{2}\left(\dot{\boldsymbol{\gamma}}\cdot\dot{\boldsymbol{\gamma}}\right)\right]^{1/2}").to_edge(LEFT, buff=1.0)
-        )
-        self.next_slide()
-
-        legend_d2 = self._legend(
-            r"$\dot{\boldsymbol{\gamma}}$ -- shear-rate tensor \quad $u,v$ -- velocity components (x, y) \quad subscripts -- partial derivatives, e.g. $u_x=\partial u/\partial x$",
-        ).move_to(legend_d, aligned_edge=LEFT)
-        self.play(Transform(legend_d, legend_d2))
-        self._set_eq(
-            eq(
-                r"\dot{\gamma} = \left[\tfrac{1}{2}\left(4u_x^2 + 2(u_y+v_x)^2 + 4v_y^2\right)\right]^{1/2}"
-            ).to_edge(LEFT, buff=1.0)
-        )
+        self.play(FadeIn(header), FadeIn(name_d))
+        self.play(LaggedStart(Write(e1), Write(e2), Write(e3), lag_ratio=0.4), FadeIn(legend_d))
         self.next_slide(
             notes="""
             The shear-rate tensor (Eq. 19) contracted with itself and
             square-rooted gives its scalar magnitude -- the general
-            double-dot-product form first, then written out in components
-            for this model's 2D velocity field (u, v) as Eq. 20. Two visible
-            steps: the general contraction, then the component expansion --
-            not one jump straight to the component form.
+            double-dot-product form -- then written out in components for
+            this model's 2D velocity field (u, v) as Eq. 20. All three
+            forms of the same quantity, together rather than paced one at
+            a time: the tensor, its contraction, and the component form.
             """
         )
-        self.play(FadeOut(header), FadeOut(self.eq), FadeOut(legend_d))
+        self.play(FadeOut(header), FadeOut(name_d), FadeOut(group), FadeOut(legend_d))
 
     def chapter_2e_assemble(self):
         header = self._header("Modeling. Assembling the master Φ-equation.")
@@ -632,7 +679,7 @@ class Presentation(Slide):
             r"\kappa\,\rho_s\,\nabla\cdot\left\{-\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right] - f_h\mathbf{u}_{st}\Phi\right\}",
             font_size=26, color=ORANGE,
         ).move_to(hero[1], aligned_edge=LEFT)
-        self.play(FadeOut(hero[1]), FadeIn(step1))
+        self.play(FadeOut(hero[1]), Write(step1))
         self._hard_settle([hero[1]], [step1])
         hero.submobjects[1] = step1
         # hero[0] is a fixed left anchor and every swap above preserves it
@@ -681,7 +728,7 @@ class Presentation(Slide):
             r"\right\}",
             font_size=24,
         ).move_to(hero[1], aligned_edge=LEFT)
-        self.play(FadeOut(hero[1]), FadeIn(final_rhs))
+        self.play(FadeOut(hero[1]), Write(final_rhs))
         self._hard_settle([hero[1]], [final_rhs])
         hero.submobjects[1] = final_rhs
         if hero.width > MAX_EQ_WIDTH:
@@ -691,7 +738,7 @@ class Presentation(Slide):
         self.next_slide()
 
         note = Text(
-            "This is the one equation that determines where the cells go.",
+            "This is the coupled Φ-transport equation.",
             font_size=26, color=YELLOW,
         ).to_edge(DOWN, buff=0.5)
         self.play(FadeIn(note), run_time=1.3)
@@ -710,51 +757,58 @@ class Presentation(Slide):
     def chapter_2f_rest_of_model(self):
         header = self._header("Modeling. Rest of the model.")
 
-        # --- Pair 1: boundary conditions ---
-        e22 = MathTex(r"\tau_w = \frac{4\mu_f(\mathbf{u}-\mathbf{u}_w)}{L}", font_size=32)
-        e23 = MathTex(r"\mathbf{u}_r = \omega (y,-x)", font_size=32)
-        pair1 = VGroup(e22, e23).arrange(DOWN, buff=0.5, aligned_edge=LEFT).to_edge(LEFT, buff=1.0)
-        legend_f1 = self._legend(
-            r"$\tau_w$ -- wall shear stress \quad $\mathbf{u}_w$ -- wall velocity \quad $L$ -- gap half-width \quad $\omega$ -- vessel angular velocity",
-        ).next_to(pair1, DOWN, buff=0.5, aligned_edge=LEFT)
-        self.play(FadeIn(header), LaggedStart(FadeIn(e22), FadeIn(e23), lag_ratio=0.4), FadeIn(legend_f1))
-        self.next_slide(
-            notes="""
-            Four independent relations round out the model -- none derived
-            from each other, so they accumulate on screen in two related
-            pairs rather than morphing one into the next. First pair: wall
-            shear stress (Eq. 22) and the rotational wall velocity (Eq. 23)
-            -- the two boundary conditions closing the momentum equation at
-            the vessel wall. Independent of each other and of everything
-            derived so far.
-            """
-        )
-        self.play(FadeOut(pair1), FadeOut(legend_f1))
+        # --- Both remaining pairs on one slide, each with its own name --
+        # four independent relations, none derived from each other or from
+        # anything else in this model, so they accumulate together
+        # instead of each getting a separate slide. ---
+        e22 = MathTex(r"\tau_w = \frac{4\mu_f(\mathbf{u}-\mathbf{u}_w)}{L}", font_size=30)
+        e23 = MathTex(r"\mathbf{u}_r = \omega (y,-x)", font_size=30)
+        pair1 = VGroup(e22, e23).arrange(DOWN, buff=0.4, aligned_edge=LEFT)
+        pair1.to_edge(LEFT, buff=1.0).shift(UP * 2.1)
+        name1 = self._name("Boundary conditions", pair1)
 
-        # --- Pair 2: nutrient + growth ---
         e2425 = MathTex(
             r"\frac{dC}{dt} + \mathbf{u}\cdot\nabla C = D_f \nabla^2 C + r_c"
             r"\qquad r_c = -\mu_c \cdot d",
-            font_size=30,
+            font_size=28,
         )
-        e26 = MathTex(r"\frac{\partial d}{\partial t} = k_c \cdot C \cdot d_0 \cdot e^{k_e t}", font_size=30)
-        e28 = MathTex(r"\Phi = \frac{\pi}{6} d\, a^3", font_size=30)
-        pair2 = VGroup(e2425, e26, e28).arrange(DOWN, buff=0.5, aligned_edge=LEFT).to_edge(LEFT, buff=1.0)
-        legend_f2 = self._legend(
-            r"$C$ -- nutrient concentration \quad $D_f$ -- nutrient diffusivity \quad $r_c$ -- consumption rate \quad $d$ -- cell diameter",
-            r"$\mu_c$ -- consumption-rate constant \quad $k_c, k_e$ -- growth-rate constants \quad $d_0$ -- initial cell diameter",
-        ).next_to(pair2, DOWN, buff=0.5, aligned_edge=LEFT)
-        self.play(LaggedStart(FadeIn(e2425), FadeIn(e26), FadeIn(e28), lag_ratio=0.3), FadeIn(legend_f2))
+        e26 = MathTex(r"\frac{\partial d}{\partial t} = k_c \cdot C \cdot d_0 \cdot e^{k_e t}", font_size=28)
+        e28 = MathTex(r"\Phi = \frac{\pi}{6} d\, a^3", font_size=28)
+        e2425.next_to(pair1, DOWN, buff=0.9, aligned_edge=LEFT)
+        name_nutrient = self._name("Nutrient", e2425)
+        growth = VGroup(e26, e28).arrange(DOWN, buff=0.4, aligned_edge=LEFT)
+        growth.next_to(e2425, DOWN, buff=0.7, aligned_edge=LEFT)
+        name_growth = self._name("Growth", growth)
+        pair2 = VGroup(e2425, growth)
+
+        legend = self._legend(
+            r"$\tau_w$ -- wall shear stress \quad $\mathbf{u}_w$ -- wall velocity \quad $L$ -- gap half-width \quad $\omega$ -- vessel angular velocity",
+            r"$C$ -- nutrient concentration \quad $D_f$ -- nutrient diffusivity \quad $r_c$ -- consumption rate \quad $d$ -- cell diameter \quad $\mu_c$ -- consumption-rate constant",
+            r"$k_c, k_e$ -- growth-rate constants \quad $d_0$ -- initial cell diameter",
+        ).to_corner(DL, buff=0.4)
+
+        self.play(FadeIn(header), FadeIn(name1), LaggedStart(FadeIn(e22), FadeIn(e23), lag_ratio=0.4))
+        self.play(FadeIn(name_nutrient), FadeIn(e2425))
+        self.play(FadeIn(name_growth), LaggedStart(FadeIn(e26), FadeIn(e28), lag_ratio=0.3), FadeIn(legend))
         self.next_slide(
             notes="""
-            Second pair: nutrient transport and consumption (Eq. 24-25),
-            the cell-growth kinetics driven by that nutrient (Eq. 26), and
-            the relation between cell density and volume fraction (Eq. 28)
-            that feeds growth back into Phi. Three more independent
-            relations, accumulated together rather than chained by fade.
+            Four more independent relations round out the model -- none
+            derived from each other, so they accumulate on screen together
+            in three named groups rather than each getting its own slide.
+
+            Boundary conditions: wall shear stress and the rotational wall
+            velocity, closing the momentum equation at the vessel wall.
+
+            Nutrient: transport and consumption. Growth: the cell-growth
+            kinetics driven by that nutrient, and the relation between
+            cell density and volume fraction that feeds growth back into
+            Phi.
             """
         )
-        self.play(FadeOut(header), FadeOut(pair2), FadeOut(legend_f2))
+        self.play(
+            FadeOut(header), FadeOut(name1), FadeOut(pair1),
+            FadeOut(name_nutrient), FadeOut(name_growth), FadeOut(pair2), FadeOut(legend),
+        )
 
     def chapter_2g_summary(self):
         title = Text("Every equation that defines the model", font_size=32, weight=BOLD).to_edge(UP)
