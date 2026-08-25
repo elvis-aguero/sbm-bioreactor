@@ -24,6 +24,7 @@ inspecting frames, not just by reading the animation-class docs.
 """
 from pathlib import Path
 
+import numpy as np
 from manim import *
 from manim_slides import Slide
 
@@ -337,7 +338,13 @@ class Presentation(Slide):
         definition = MathTex(
             r"\mathbf{u}_s = \mathbf{u} + (1-c_s)\mathbf{u}_{slip}", font_size=26
         ).set_color(ORANGE).next_to(eq5, DOWN, buff=0.6, aligned_edge=LEFT)
-        self.play(FadeIn(definition))
+        # c_s appears in "definition" the moment it's shown, so the legend
+        # has to define it right here too -- not one beat later, when it
+        # would otherwise be sitting on screen undefined.
+        new_legend5 = self._legend(
+            r"$\Phi$ -- particle volume fraction \quad $c_s$ -- local solid fraction \quad $\mathbf{u}_{slip}$ -- slip velocity (solid $-$ fluid)",
+        ).to_corner(DL, buff=0.4)
+        self.play(FadeIn(definition), Transform(legend5, new_legend5))
         self.next_slide()
 
         replacement = MathTex(
@@ -351,13 +358,9 @@ class Presentation(Slide):
         shift = replacement.width - eq5[2].width
         if shift > 1e-3:
             self.play(eq5[3].animate.shift(RIGHT * shift))
-        new_legend5 = self._legend(
-            r"$\Phi$ -- particle volume fraction \quad $c_s$ -- local solid fraction \quad $\mathbf{u}_{slip}$ -- slip velocity (solid $-$ fluid)",
-        ).to_corner(DL, buff=0.4)
         self.play(
             FadeOut(definition), FadeOut(eq5[1]), FadeOut(eq5[2]),
             FadeIn(new_sign), FadeIn(replacement),
-            Transform(legend5, new_legend5),
         )
         self._hard_settle([definition, eq5[1], eq5[2]], [new_sign, replacement])
         eq5.submobjects[1] = new_sign
@@ -895,7 +898,11 @@ class Presentation(Slide):
             roundabout form as if it were the only way to write it.
             """
         )
-        self.play(FadeOut(kappa_calc))
+        # kappa_calc stays up (same standard as kappa_def a couple of
+        # chapters back) rather than flashing for one beat and vanishing --
+        # it's a live cross-check the audience can still glance back at
+        # while the sedimentation substitution below happens, and only
+        # closes out with the rest of the chapter.
 
         # --- Substitute the Stokes-velocity / hindered-settling closures
         #     into the sedimentation term -- the other, independent
@@ -941,7 +948,7 @@ class Presentation(Slide):
         ).to_edge(DOWN, buff=0.5)
         self.play(FadeIn(note), run_time=1.3)
         self.next_slide()
-        self.play(FadeOut(header), FadeOut(hero), FadeOut(note))
+        self.play(FadeOut(header), FadeOut(hero), FadeOut(note), FadeOut(kappa_calc))
 
     def chapter_2f_rest_of_model(self):
         header = self._header("Modeling. Rest of the model.")
@@ -1128,22 +1135,31 @@ class Presentation(Slide):
         self.play(FadeOut(title), FadeOut(lines))
 
     # ------------------------------------------------------------------
-    def _fem_mesh_graphic(self, rows=5, cols=6, cell=0.42):
-        # A plain triangulated-mesh illustration -- grid lines plus one
-        # diagonal per cell -- drawn with manim primitives to match this
-        # deck's other schematics (chapter_1's HARV sketch), not an
-        # external plot image.
+    def _fem_mesh_graphic(self, n=10, radius=1.15):
+        # The actual mesh src/examples.jl's build_harv_2d_case builds: an
+        # n x n Cartesian grid of straight-sided quadrilaterals on a
+        # reference square (n=10 is that function's own default
+        # partition), warped onto the disk by harv_square_to_disk() --
+        # ported here verbatim, not re-derived -- rather than a
+        # stand-in schematic grid. No diagonals: Gridap's
+        # CartesianDiscreteModel keeps quad cells here, it's never
+        # simplexified into triangles.
+        def warp(x, y):
+            X, Y = x / radius, y / radius
+            x_new = X * (1.0 - Y ** 2 / 2.0) ** 0.5
+            y_new = Y * (1.0 - X ** 2 / 2.0) ** 0.5
+            return np.array([x_new * radius, y_new * radius, 0.0])
+
+        coords = [-radius + 2 * radius * k / n for k in range(n + 1)]
+        nodes = [[warp(x, y) for y in coords] for x in coords]
+
         lines = VGroup()
-        for i in range(rows + 1):
-            lines.add(Line(RIGHT * 0 + UP * i * cell, RIGHT * cols * cell + UP * i * cell, stroke_width=1.5, color=GRAY_B))
-        for j in range(cols + 1):
-            lines.add(Line(RIGHT * j * cell + UP * 0, RIGHT * j * cell + UP * rows * cell, stroke_width=1.5, color=GRAY_B))
-        for i in range(rows):
-            for j in range(cols):
-                lines.add(Line(
-                    RIGHT * j * cell + UP * i * cell, RIGHT * (j + 1) * cell + UP * (i + 1) * cell,
-                    stroke_width=1, color=GRAY_D,
-                ))
+        for i in range(n + 1):
+            for j in range(n):
+                lines.add(Line(nodes[i][j], nodes[i][j + 1], stroke_width=1, color=GRAY_B))
+        for j in range(n + 1):
+            for i in range(n):
+                lines.add(Line(nodes[i][j], nodes[i + 1][j], stroke_width=1, color=GRAY_B))
         return lines
 
     def chapter_4_implementation(self):
@@ -1219,6 +1235,13 @@ class Presentation(Slide):
             """
         )
         self.play(FadeOut(title), FadeOut(headline), FadeOut(mesh), FadeOut(fields))
+        # Close this slide out on its own -- otherwise this fade-out has no
+        # next_slide() of its own and gets swept into the results chapter's
+        # zero-animation src= slide below, which needs two keystrokes (one
+        # to finish this fade, a second to actually reveal the external
+        # video). This used to be handled by chapter_5_verification's own
+        # trailing next_slide() before that chapter was removed.
+        self.next_slide()
 
     # ------------------------------------------------------------------
     def chapter_6_results(self):
@@ -1279,16 +1302,42 @@ class Presentation(Slide):
         )
 
     # ------------------------------------------------------------------
+    def _radial_density_schematic(self, radius=1.15, rings=30):
+        # Schematic radial cell-density profile -- illustrates the paper's
+        # own description (peak density at mid-radius, not the exact
+        # centre or the wall) rather than reproducing its actual Figure
+        # 4/7, which we don't have the underlying data for. Painted as
+        # concentric filled rings, largest first so each smaller one
+        # layers on top.
+        group = VGroup()
+        for i in range(rings, 0, -1):
+            r = radius * i / rings
+            x = i / rings
+            density = float(np.exp(-((x - 0.55) ** 2) / (2 * 0.16 ** 2)))
+            color = interpolate_color(BLUE_E, YELLOW, density)
+            group.add(Circle(radius=r, color=color, fill_color=color, fill_opacity=1.0, stroke_width=0))
+        return group
+
     def chapter_6a_paper_results(self):
         title = Text("What the paper itself found", font_size=36, weight=BOLD).to_edge(UP, buff=0.6)
+
+        density = self._radial_density_schematic().to_edge(LEFT, buff=1.3).shift(DOWN * 0.2)
+        density_caption = Text(
+            "Cell density vs. radius, schematic --\nthe paper's described pattern, not its actual figure",
+            font_size=16, color=GRAY_B, line_spacing=0.9,
+        ).next_to(density, DOWN, buff=0.35, aligned_edge=LEFT)
+        if density_caption.get_left()[0] < -6.9:
+            density_caption.to_edge(LEFT, buff=0.4)
+
         points = BulletedList(
             "Cells settle into concentric rings, densest at mid-radius",
             "Nutrient stays fairly uniform, with a mild outer-to-inner decrease",
             "Checked against two independent experiments (Pollack et al.; Altamirano et al.)",
-            font_size=26,
-        )
+            font_size=24,
+        ).scale_to_fit_width(6.2).next_to(density, RIGHT, buff=1.0)
 
         self.play(FadeIn(title))
+        self.play(FadeIn(density), FadeIn(density_caption))
         self.play(LaggedStart(*[FadeIn(p) for p in points], lag_ratio=0.4))
         self.next_slide(
             notes="""
@@ -1333,19 +1382,56 @@ class Presentation(Slide):
             simulation does not capture that.
             """
         )
-        self.play(FadeOut(title), FadeOut(points))
+        self.play(FadeOut(title), FadeOut(points), FadeOut(density), FadeOut(density_caption))
 
     # ------------------------------------------------------------------
+    def _growth_gap_plot(self, width=4.2, height=2.6):
+        # Schematic growth curves -- illustrates the shape of the gap the
+        # paper itself reports (real cultures keep growing 20-30h past
+        # nutrient depletion, the simulation doesn't), not digitized data
+        # from its actual Figure 10.
+        axes = Axes(
+            x_range=[0, 10, 5], y_range=[0, 1.1, 1.1],
+            x_length=width, y_length=height,
+            axis_config={"include_tip": False, "stroke_width": 1.5, "color": GRAY_B},
+        )
+        depletion_x = 4.0
+        real_curve = axes.plot(
+            lambda x: min(1.0, 0.22 * x) if x <= depletion_x else min(1.0, 0.22 * depletion_x + 0.08 * (x - depletion_x)),
+            x_range=[0, 10], color=GREEN_C, stroke_width=3,
+        )
+        sim_curve = axes.plot(
+            lambda x: 0.22 * x if x <= depletion_x else max(0.0, 0.22 * depletion_x - 0.35 * (x - depletion_x)),
+            x_range=[0, 10], color=RED_C, stroke_width=3,
+        )
+        marker = DashedLine(axes.c2p(depletion_x, 0), axes.c2p(depletion_x, 1.05), color=GRAY_B, stroke_width=1.5)
+        marker_label = Text("nutrient depleted", font_size=14, color=GRAY_B).next_to(marker, UP, buff=0.05)
+        legend = VGroup(
+            VGroup(Line(ORIGIN, RIGHT * 0.3, color=GREEN_C, stroke_width=3), Text("real culture", font_size=14, color=GRAY_B)).arrange(RIGHT, buff=0.1),
+            VGroup(Line(ORIGIN, RIGHT * 0.3, color=RED_C, stroke_width=3), Text("simulated", font_size=14, color=GRAY_B)).arrange(RIGHT, buff=0.1),
+        ).arrange(DOWN, buff=0.1, aligned_edge=LEFT).next_to(axes, UP, buff=0.15, aligned_edge=LEFT)
+        return VGroup(axes, real_curve, sim_curve, marker, marker_label, legend)
+
     def chapter_6b_paper_discussion(self):
         title = Text("What the paper concludes", font_size=36, weight=BOLD).to_edge(UP, buff=0.6)
+
+        growth = self._growth_gap_plot().to_edge(LEFT, buff=1.3).shift(DOWN * 0.2)
+        growth_caption = Text(
+            "Cell density over time, schematic --\nillustrates the reported gap's shape, not digitized data",
+            font_size=16, color=GRAY_B, line_spacing=0.9,
+        ).next_to(growth, DOWN, buff=0.35, aligned_edge=LEFT)
+        if growth_caption.get_left()[0] < -6.9:
+            growth_caption.to_edge(LEFT, buff=0.4)
+
         points = BulletedList(
             "Growth-kinetics gap: simulated cells die off after nutrient depletion, real cultures kept growing 20-30h longer",
             "Framed as a design-exploration tool, not a finished predictive model",
             "Their own words: several parameters are assumption-based -- further studies are needed",
-            font_size=24,
-        )
+            font_size=22,
+        ).scale_to_fit_width(6.2).next_to(growth, RIGHT, buff=1.0)
 
         self.play(FadeIn(title))
+        self.play(FadeIn(growth), FadeIn(growth_caption))
         self.play(LaggedStart(*[FadeIn(p) for p in points], lag_ratio=0.4))
         self.next_slide(
             notes="""
@@ -1380,7 +1466,7 @@ class Presentation(Slide):
             explicitly for the room.
             """
         )
-        self.play(FadeOut(title), FadeOut(points))
+        self.play(FadeOut(title), FadeOut(points), FadeOut(growth), FadeOut(growth_caption))
 
     # ------------------------------------------------------------------
     def chapter_7_takeaways(self):
