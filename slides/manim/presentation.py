@@ -396,7 +396,6 @@ class Presentation(Slide):
         ).arrange(RIGHT, buff=0.08).move_to(eq4, aligned_edge=LEFT)
         self.play(FadeOut(eq4), FadeOut(eq4_label), Write(eq8_raw))
         self._hard_settle([eq4, eq4_label], [eq8_raw])
-        self.wait(0.1)
         self.next_slide(
             notes="""
             Step 1 of 2, pure algebra: move the rho_f*div(u) term to the
@@ -420,7 +419,6 @@ class Presentation(Slide):
         ).arrange(RIGHT, buff=0.15).move_to(eq8_raw, aligned_edge=LEFT)
         self.play(FadeOut(eq8_raw), Write(eq8), FadeOut(js_def))
         self._hard_settle([eq8_raw, js_def], [eq8])
-        self.wait(0.1)
         self.next_slide(
             notes="""
             Step 2 of 2: the bracketed slip-flux term is exactly J_s/rho_s
@@ -442,7 +440,6 @@ class Presentation(Slide):
         ).arrange(RIGHT, buff=0.15).move_to(eq8, aligned_edge=LEFT)
         self.play(FadeOut(eq8), Write(eq8_named), FadeIn(kappa_def))
         self._hard_settle([eq8], [eq8_named])
-        self.wait(0.1)
         eq8 = eq8_named
         self.next_slide(
             notes="""
@@ -468,7 +465,6 @@ class Presentation(Slide):
         ).next_to(dist_a, RIGHT, buff=0.1)
         self.play(FadeOut(eq5[1]), FadeOut(eq5[2]), FadeOut(eq5[3]), Write(dist_a), Write(dist_b))
         self._hard_settle([eq5[1], eq5[2], eq5[3]], [dist_a, dist_b])
-        self.wait(0.1)
         self.next_slide(
             notes="""
             Step 1 of 2, pure algebra: distributing the divergence over
@@ -494,7 +490,6 @@ class Presentation(Slide):
         piece2 = MathTex(r"= -\frac{\nabla\cdot\mathbf{J}_s}{\rho_s^\circ}", font_size=32).next_to(piece1, RIGHT, buff=0.1)
         self.play(FadeOut(dist_a), FadeOut(dist_b), Write(piece1), Write(piece2))
         self._hard_settle([dist_a, dist_b], [piece1, piece2])
-        self.wait(0.1)
         eq7 = VGroup(eq5[0], piece1, piece2)
         self.next_slide(
             notes="""
@@ -525,7 +520,6 @@ class Presentation(Slide):
             self.play(piece2.animate.shift(RIGHT * added_width))
         self.play(FadeOut(piece1), Write(u_dot_grad), Write(new_term))
         self._hard_settle([piece1], [u_dot_grad, new_term])
-        self.wait(0.1)
         expanded = VGroup(eq5[0], u_dot_grad, new_term, piece2)
         self.next_slide(
             notes="""
@@ -549,7 +543,6 @@ class Presentation(Slide):
             self.play(expanded[3].animate.shift(RIGHT * shift2))
         self.play(FadeOut(new_term), Write(kappa_term), FadeOut(eq8))
         self._hard_settle([new_term, eq8], [kappa_term])
-        self.wait(0.1)
         expanded.submobjects[2] = kappa_term
         self.next_slide(
             notes="""
@@ -580,7 +573,6 @@ class Presentation(Slide):
         ).move_to(expanded)
         self.play(FadeOut(expanded), Write(eq10), run_time=1.3)
         self._hard_settle([expanded], [eq10])
-        self.wait(0.1)
         self.next_slide(
             notes="""
             Landing on Eq. 10, the master Phi-transport equation -- kappa
@@ -776,7 +768,6 @@ class Presentation(Slide):
             hero.generate_target()
             hero.target.scale_to_fit_width(MAX_EQ_WIDTH, about_edge=LEFT)
             self.play(MoveToTarget(hero))
-        self.wait(0.1)
         self.next_slide(
             notes="""
             J_s (divided by rho_s in Eq. 14) becomes rho_s times that same
@@ -806,7 +797,6 @@ class Presentation(Slide):
             hero.generate_target()
             hero.target.scale_to_fit_width(MAX_EQ_WIDTH, about_edge=LEFT)
             self.play(MoveToTarget(hero))
-        self.wait(0.1)
         self.next_slide(
             notes="""
             Expanding kappa back into (rho_f-rho_s)/(rho_s*rho_f) -- the
@@ -867,7 +857,6 @@ class Presentation(Slide):
             hero.generate_target()
             hero.target.scale_to_fit_width(MAX_EQ_WIDTH, about_edge=LEFT)
             self.play(MoveToTarget(hero))
-        self.wait(0.1)
         self.next_slide(
             notes="""
             Eq. 21: Stokes velocity (Eq. 17) and the hindered-settling
