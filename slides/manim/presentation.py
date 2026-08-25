@@ -114,7 +114,7 @@ class Presentation(Slide):
             "Suspension dynamics in a rotating bioreactor", font_size=28, color=GRAY_B
         ).next_to(title, DOWN, buff=0.5)
         citation = Text(
-            "Chao & Das (2015), Chem. Eng. J. -- re-implemented & verified",
+            "An open-source reimplementation of Chao & Das (2015), Chem. Eng. J.",
             font_size=20, color=GRAY,
         ).next_to(subtitle, DOWN, buff=0.6)
 
