@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Manim Slides</title>
+<link href="presentation_highlevel_assets/reveal.css" rel="stylesheet"/>
+<link href="presentation_highlevel_assets/black.css" rel="stylesheet"/>
+<!-- Theme used for syntax highlighting of code -->
+<!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+<link href="presentation_highlevel_assets/zenburn.css" rel="stylesheet"/>
+<!-- <link rel="stylesheet" href="index.css"> -->
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/c37d8580cbfb59ce664399802668528017e31853594aa866400f38582bc6b25a.mp4" data-background-video-muted="">
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/065536072732448699e1351c3df23d84f6199cf5c326fefe3c4a7b4d9fb29ee0.mp4">
+<aside class="notes" data-markdown="">
+Short version of the deck: no derivation on screen, just the
+final equations that define the model, one per slide, then the
+implementation and a results video. Good for an audience that
+wants the shape of the model and the result, not the algebra.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/0b455905baa3b39fa481fd4c689eee860dcdcf41b22c3d3529a5d74f35f9b6a5.mp4">
+<aside class="notes" data-markdown="">
+This is the only momentum equation in the model -- fluid and
+suspended cells move together as one mixture, no separate
+momentum balance for the solid phase. Density and viscosity
+both depend on the local particle volume fraction Phi, defined
+next slide -- that coupling is what makes this system nonlinear
+and is where the suspension physics actually enters.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/51e5f582eaa3795cfec275fbf33e5ec5986362c3944828a91593608db1a2ce3a.mp4">
+<aside class="notes" data-markdown="">
+Both closures are algebraic -- no new PDEs, they just define
+rho and mu as functions of Phi so the momentum equation above
+can be solved. The Krieger-Dougherty viscosity is an empirical
+closure from the suspension-rheology literature, not derived in
+this paper -- cited, not original to it.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/4dbeafe5cbdb3139f818a6dba3a12b981759e779a1b228cfa0038e56bfe5d1a5.mp4">
+<aside class="notes" data-markdown="">
+This is our own re-derivation of the paper's Phi-transport
+equation, verified from first principles with sympy
+(scripts/verify_paper_equations.py) -- the paper's own printed
+Eq. 10 states two different forms of this coefficient and
+claims they're equal; they aren't, about 20x apart at the
+paper's own Table 1 densities. This slide shows the
+mathematically correct form. Full derivation and the paper
+comparison are in the other deck / the verification script, not
+here.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/1c424a6210c04e2d9ed95dd4f6a98619a6416b12e71ecb7d6bccd3f134dcd8ee.mp4">
+<aside class="notes" data-markdown="">
+Three competing migration mechanisms in one flux. Worth noting
+for anyone who wants the detail: the paper's own printed
+equations 12-14 aren't fully self-consistent about the power of
+Phi in the shear-migration term (linear in one place, quadratic
+in another) -- we picked the form shown here (matching their
+Eq. 14) and disclose that choice; not re-litigating it on this
+slide.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/917cd6795e421d12a41e5a2c93c09b1bb3a1e9576a37b22363cb2f631c45c035.mp4">
+<aside class="notes" data-markdown="">
+No new physical unknowns here -- gamma-dot is fully determined
+by u, which is already in the system. It's lifted into its own
+finite-element field in the implementation only because
+differentiating sqrt() of a quadratic form directly is singular
+at zero shear; more on that in the implementation slide.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/251289ce62cc494c3729d28c14b90aee38316ffa1d8e976b2f1a1c7a5eb9bc17.mp4">
+<aside class="notes" data-markdown="">
+The second transport equation in the system, coupled to the
+flow the same way Phi is -- advected by u, plus its own
+diffusion and a sink term for consumption by the cells. Feeds
+into growth kinetics on the next slide.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/d8dc8f33408b7a90693192c5c9494574b297fe2b9202e60e0ee77714ab693404.mp4">
+<aside class="notes" data-markdown="">
+Closes the loop: nutrient concentration C drives cell-density
+growth d, which converts to volume fraction Phi, which feeds
+back into density/viscosity and the migration flux. Worth
+flagging in discussion if it comes up: the paper uses two
+distinct symbols for the growth-rate and nutrient-consumption
+constants; our code currently reuses one parameter (kc) for
+both -- a disclosed simplification, not a bug.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/7bc9a92ae5e872c1199268548115320cba0ec499c84b7ee249167cd3bc1b2f9f.mp4">
+<aside class="notes" data-markdown="">
+The complete model, all seven pieces side by side -- exactly
+what was shown one slide at a time on the previous seven
+slides, just gathered here for reference before moving on to
+the implementation.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/faaa147c375709ff67578b1fa1c3a896a3cb519a84c3fb74399cacf8627d7693.mp4">
+<aside class="notes" data-markdown="">
+All five fields (u, p, Phi, C, Gamma) in one coupled nonlinear
+system, solved together each timestep with Newton's method --
+not a segregated/split scheme. Monolithic is more expensive per
+step but avoids splitting error entirely.
+
+Verified two independent ways: the hand-derived analytic
+Jacobian matches Gridap's own automatic differentiation of the
+same residual to under 1e-8 relative error (a CI regression
+test); separately, the full nonlinear system is checked against
+the Method of Manufactured Solutions, confirming the solver
+converges to a known exact solution to near machine precision.
+Not just "the plots look plausible."
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/5f2825a75b6251df69c7e1fdc203c2fa531163d76d2d6ea589bfd9acfc047c6b.mp4">
+<aside class="notes" data-markdown="">
+Same simulation, same timestamps, two views side by side -- the
+flow driving the migration (right) next to the concentration
+field it's redistributing (left).
+
+Deliberately adversarial initial condition: cells start in the
+upper half of the disk, exactly where buoyancy alone (they're
+less dense than the surrounding medium) would want to hold
+them anyway. If buoyancy were the only thing going on, nothing
+would move. Watch whether the concentration field visibly
+redistributes away from that buoyancy-favored configuration,
+tracking where the flow field is most active -- that's
+shear-induced migration actively competing with buoyancy, the
+qualitative claim the whole paper is built on.
+
+Two caveats, stated plainly: (1) the timestep was chosen to
+resolve the Hele-Shaw drag relaxation time, the one fast
+process in this model; (2) buoyancy is artificially scaled up
+~10^6x for this clip only, so its effect is visible on the same
+timescale as shear-induced migration -- the momentum equation's
+own gravity term is untouched, only the settling flux is
+scaled, and only in this script.
+
+This is a qualitative, illustrative result on a coarse mesh
+with interpolated frames for smooth playback -- not a converged
+production run. Now open for discussion.
+</aside>
+</section>
+</div>
+</div>
+<script src="presentation_highlevel_assets/reveal.js"></script>
+<script src="presentation_highlevel_assets/notes.js"></script>
+<!-- To include plugins, see: https://revealjs.com/plugins/ -->
+<script src="presentation_highlevel_assets/markdown.js"></script>
+<!-- <script src="index.js"></script> -->
+<script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: false,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'bottom-right',
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+        // Display a presentation progress bar
+        progress: false,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: false,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+</body>
+</html>
