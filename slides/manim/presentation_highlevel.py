@@ -5,8 +5,11 @@ A SEPARATE, shorter deck from presentation.py. Where presentation.py builds
 every equation on screen step by step (full algebra, red-flagged paper
 discrepancies inline), this deck skips the derivation entirely: one final
 equation per slide (Name / Equation / Physical meaning / Undefined terms),
-then the same summary table, implementation, and results-video slides as
-the main deck, reused verbatim. Built mechanically per an explicit request
+then the same summary table and implementation slides as the main deck
+(reused verbatim), followed by a results section (test-case setup /
+video / paper's own takeaways / cross-field relevance) aimed at a
+general audience, not just fluids specialists. Built mechanically per
+an explicit request
 -- this file intentionally duplicates a few small helpers from
 presentation.py rather than importing from it, so the two decks can keep
 evolving independently.
@@ -53,7 +56,10 @@ class Presentation(Slide):
         self.chapter_7_growth()
         self.chapter_8_summary()
         self.chapter_9_implementation()
-        self.chapter_10_results()
+        self.chapter_10_results_setup()
+        self.chapter_11_results_video()
+        self.chapter_12_paper_takeaways()
+        self.chapter_13_broader_relevance()
 
     def next_slide(self, *args, **kwargs):
         result = super().next_slide(*args, **kwargs)
@@ -388,26 +394,44 @@ class Presentation(Slide):
         self.next_slide()
 
     # ------------------------------------------------------------------
-    def chapter_10_results(self):
+    def chapter_10_results_setup(self):
+        title = Text("Putting it to the test", font_size=36, weight=BOLD).to_edge(UP, buff=0.6)
+
+        setup = BulletedList(
+            "Adversarial initial condition: cells start exactly where\\\\buoyancy alone would already want to hold them",
+            "Question: does shear-induced migration visibly compete\\\\with that passive, buoyancy-favored equilibrium?",
+            font_size=28,
+        ).next_to(title, DOWN, buff=0.8)
+
+        self.play(FadeIn(title))
+        self.play(LaggedStart(*[FadeIn(b) for b in setup], lag_ratio=0.4))
+        self.next_slide(
+            notes="""
+            Cells here are less dense than the surrounding medium
+            (buoyant), and are placed in the upper half of the disk at
+            t=0 -- exactly the configuration buoyancy alone would want
+            anyway. If buoyancy were the only thing going on, the
+            concentration field would just sit there.
+
+            What follows is the same simulation shown two ways side by
+            side: the flow field driving migration, next to the
+            concentration field it's redistributing. Watch whether Phi
+            visibly moves away from that buoyancy-favored starting point,
+            tracking where the flow is most active -- that's
+            shear-induced migration actively fighting passive buoyant
+            equilibrium, the qualitative claim the whole paper is built
+            on.
+            """
+        )
+        self.play(FadeOut(title), FadeOut(setup))
+
+    # ------------------------------------------------------------------
+    def chapter_11_results_video(self):
         # Zero-animation slide: the entire content is the external video
         # (which already carries its own on-screen captions).
         self.next_slide(
             src=RESULTS_VIDEO,
             notes="""
-            Same simulation, same timestamps, two views side by side -- the
-            flow driving the migration (right) next to the concentration
-            field it's redistributing (left).
-
-            Deliberately adversarial initial condition: cells start in the
-            upper half of the disk, exactly where buoyancy alone (they're
-            less dense than the surrounding medium) would want to hold
-            them anyway. If buoyancy were the only thing going on, nothing
-            would move. Watch whether the concentration field visibly
-            redistributes away from that buoyancy-favored configuration,
-            tracking where the flow field is most active -- that's
-            shear-induced migration actively competing with buoyancy, the
-            qualitative claim the whole paper is built on.
-
             Two caveats, stated plainly: (1) the timestep was chosen to
             resolve the Hele-Shaw drag relaxation time, the one fast
             process in this model; (2) buoyancy is artificially scaled up
@@ -417,7 +441,86 @@ class Presentation(Slide):
             scaled, and only in this script.
 
             This is a qualitative, illustrative result on a coarse mesh
-            with interpolated frames for smooth playback -- not a converged
-            production run. Now open for discussion.
+            with interpolated frames for smooth playback -- not a
+            converged production run.
             """,
         )
+
+    # ------------------------------------------------------------------
+    def chapter_12_paper_takeaways(self):
+        title = Text("What the paper found", font_size=36, weight=BOLD).to_edge(UP, buff=0.6)
+
+        points = BulletedList(
+            "Shear-induced migration is not a small correction to buoyancy\\\\-- it measurably redistributes cells even in a \"low-shear\" vessel",
+            "A 2D, depth-averaged model (with a Hele-Shaw drag term standing\\\\in for the 3rd dimension) is enough to capture that competition",
+            "Standard suspension-rheology closures (Krieger--Dougherty\\\\viscosity, shear/viscosity-gradient migration) transfer directly\\\\onto a biological particle -- no cell-specific physics required",
+            font_size=26,
+        ).next_to(title, DOWN, buff=0.7)
+
+        self.play(FadeIn(title))
+        self.play(LaggedStart(*[FadeIn(p) for p in points], lag_ratio=0.4))
+        self.next_slide(
+            notes="""
+            The paper's central point, stripped of the equations: a
+            rotating vessel designed specifically to minimize shear still
+            has enough shear structure to move cells around in a way
+            buoyancy alone would not predict. "Low shear" is a design
+            goal, not a statement that transport stops.
+
+            The closures themselves (Krieger-Dougherty viscosity,
+            shear-induced migration flux) come from decades of suspension
+            rheology on inert particles -- sand, glass beads, emulsions.
+            The paper's contribution is showing they carry over to a
+            living, growing particle population with almost no
+            modification.
+            """
+        )
+        self.play(FadeOut(title), FadeOut(points))
+
+    # ------------------------------------------------------------------
+    def chapter_13_broader_relevance(self):
+        title = Text("Why it matters, across fields", font_size=34, weight=BOLD).to_edge(UP, buff=0.6)
+
+        rows = [
+            ("Experimentalists", "predicts where cells will concentrate before you run the culture -- informs probe placement and vessel design"),
+            ("Biologists", "gives a mechanistic reason \"low shear'' isn't \"no transport'' -- local flow sets the local growth environment"),
+            ("Chemists / rheologists", "the same closures generalize to any concentrated suspension -- slurries, colloids, blood analogs, not just cells"),
+            ("Applied mathematicians", "a coupled 5-field nonlinear PDE system with a documented, reusable verification path (MMS + Jacobian check)"),
+        ]
+        lines = VGroup()
+        for label, desc in rows:
+            lbl = Text(label + ":  ", font_size=24, color=BLUE_C, weight=BOLD)
+            txt = Tex(desc, font_size=24)
+            line = VGroup(lbl, txt).arrange(RIGHT, buff=0.15, aligned_edge=UP)
+            if line.width > 12.0:
+                line.scale_to_fit_width(12.0)
+            lines.add(line)
+        lines.arrange(DOWN, buff=0.45, aligned_edge=LEFT)
+        lines.next_to(title, DOWN, buff=0.7)
+
+        self.play(FadeIn(title))
+        self.play(LaggedStart(*[FadeIn(l) for l in lines], lag_ratio=0.25))
+        self.next_slide(
+            notes="""
+            The point of this slide: an SBM isn't just "the Chao & Das
+            paper" -- it's a reusable modeling pattern any of these
+            audiences can pick up.
+
+            - Experimentalists get a predictive tool instead of pure
+              trial-and-error vessel design -- run the model before you
+              run the bioreactor.
+            - Biologists get a physical explanation for spatial
+              heterogeneity in culture outcomes that's otherwise easy to
+              misattribute to biological variability.
+            - Chemists/rheologists already have this toolkit for inert
+              particles -- this is a demonstration it survives contact
+              with a living, growing, consuming particle phase.
+            - Applied mathematicians get a concrete, moderately-sized
+              coupled nonlinear system with a worked verification
+              story (MMS + analytic-vs-AD Jacobian) that generalizes to
+              validating other multiphysics couplings.
+
+            Now open for discussion.
+            """
+        )
+        self.play(FadeOut(title), FadeOut(lines))

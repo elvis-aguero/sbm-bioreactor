@@ -120,22 +120,28 @@ converges to a known exact solution to near machine precision.
 Not just "the plots look plausible."
 </aside>
 </section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/290653362038cd0ea32f87118c04c73d5f6ea33c5ff394f76dc5a1f9c482292f.mp4">
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/6d62ceb592b0924c7402e0f0ff3f1023d1c78af6c8159ac3deeccc6b8262ceb3.mp4">
+<aside class="notes" data-markdown="">
+Cells here are less dense than the surrounding medium
+(buoyant), and are placed in the upper half of the disk at
+t=0 -- exactly the configuration buoyancy alone would want
+anyway. If buoyancy were the only thing going on, the
+concentration field would just sit there.
+
+What follows is the same simulation shown two ways side by
+side: the flow field driving migration, next to the
+concentration field it's redistributing. Watch whether Phi
+visibly moves away from that buoyancy-favored starting point,
+tracking where the flow is most active -- that's
+shear-induced migration actively fighting passive buoyant
+equilibrium, the qualitative claim the whole paper is built
+on.
+</aside>
+</section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/5f2825a75b6251df69c7e1fdc203c2fa531163d76d2d6ea589bfd9acfc047c6b.mp4">
 <aside class="notes" data-markdown="">
-Same simulation, same timestamps, two views side by side -- the
-flow driving the migration (right) next to the concentration
-field it's redistributing (left).
-
-Deliberately adversarial initial condition: cells start in the
-upper half of the disk, exactly where buoyancy alone (they're
-less dense than the surrounding medium) would want to hold
-them anyway. If buoyancy were the only thing going on, nothing
-would move. Watch whether the concentration field visibly
-redistributes away from that buoyancy-favored configuration,
-tracking where the flow field is most active -- that's
-shear-induced migration actively competing with buoyancy, the
-qualitative claim the whole paper is built on.
-
 Two caveats, stated plainly: (1) the timestep was chosen to
 resolve the Hele-Shaw drag relaxation time, the one fast
 process in this model; (2) buoyancy is artificially scaled up
@@ -145,8 +151,49 @@ own gravity term is untouched, only the settling flux is
 scaled, and only in this script.
 
 This is a qualitative, illustrative result on a coarse mesh
-with interpolated frames for smooth playback -- not a converged
-production run. Now open for discussion.
+with interpolated frames for smooth playback -- not a
+converged production run.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/3c576b6ef89ff7eececdec2eaa71f3287e6d2d6d0afcead92c79d8e51ea41efc.mp4">
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/fe0481ccada061fb364e5372e3394813a82b91b31508f1bbe8d0c7133424c0a5.mp4">
+<aside class="notes" data-markdown="">
+The paper's central point, stripped of the equations: a
+rotating vessel designed specifically to minimize shear still
+has enough shear structure to move cells around in a way
+buoyancy alone would not predict. "Low shear" is a design
+goal, not a statement that transport stops.
+
+The closures themselves (Krieger-Dougherty viscosity,
+shear-induced migration flux) come from decades of suspension
+rheology on inert particles -- sand, glass beads, emulsions.
+The paper's contribution is showing they carry over to a
+living, growing particle population with almost no
+modification.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e4d855b077526cf63d96749bf95d27f4c026ae15a1e96de8b2f9d7dbf57ec8d8.mp4">
+<aside class="notes" data-markdown="">
+The point of this slide: an SBM isn't just "the Chao &amp; Das
+paper" -- it's a reusable modeling pattern any of these
+audiences can pick up.
+
+- Experimentalists get a predictive tool instead of pure
+  trial-and-error vessel design -- run the model before you
+  run the bioreactor.
+- Biologists get a physical explanation for spatial
+  heterogeneity in culture outcomes that's otherwise easy to
+  misattribute to biological variability.
+- Chemists/rheologists already have this toolkit for inert
+  particles -- this is a demonstration it survives contact
+  with a living, growing, consuming particle phase.
+- Applied mathematicians get a concrete, moderately-sized
+  coupled nonlinear system with a worked verification
+  story (MMS + analytic-vs-AD Jacobian) that generalizes to
+  validating other multiphysics couplings.
+
+Now open for discussion.
 </aside>
 </section>
 </div>
