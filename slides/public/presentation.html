@@ -38,7 +38,7 @@ judgment calls we had to make, both the paper's and ours (3-4 min)
 qualitative result (2-3 min) -&gt; discussion.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/b322b77580c0d4c8a597d8b7c87091c3c1fedac5b27bc2ebefbad523ee03d1c3.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/0efd2a67c9e93ec43d0a32e8eb83fecc63f0c12a81d0b737928f765ff06df880.mp4">
 <aside class="notes" data-markdown="">
 The HARV: a horizontally-rotating, disk-shaped vessel with a very
 thin gap between two circular plates. Rotating the whole vessel --
@@ -62,7 +62,7 @@ couples them to the fluid flow and nutrient transport,
 self-consistently.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/46caa09b915380b0826d2aced5850343338fdf0841c0be03e307aaf6ebb6e9cf.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/5fc50247c85233218ada75270337c117516aeaeccf20a37fe3248479a52bedcf.mp4">
 <aside class="notes" data-markdown="">
 This is the derivation, live: a keystroke-triggered walkthrough of
 every numbered equation in the paper (Eq. 1-26, 28). On-screen
@@ -76,9 +76,20 @@ Dougherty viscosity law (Eq. 3). Both are independent
 constitutive relations, not derived from the momentum balance --
 shown together with it rather than as a continuation of its
 algebra.
+
+This is the paper's own Eq. 1 in full, including the
+slip-velocity stress term (third term) that earlier versions of
+this deck had silently dropped -- caught only when spot-checked
+against the printed page. It's quadratic in u_slip, which for
+this model is just the Stokes settling velocity (order
+nanometers/second), so it's many orders of magnitude smaller
+than the other terms here. We drop it for the rest of this
+derivation and in the actual solver -- a physically justified
+truncation, but one that needs to be said out loud rather than
+silently done, which is exactly what this note is doing.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/fb8f7704fe56a400cd5f4a88aed6bd48cb4894545fadd10f5fdf8f554f4ad159.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/ddc166b8710d0a68b4bc14d65d86002fff13d8f3dcd885dfd93573f59d952c01.mp4">
 <aside class="notes" data-markdown="">
 Plugging Eq. 2's mixture density into the gravity term of Eq. 1
 makes the buoyancy contribution explicit -- the term that has to
@@ -88,7 +99,7 @@ balance is the same mobject, untouched, which is the whole point
 of showing it this way instead of fading the whole line.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/8207c1aebb1152067fe9ccb48e136ac2f714f284a04eb3b8d4d94b0e70b68bf3.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/de8c505d0daefd8fa9cdd19ce4923f177fe7e309a1602573ea9b381f5e9d1f18.mp4">
 <aside class="notes" data-markdown="">
 Same for Eq. 3: the Krieger-Dougherty viscosity law plugged
 into the viscous-stress term. Both closures shown at the start
@@ -493,6 +504,16 @@ Our own explicit approximations, disclosed the same way:
 - The paper uses two distinct symbols for the growth-rate
   constant and the nutrient-consumption constant; our code
   currently reuses one parameter (kc) for both.
+- Eq. 1's momentum balance carries a slip-velocity stress term
+  (rho*c_s*(1-c_s)*u_slip⊗u_slip) that this deck used to drop
+  silently -- caught only when spot-checked against the printed
+  page. It's quadratic in u_slip (here, the Stokes settling
+  velocity, order nanometers/second), so it's genuinely
+  negligible next to the other terms -- but that's a
+  justification, not a license to skip disclosing it. Now shown
+  in full on the momentum slide, then dropped for the rest of
+  the derivation and in the actual solver, same as it always
+  was; the difference is saying so.
 - Caught, not disclosed-as-a-choice: the momentum equation's
   buoyancy term used bare g instead of ρg (Eq. 1's literal form)
   for most of this project -- briefly rationalized as avoiding

@@ -220,6 +220,7 @@ class Presentation(Slide):
             MathTex(r"\rho \frac{\partial \mathbf{u}}{\partial t}", font_size=30),
             MathTex(r"+ \rho (\mathbf{u}\cdot\nabla)\mathbf{u}", font_size=30),
             MathTex(r"= -\nabla p", font_size=30),
+            MathTex(r"- \nabla\cdot\left[\rho c_s(1-c_s)\mathbf{u}_{slip}\mathbf{u}_{slip}\right]", font_size=30),
             MathTex(r"+ \nabla\cdot\left[", font_size=30),
             MathTex(r"\mu", font_size=30),
             MathTex(r"\left(\nabla\mathbf{u} + \nabla\mathbf{u}^{T}\right)\right]", font_size=30),
@@ -227,6 +228,30 @@ class Presentation(Slide):
             MathTex(r"\rho", font_size=30),
             MathTex(r"\mathbf{g}", font_size=30),
         ).arrange(RIGHT, buff=0.12)
+        eq1.to_edge(LEFT, buff=1.0).shift(UP * 1.1)
+        # The line only ever grows as mu/rho get substituted in later
+        # (placeholders are narrower than what replaces them), so the
+        # FINAL, fully-substituted state is the widest this equation will
+        # ever be. Measure that final state up front (never added to the
+        # scene) and derive one scale factor from it, applied to eq1 now
+        # AND to the later rho_expr/mu_expr -- so every stage of the
+        # substitution animation stays consistently sized and the fully
+        # expanded equation still fits, instead of overflowing only once
+        # both substitutions have landed.
+        _final_preview = VGroup(
+            MathTex(r"\rho \frac{\partial \mathbf{u}}{\partial t}", font_size=30),
+            MathTex(r"+ \rho (\mathbf{u}\cdot\nabla)\mathbf{u}", font_size=30),
+            MathTex(r"= -\nabla p", font_size=30),
+            MathTex(r"- \nabla\cdot\left[\rho c_s(1-c_s)\mathbf{u}_{slip}\mathbf{u}_{slip}\right]", font_size=30),
+            MathTex(r"+ \nabla\cdot\left[", font_size=30),
+            MathTex(r"\mu_f\left(1-\frac{\Phi}{\Phi_{\max}}\right)^{-2.5\Phi_{\max}}", font_size=30),
+            MathTex(r"\left(\nabla\mathbf{u} + \nabla\mathbf{u}^{T}\right)\right]", font_size=30),
+            MathTex(r"+", font_size=30),
+            MathTex(r"\left[(1-\Phi)\rho_f^\circ + \Phi \rho_s^\circ\right]", font_size=30),
+            MathTex(r"\mathbf{g}", font_size=30),
+        ).arrange(RIGHT, buff=0.12)
+        eq1_scale = MAX_EQ_WIDTH / _final_preview.width if _final_preview.width > MAX_EQ_WIDTH else 1.0
+        eq1.scale(eq1_scale)
         eq1.to_edge(LEFT, buff=1.0).shift(UP * 1.1)
         name1 = self._name("Momentum", eq1)
 
@@ -238,6 +263,7 @@ class Presentation(Slide):
         legend = self._legend(
             r"$\rho$ -- mixture density \quad $\mathbf{u}$ -- velocity \quad $p$ -- pressure \quad $\mu$ -- mixture viscosity \quad $\mathbf{g}$ -- gravity",
             r"$\Phi$ -- particle volume fraction \quad $\rho_f^\circ,\ \rho_s^\circ$ -- fluid / particle density \quad $\mu_f$ -- fluid viscosity \quad $\Phi_{\max}$ -- max packing fraction",
+            r"$c_s$ -- local mass fraction of solid \quad $\mathbf{u}_{slip}$ -- relative velocity between solid and fluid",
         ).to_corner(DL, buff=0.4)
 
         # Momentum and its two closures appear together -- they're all
@@ -259,6 +285,17 @@ class Presentation(Slide):
             constitutive relations, not derived from the momentum balance --
             shown together with it rather than as a continuation of its
             algebra.
+
+            This is the paper's own Eq. 1 in full, including the
+            slip-velocity stress term (third term) that earlier versions of
+            this deck had silently dropped -- caught only when spot-checked
+            against the printed page. It's quadratic in u_slip, which for
+            this model is just the Stokes settling velocity (order
+            nanometers/second), so it's many orders of magnitude smaller
+            than the other terms here. We drop it for the rest of this
+            derivation and in the actual solver -- a physically justified
+            truncation, but one that needs to be said out loud rather than
+            silently done, which is exactly what this note is doing.
             """
         )
 
@@ -266,17 +303,18 @@ class Presentation(Slide):
         # that order. Everything after the gravity term has to move out
         # of the way BEFORE the wider bracket appears, or the new content
         # would briefly overlap it.
-        self.play(eq1[7].animate.set_color(ORANGE), eq2.animate.set_color(ORANGE), run_time=0.5)
+        self.play(eq1[8].animate.set_color(ORANGE), eq2.animate.set_color(ORANGE), run_time=0.5)
         rho_expr = MathTex(
             r"\left[(1-\Phi)\rho_f^\circ + \Phi \rho_s^\circ\right]", font_size=30
         ).set_color(ORANGE)
-        rho_expr.move_to(eq1[7], aligned_edge=LEFT)
-        shift = rho_expr.width - eq1[7].width
+        rho_expr.scale(eq1_scale)
+        rho_expr.move_to(eq1[8], aligned_edge=LEFT)
+        shift = rho_expr.width - eq1[8].width
         if shift > 1e-3:
-            self.play(eq1[8].animate.shift(RIGHT * shift))
-        self.play(FadeOut(eq1[7]), Write(rho_expr))
-        self._hard_settle([eq1[7]], [rho_expr])
-        eq1.submobjects[7] = rho_expr
+            self.play(eq1[9].animate.shift(RIGHT * shift))
+        self.play(FadeOut(eq1[8]), Write(rho_expr))
+        self._hard_settle([eq1[8]], [rho_expr])
+        eq1.submobjects[8] = rho_expr
         self.next_slide(
             notes="""
             Plugging Eq. 2's mixture density into the gravity term of Eq. 1
@@ -291,19 +329,21 @@ class Presentation(Slide):
         # Symmetric completion: Eq. 3 (the viscosity closure) gets plugged
         # in too, into the viscous-stress term -- both closures were shown
         # together, so both should end up used on screen, not just one.
-        self.play(eq1[4].animate.set_color(ORANGE), eq3.animate.set_color(ORANGE), run_time=0.5)
+        self.play(eq1[5].animate.set_color(ORANGE), eq3.animate.set_color(ORANGE), run_time=0.5)
         mu_expr = MathTex(
             r"\mu_f\left(1-\frac{\Phi}{\Phi_{\max}}\right)^{-2.5\Phi_{\max}}", font_size=30
-        ).set_color(ORANGE).move_to(eq1[4], aligned_edge=LEFT)
-        shift_mu = mu_expr.width - eq1[4].width
+        ).set_color(ORANGE)
+        mu_expr.scale(eq1_scale)
+        mu_expr.move_to(eq1[5], aligned_edge=LEFT)
+        shift_mu = mu_expr.width - eq1[5].width
         if shift_mu > 1e-3:
             self.play(
-                eq1[5].animate.shift(RIGHT * shift_mu), eq1[6].animate.shift(RIGHT * shift_mu),
-                eq1[7].animate.shift(RIGHT * shift_mu), eq1[8].animate.shift(RIGHT * shift_mu),
+                eq1[6].animate.shift(RIGHT * shift_mu), eq1[7].animate.shift(RIGHT * shift_mu),
+                eq1[8].animate.shift(RIGHT * shift_mu), eq1[9].animate.shift(RIGHT * shift_mu),
             )
-        self.play(FadeOut(eq1[4]), Write(mu_expr))
-        self._hard_settle([eq1[4]], [mu_expr])
-        eq1.submobjects[4] = mu_expr
+        self.play(FadeOut(eq1[5]), Write(mu_expr))
+        self._hard_settle([eq1[5]], [mu_expr])
+        eq1.submobjects[5] = mu_expr
         self.next_slide(
             notes="""
             Same for Eq. 3: the Krieger-Dougherty viscosity law plugged
@@ -1321,6 +1361,16 @@ class Presentation(Slide):
             - The paper uses two distinct symbols for the growth-rate
               constant and the nutrient-consumption constant; our code
               currently reuses one parameter (kc) for both.
+            - Eq. 1's momentum balance carries a slip-velocity stress term
+              (rho*c_s*(1-c_s)*u_slip⊗u_slip) that this deck used to drop
+              silently -- caught only when spot-checked against the printed
+              page. It's quadratic in u_slip (here, the Stokes settling
+              velocity, order nanometers/second), so it's genuinely
+              negligible next to the other terms -- but that's a
+              justification, not a license to skip disclosing it. Now shown
+              in full on the momentum slide, then dropped for the rest of
+              the derivation and in the actual solver, same as it always
+              was; the difference is saying so.
             - Caught, not disclosed-as-a-choice: the momentum equation's
               buoyancy term used bare g instead of ρg (Eq. 1's literal form)
               for most of this project -- briefly rationalized as avoiding
