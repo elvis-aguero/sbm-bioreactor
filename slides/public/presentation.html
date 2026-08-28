@@ -83,10 +83,14 @@ this deck had silently dropped -- caught only when spot-checked
 against the printed page. It's quadratic in u_slip, which for
 this model is just the Stokes settling velocity (order
 nanometers/second), so it's many orders of magnitude smaller
-than the other terms here. We drop it for the rest of this
-derivation and in the actual solver -- a physically justified
-truncation, but one that needs to be said out loud rather than
-silently done, which is exactly what this note is doing.
+than the other terms here -- but it IS now implemented in the
+actual solver (src/physics.jl's slip_stress_coeff, wired into
+the momentum residual and its analytic Jacobian in
+src/solver.jl), not just shown here and quietly left out. It
+changes nothing numerically at these settling velocities --
+that was always the point of calling it negligible -- but
+"negligible" was never a license to omit it from the code
+without saying so, and now it isn't omitted at all.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/ddc166b8710d0a68b4bc14d65d86002fff13d8f3dcd885dfd93573f59d952c01.mp4">
@@ -442,7 +446,7 @@ wall's own velocity) and the rotational wall velocity itself,
 solid-body rotation at angular speed omega.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/52aea4225b033f28d6417c1536547e393705b4b0b9c3fd4098fe457a61335a6b.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/875e3c1bec525519a4167e72979e4b86b1690a39e5f8b2e9680b23841a75b2b0.mp4">
 <aside class="notes" data-markdown="">
 Nutrient: transport and consumption, standard advection-
 diffusion with a sink term. Growth: the cell-growth kinetics
@@ -452,7 +456,7 @@ diameter and volume fraction that feeds growth back into Phi
 particle concentration the rest of the model tracks.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/05555673bb18a3cf6f45a1c392d3fce23ac9cb2e2d960efee8cfece32030c39b.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/a4fba085a0b704d132751c4182f4216ca3624d12dda776ec9726da0fb7390fcc.mp4">
 <aside class="notes" data-markdown="">
 The complete model, all in one place: momentum, mixture
 density/viscosity, the master Phi-transport equation, the flux
@@ -504,16 +508,19 @@ Our own explicit approximations, disclosed the same way:
 - The paper uses two distinct symbols for the growth-rate
   constant and the nutrient-consumption constant; our code
   currently reuses one parameter (kc) for both.
-- Eq. 1's momentum balance carries a slip-velocity stress term
-  (rho*c_s*(1-c_s)*u_slip⊗u_slip) that this deck used to drop
-  silently -- caught only when spot-checked against the printed
-  page. It's quadratic in u_slip (here, the Stokes settling
-  velocity, order nanometers/second), so it's genuinely
-  negligible next to the other terms -- but that's a
-  justification, not a license to skip disclosing it. Now shown
-  in full on the momentum slide, then dropped for the rest of
-  the derivation and in the actual solver, same as it always
-  was; the difference is saying so.
+- Caught, then actually fixed, not just disclosed: Eq. 1's
+  momentum balance carries a slip-velocity stress term
+  (rho*c_s*(1-c_s)*u_slip⊗u_slip) that this deck, and the actual
+  solver, used to drop silently -- caught only when spot-checked
+  against the printed page. It's quadratic in u_slip (here, the
+  Stokes settling velocity, order nanometers/second), so it's
+  genuinely negligible next to the other terms and changes
+  nothing numerically -- but negligible isn't the same as
+  absent. It's now implemented for real (src/physics.jl's
+  slip_stress_coeff, wired into the momentum residual and its
+  analytic Jacobian in src/solver.jl, verified against Gridap's
+  AD Jacobian to machine precision same as every other term),
+  not merely shown once on a slide and left out of the code.
 - Caught, not disclosed-as-a-choice: the momentum equation's
   buoyancy term used bare g instead of ρg (Eq. 1's literal form)
   for most of this project -- briefly rationalized as avoiding

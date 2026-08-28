@@ -144,7 +144,7 @@ Compute the total particle migration flux based on the Suspension Balance Model 
 1. `Jsc = -0.41 * a^2 * Φ * ∇(ΓΦ)`: Shear-induced migration from high to low shear 
    and concentration gradients (particle-particle collisions).
 2. `Jsμ = -0.62 * a^2 * Φ^2 * Γ * ∇ln(μ)`: Migration toward lower viscosity regions.
-3. `Jst = - (ust) * Φ`: Sedimentation flux due to buoyancy, corrected for hindrance 
+3. `Jst = - (ust) * Φ`: Sedimentation flux due to buoyancy, corrected for hindrance
    effects at high Φ.
 """
 function particle_flux(u, Φ, ∇Φ, μ, ∇μ, a, ρs, ρf, μf, Φavg, g, Γ, ∇Γ; buoyancy_scale=1.0)
@@ -171,6 +171,56 @@ function particle_flux(u, Φ, ∇Φ, μ, ∇μ, a, ρs, ρf, μf, Φavg, g, Γ, 
     Jst = -buoyancy_scale * (ust_fh_op ∘ μ) * Φ
 
     return Jsc + Jsμ + Jst
+end
+
+"""
+    slip_stress_coeff(Φ, ρ, ρs, ρf)
+
+Coefficient multiplying `flux⊗flux` in the momentum equation's slip-velocity
+stress term (Chao & Das 2015 Eq. 1, third term: `-∇·[ρ*c_s*(1-c_s)*u_slip⊗u_slip]`,
+previously omitted from this solver entirely -- see git history for when it was
+added).
+
+# Derivation
+Eq. 1 states this term in terms of `c_s` (local mass fraction of solid) and
+`u_slip` (relative velocity between phases), neither of which is a primary
+unknown here. `particle_flux` instead returns a velocity-dimensioned
+`flux = J_s/ρs` (see its docstring), where `J_s := ρs*Φ*(1-c_s)*u_slip` is the
+physically-motivated migration flux this codebase uses throughout (see
+scripts/verify_paper_equations.py). Substituting `u_slip = flux/(Φ*(1-c_s))`
+and `c_s = Φ*ρs/ρ` into `ρ*c_s*(1-c_s)*u_slip^2` and simplifying (checked
+symbolically, not by hand) gives exactly `ρ*ρs/(ρf*Φ*(1-Φ)) * flux^2` --
+this coefficient -- so the term is built from quantities already computed by
+the residual/Jacobian, rather than introducing c_s/u_slip as new unknowns.
+
+# Regularization
+The `Φ*(1-Φ)` denominator is regularized (`+1e-10`, same scale and rationale as
+`shear_rate`'s regularized sqrt) since Φ is exactly 0 in parts of the domain in
+several existing initial conditions. Physically this term is already negligible
+there (both `flux` and this coefficient's own Φ-dependence vanish as Φ→0 or
+Φ→1 at least as fast as the denominator does), so this only prevents a literal
+division by zero -- it doesn't change the converged physics for any
+well-resolved Φ, matching `_clamp_Φ`'s own stated rationale above.
+"""
+function slip_stress_coeff(Φ, ρ, ρs, ρf)
+    denom = Φ * (1.0 - Φ) + 1.0e-10
+    return (ρ * ρs) / (ρf * denom)
+end
+
+"""
+    slip_stress_coeff_dΦ(Φ, dΦ, ρ, dρ, ρs, ρf)
+
+Analytic derivative of `slip_stress_coeff` in the direction `dΦ`, expressed via
+the already-linearized `dρ = (ρs-ρf)*dΦ` (see `coupled_bioreactor_jacobian`)
+instead of expanding fully in Φ, to keep the hand-transcription short and
+checkable. Verified to agree with the direct symbolic derivative of
+`slip_stress_coeff` (both by computer algebra and against Gridap's own AD
+Jacobian in test/test_analytic_jacobian.jl).
+"""
+function slip_stress_coeff_dΦ(Φ, dΦ, ρ, dρ, ρs, ρf)
+    denom = Φ * (1.0 - Φ) + 1.0e-10
+    ddenom = (1.0 - 2.0 * Φ) * dΦ
+    return (ρs / ρf) * (dρ / denom - ρ * ddenom / (denom * denom))
 end
 
 

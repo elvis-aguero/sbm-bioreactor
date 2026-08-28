@@ -32,12 +32,16 @@ stand-in. The middle term is a stress from slip between the
 phases; it's quadratic in u_slip, which for this model is
 just the Stokes settling velocity, on the order of nanometers
 per second. That makes the term many orders of magnitude
-smaller than the others, so it's dropped, in this deck and in
-the actual solver alike. That's a physically justified
-truncation, not an oversight, but it had not been disclosed
-anywhere before, so it's disclosed here: the momentum equation
-in the summary slide and the one actually implemented both
-omit this term.
+smaller than the others, and it changes nothing numerically at
+these settling velocities, but it is genuinely implemented in
+the solver now (src/physics.jl's slip_stress_coeff, wired into
+the momentum residual and its analytic Jacobian in
+src/solver.jl, verified against Gridap's automatic
+differentiation to machine precision). It had previously been
+omitted from both this deck and the code with no disclosure at
+all -- caught in review, then actually fixed rather than just
+written up as a disclosed simplification. The summary slide's
+momentum row still shows this same complete form.
 
 This is the only momentum equation in the model. Fluid and
 suspended cells move together as one mixture; there is no
@@ -96,7 +100,7 @@ diffusion and a sink term for consumption by the cells. Feeds
 into growth kinetics on the next slide.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/4cc5b7c8cb8a0ac684d24a6d06c17c7c8506e4f9bb8329fd33d3e09175eabf85.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/45c1bd1dccf396b6113490635d07976b27fdb9427f08a4f050a493fe35adc46b.mp4">
 <aside class="notes" data-markdown="">
 Closes the loop: nutrient concentration C drives cell-density
 growth d, which converts to volume fraction Phi, which feeds
@@ -107,7 +111,7 @@ constants; our code currently reuses one parameter (kc) for
 both. That is a disclosed simplification, not a bug.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/1e178dcf325d062ac7070554c4e04fad617b7dc5765b474a7605c00ebbf57cab.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/43d01eec275cc3f6eba0fe5799c637e30c8c19006785712ddc1ae9c13848527c.mp4">
 <aside class="notes" data-markdown="">
 The complete model, all seven pieces together: exactly what
 was shown one slide at a time on the previous seven slides,

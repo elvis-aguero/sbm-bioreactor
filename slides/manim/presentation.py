@@ -292,10 +292,14 @@ class Presentation(Slide):
             against the printed page. It's quadratic in u_slip, which for
             this model is just the Stokes settling velocity (order
             nanometers/second), so it's many orders of magnitude smaller
-            than the other terms here. We drop it for the rest of this
-            derivation and in the actual solver -- a physically justified
-            truncation, but one that needs to be said out loud rather than
-            silently done, which is exactly what this note is doing.
+            than the other terms here -- but it IS now implemented in the
+            actual solver (src/physics.jl's slip_stress_coeff, wired into
+            the momentum residual and its analytic Jacobian in
+            src/solver.jl), not just shown here and quietly left out. It
+            changes nothing numerically at these settling velocities --
+            that was always the point of calling it negligible -- but
+            "negligible" was never a license to omit it from the code
+            without saying so, and now it isn't omitted at all.
             """
         )
 
@@ -1287,7 +1291,7 @@ class Presentation(Slide):
         title = Text("Every equation that defines the model", font_size=32, weight=BOLD).to_edge(UP)
 
         rows = [
-            ("Momentum", r"\rho \dot{\mathbf{u}} + \rho(\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p + \nabla\cdot[\mu(\nabla\mathbf{u}+\nabla\mathbf{u}^T)] + \rho\mathbf{g}"),
+            ("Momentum", r"\rho \dot{\mathbf{u}} + \rho(\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p - \nabla\cdot[\rho c_s(1-c_s)\mathbf{u}_{slip}\mathbf{u}_{slip}] + \nabla\cdot[\mu(\nabla\mathbf{u}+\nabla\mathbf{u}^T)] + \rho\mathbf{g}"),
             ("Mixture density / viscosity", r"\rho=(1-\Phi)\rho_f^\circ+\Phi\rho_s^\circ \quad \mu=\mu_f(1-\Phi/\Phi_{\max})^{-2.5\Phi_{\max}}"),
             ("Φ-transport (master eq.)", r"\dot{\Phi} + \mathbf{u}\cdot\nabla\Phi = -\frac{\rho}{\rho_s^\circ\rho_f^\circ}\,\nabla\cdot\mathbf{J}_s"),
             ("Flux closure", r"\mathbf{J}_s/\rho_s = -[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)] + f_h\mathbf{u}_{st}\Phi"),
@@ -1361,16 +1365,19 @@ class Presentation(Slide):
             - The paper uses two distinct symbols for the growth-rate
               constant and the nutrient-consumption constant; our code
               currently reuses one parameter (kc) for both.
-            - Eq. 1's momentum balance carries a slip-velocity stress term
-              (rho*c_s*(1-c_s)*u_slip⊗u_slip) that this deck used to drop
-              silently -- caught only when spot-checked against the printed
-              page. It's quadratic in u_slip (here, the Stokes settling
-              velocity, order nanometers/second), so it's genuinely
-              negligible next to the other terms -- but that's a
-              justification, not a license to skip disclosing it. Now shown
-              in full on the momentum slide, then dropped for the rest of
-              the derivation and in the actual solver, same as it always
-              was; the difference is saying so.
+            - Caught, then actually fixed, not just disclosed: Eq. 1's
+              momentum balance carries a slip-velocity stress term
+              (rho*c_s*(1-c_s)*u_slip⊗u_slip) that this deck, and the actual
+              solver, used to drop silently -- caught only when spot-checked
+              against the printed page. It's quadratic in u_slip (here, the
+              Stokes settling velocity, order nanometers/second), so it's
+              genuinely negligible next to the other terms and changes
+              nothing numerically -- but negligible isn't the same as
+              absent. It's now implemented for real (src/physics.jl's
+              slip_stress_coeff, wired into the momentum residual and its
+              analytic Jacobian in src/solver.jl, verified against Gridap's
+              AD Jacobian to machine precision same as every other term),
+              not merely shown once on a slide and left out of the code.
             - Caught, not disclosed-as-a-choice: the momentum equation's
               buoyancy term used bare g instead of ρg (Eq. 1's literal form)
               for most of this project -- briefly rationalized as avoiding

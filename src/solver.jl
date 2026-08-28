@@ -102,6 +102,15 @@ function coupled_bioreactor_residual(x, x_prevs, y, dt, params, order=1, t=0.0)
     κ = (ρs - ρf) / ρf
     res_continuity_rhs = ∇(q) ⋅ (flux * κ)
 
+    # 2b. Slip-velocity stress correction to the momentum balance (Eq. 1's third
+    # term, -∇·[ρ*c_s*(1-c_s)*u_slip⊗u_slip]), built from the flux just computed
+    # above -- see slip_stress_coeff's docstring for the substitution. Quadratic
+    # in the (tiny, ~nm/s) settling velocity, so it's many orders of magnitude
+    # smaller than every other term here; included anyway because it's part of
+    # the paper's own Eq. 1, not something to silently drop.
+    slip_coeff = slip_stress_coeff(Φ, ρ, ρs, ρf)
+    res_ns = res_ns - (slip_coeff * (flux ⊗ flux)) ⊙ ∇(v)
+
     # 4. Particle Transport: ∂Φ/∂t + u⋅∇Φ = -∇⋅J + Source
     # Source term models cell proliferation (B.7)
     source_phi = (π/6.0 * a^3) * kc * C * d0 * exp(ke * t)
@@ -214,6 +223,17 @@ function coupled_bioreactor_jacobian(x, dx, x_prevs, y, dt, params, order=1, t=0
     dflux = dJsc + dJsμ + dJst
 
     res_continuity_rhs_jac = ∇(q) ⋅ (dflux * κ)
+
+    # Jacobian of the slip-velocity stress term added to res_ns in
+    # coupled_bioreactor_residual: -(slip_coeff*(flux⊗flux)) ⊙ ∇(v). Needs the
+    # base `flux` itself (product rule on flux⊗flux), not just dflux -- every
+    # other term consuming flux/dflux here is linear in flux, so this is the
+    # only place in this Jacobian that needs the undifferentiated value.
+    flux = particle_flux(u, Φ, ∇(Φ), μ, ∇μ, a, ρs, ρf, μf, Φavg, g, Γ, ∇(Γ); buoyancy_scale=buoyancy_scale)
+    slip_coeff = slip_stress_coeff(Φ, ρ, ρs, ρf)
+    dslip_coeff = slip_stress_coeff_dΦ(Φ, dΦ, ρ, dρ, ρs, ρf)
+    dflux_outer = (dflux ⊗ flux) + (flux ⊗ dflux)
+    res_ns_jac = res_ns_jac - (dslip_coeff * (flux ⊗ flux) + slip_coeff * dflux_outer) ⊙ ∇(v)
 
     d_source_phi = (π/6.0 * a^3) * kc * params.d0 * exp(params.ke * t) * dC
     res_phi_jac =

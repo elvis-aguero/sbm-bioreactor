@@ -45,6 +45,12 @@ export shear_rate
 @doc "particle_flux(u, Φ, gradΦ, params): Compute the particle migration flux combining shear-induced and buoyancy effects." particle_flux
 export particle_flux
 
+@doc "slip_stress_coeff(Φ, ρ, ρs, ρf): Coefficient of flux⊗flux in the momentum equation's slip-velocity stress term (Eq. 1)." slip_stress_coeff
+export slip_stress_coeff
+
+@doc "slip_stress_coeff_dΦ(Φ, dΦ, ρ, dρ, ρs, ρf): Analytic derivative of slip_stress_coeff." slip_stress_coeff_dΦ
+export slip_stress_coeff_dΦ
+
 @doc "navier_stokes_weak_form(u, p, v, q, dΩ, params): Assemble the Navier-Stokes weak form for the bioreactor flow." navier_stokes_weak_form
 export navier_stokes_weak_form
 
