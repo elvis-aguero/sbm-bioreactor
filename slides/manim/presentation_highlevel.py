@@ -131,20 +131,31 @@ class Presentation(Slide):
     def chapter_1_momentum(self):
         self._equation_slide(
             name="Momentum balance",
-            tex=r"\rho \dot{\mathbf{u}} + \rho(\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p + \nabla\cdot[\mu(\nabla\mathbf{u}+\nabla\mathbf{u}^T)] + \rho\mathbf{g}",
+            tex=r"\rho \dot{\mathbf{u}} + \rho(\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p - \nabla\cdot[\rho c_s(1-c_s)\mathbf{u}_{slip}\mathbf{u}_{slip}] + \nabla\cdot[\mu(\nabla\mathbf{u}+\nabla\mathbf{u}^T)] + \rho\mathbf{g}",
+            eq_font_size=32,
             meaning_lines=[
                 "Mixture momentum balance: fluid and suspended cells move as one continuum",
-                "Ordinary variable-density, variable-viscosity Navier-Stokes",
+                "Variable-density, variable-viscosity Navier-Stokes, plus a stress from slip between the two phases",
                 "Buoyancy enters through $\\rho\\mathbf{g}$",
             ],
             term_lines=[
-                r"$\rho$: mixture density",
-                r"$\mathbf{u}$: mixture velocity",
-                r"$p$: pressure",
-                r"$\mu$: mixture viscosity",
-                r"$\mathbf{g}$: gravity",
+                r"$\rho,\ \mathbf{u},\ p,\ \mu,\ \mathbf{g}$: mixture density, velocity, pressure, viscosity, gravity",
+                r"$c_s$: local mass fraction of solid",
+                r"$\mathbf{u}_{slip}$: relative velocity between solid and fluid",
             ],
             notes="""
+            This is the paper's own Eq. 1, in full, not a simplified
+            stand-in. The middle term is a stress from slip between the
+            phases; it's quadratic in u_slip, which for this model is
+            just the Stokes settling velocity, on the order of nanometers
+            per second. That makes the term many orders of magnitude
+            smaller than the others, so it's dropped, in this deck and in
+            the actual solver alike. That's a physically justified
+            truncation, not an oversight, but it had not been disclosed
+            anywhere before, so it's disclosed here: the momentum equation
+            in the summary slide and the one actually implemented both
+            omit this term.
+
             This is the only momentum equation in the model. Fluid and
             suspended cells move together as one mixture; there is no
             separate momentum balance for the solid phase. Density and

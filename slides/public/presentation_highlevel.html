@@ -17,7 +17,7 @@
 <div class="slides">
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/46ef291d162d319b2f488800fe0011c523070949fe8481e7e0bacb9f7b1bf51a.mp4" data-background-video-muted="">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/f3c0bfff316a84788078a619e7fa8dc4f19ca594e59ec07ab6d858933e3c79e6.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/9a2393affadea1e2cca3c7e999a6bbff1064b5161ba420bd48d0f4da7e5fc0cf.mp4">
 <aside class="notes" data-markdown="">
 Short version of the deck: no derivation on screen, just the
 final equations that define the model, one per slide, then the
@@ -25,8 +25,20 @@ implementation and a results video. Good for an audience that
 wants the shape of the model and the result, not the algebra.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/79380cc18a5433dd018f3a79fd17656fc14738e31f5e4a8764e6dfc173acd102.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e054a60b3108d36b6b25cd60fe718ff4b41177738ae7301e97491a3d13213795.mp4">
 <aside class="notes" data-markdown="">
+This is the paper's own Eq. 1, in full, not a simplified
+stand-in. The middle term is a stress from slip between the
+phases; it's quadratic in u_slip, which for this model is
+just the Stokes settling velocity, on the order of nanometers
+per second. That makes the term many orders of magnitude
+smaller than the others, so it's dropped, in this deck and in
+the actual solver alike. That's a physically justified
+truncation, not an oversight, but it had not been disclosed
+anywhere before, so it's disclosed here: the momentum equation
+in the summary slide and the one actually implemented both
+omit this term.
+
 This is the only momentum equation in the model. Fluid and
 suspended cells move together as one mixture; there is no
 separate momentum balance for the solid phase. Density and
@@ -84,7 +96,7 @@ diffusion and a sink term for consumption by the cells. Feeds
 into growth kinetics on the next slide.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/627b870382e860efdbdebc514e174b0c18555ac2af885659210b34aeed8f8832.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/4cc5b7c8cb8a0ac684d24a6d06c17c7c8506e4f9bb8329fd33d3e09175eabf85.mp4">
 <aside class="notes" data-markdown="">
 Closes the loop: nutrient concentration C drives cell-density
 growth d, which converts to volume fraction Phi, which feeds
@@ -95,7 +107,7 @@ constants; our code currently reuses one parameter (kc) for
 both. That is a disclosed simplification, not a bug.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/34bf7ba676b724043edc78443e2d724b00c1fbe124679247e83c1e57e30ce2a3.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/1e178dcf325d062ac7070554c4e04fad617b7dc5765b474a7605c00ebbf57cab.mp4">
 <aside class="notes" data-markdown="">
 The complete model, all seven pieces together: exactly what
 was shown one slide at a time on the previous seven slides,
@@ -103,7 +115,7 @@ gathered here for reference before moving on to the
 implementation.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/2e03883077bf4311ece5e36108376759e64af124342f28adddce1bbbd518b2e9.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/cf818fd7a3fe982f9373f7456ce753589f5c3b9bb4df88feeb0d67e7166ca014.mp4">
 <aside class="notes" data-markdown="">
 All five fields (u, p, Phi, C, gamma-dot) solved together,
 monolithically, each timestep, via Newton's method with a
