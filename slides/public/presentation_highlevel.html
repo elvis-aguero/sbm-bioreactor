@@ -15,9 +15,9 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/c37d8580cbfb59ce664399802668528017e31853594aa866400f38582bc6b25a.mp4" data-background-video-muted="">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/46ef291d162d319b2f488800fe0011c523070949fe8481e7e0bacb9f7b1bf51a.mp4" data-background-video-muted="">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/065536072732448699e1351c3df23d84f6199cf5c326fefe3c4a7b4d9fb29ee0.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/f3c0bfff316a84788078a619e7fa8dc4f19ca594e59ec07ab6d858933e3c79e6.mp4">
 <aside class="notes" data-markdown="">
 Short version of the deck: no derivation on screen, just the
 final equations that define the model, one per slide, then the
@@ -25,67 +25,66 @@ implementation and a results video. Good for an audience that
 wants the shape of the model and the result, not the algebra.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/0b455905baa3b39fa481fd4c689eee860dcdcf41b22c3d3529a5d74f35f9b6a5.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/79380cc18a5433dd018f3a79fd17656fc14738e31f5e4a8764e6dfc173acd102.mp4">
 <aside class="notes" data-markdown="">
-This is the only momentum equation in the model -- fluid and
-suspended cells move together as one mixture, no separate
-momentum balance for the solid phase. Density and viscosity
-both depend on the local particle volume fraction Phi, defined
-next slide -- that coupling is what makes this system nonlinear
-and is where the suspension physics actually enters.
+This is the only momentum equation in the model. Fluid and
+suspended cells move together as one mixture; there is no
+separate momentum balance for the solid phase. Density and
+viscosity both depend on the local particle volume fraction
+Phi, defined on the next slide. That coupling is what makes
+this system nonlinear, and is where the suspension physics
+actually enters.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/51e5f582eaa3795cfec275fbf33e5ec5986362c3944828a91593608db1a2ce3a.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/1cd1153bcd65f3e36fe784a0e6c132ab9482b689fa09ecd3c5550326a42e9d27.mp4">
 <aside class="notes" data-markdown="">
-Both closures are algebraic -- no new PDEs, they just define
-rho and mu as functions of Phi so the momentum equation above
-can be solved. The Krieger-Dougherty viscosity is an empirical
-closure from the suspension-rheology literature, not derived in
-this paper -- cited, not original to it.
+Both closures are algebraic. No new PDEs; they just define rho
+and mu as functions of Phi so the momentum equation above can
+be solved. The Krieger-Dougherty viscosity is an empirical
+closure from the suspension-rheology literature, cited here,
+not derived in this paper.
+
+The plot is that Krieger-Dougherty curve itself, using this
+model's own parameters (Phi_max = 0.64, mu_f = 0.5889):
+viscosity stays close to the pure-fluid value at low Phi, then
+rises steeply and diverges as Phi approaches Phi_max, the
+random-close-packing limit where the suspension jams and stops
+behaving like a fluid at all.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/4dbeafe5cbdb3139f818a6dba3a12b981759e779a1b228cfa0038e56bfe5d1a5.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/a74254e18921ea861eb6ab778c4ab6efb8af877d9ab5adafcdfd991e31e5a625.mp4">
 <aside class="notes" data-markdown="">
 This is our own re-derivation of the paper's Phi-transport
 equation, verified from first principles with sympy
-(scripts/verify_paper_equations.py) -- the paper's own printed
+(scripts/verify_paper_equations.py). The paper's own printed
 Eq. 10 states two different forms of this coefficient and
-claims they're equal; they aren't, about 20x apart at the
+claims they are equal; they are not, about 20x apart at the
 paper's own Table 1 densities. This slide shows the
-mathematically correct form. Full derivation and the paper
-comparison are in the other deck / the verification script, not
-here.
+mathematically correct form. The full derivation and paper
+comparison live in the other deck and in the verification
+script, not here.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/1c424a6210c04e2d9ed95dd4f6a98619a6416b12e71ecb7d6bccd3f134dcd8ee.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/7d379fdd2043ac0a60f78ede82bcde0934a3bb59f0a34acaa712d4e9ab61baad.mp4">
 <aside class="notes" data-markdown="">
 Three competing migration mechanisms in one flux. Worth noting
 for anyone who wants the detail: the paper's own printed
-equations 12-14 aren't fully self-consistent about the power of
-Phi in the shear-migration term (linear in one place, quadratic
-in another) -- we picked the form shown here (matching their
-Eq. 14) and disclose that choice; not re-litigating it on this
-slide.
+equations 12 through 14 are not fully self-consistent about
+the power of Phi in the shear-migration term (linear in one
+place, quadratic in another). We picked the form shown here
+(matching their Eq. 14) and disclose that choice rather than
+re-litigating it on this slide.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/917cd6795e421d12a41e5a2c93c09b1bb3a1e9576a37b22363cb2f631c45c035.mp4">
-<aside class="notes" data-markdown="">
-No new physical unknowns here -- gamma-dot is fully determined
-by u, which is already in the system. It's lifted into its own
-finite-element field in the implementation only because
-differentiating sqrt() of a quadratic form directly is singular
-at zero shear; more on that in the implementation slide.
-</aside>
-</section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/251289ce62cc494c3729d28c14b90aee38316ffa1d8e976b2f1a1c7a5eb9bc17.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/7c999c23e37ec01d5ed619e0deaf1c1272ad2b95b4f45eec5844681d53a1543a.mp4">
 <aside class="notes" data-markdown="">
 The second transport equation in the system, coupled to the
-flow the same way Phi is -- advected by u, plus its own
+flow the same way Phi is: advected by u, plus its own
 diffusion and a sink term for consumption by the cells. Feeds
 into growth kinetics on the next slide.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/d8dc8f33408b7a90693192c5c9494574b297fe2b9202e60e0ee77714ab693404.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/627b870382e860efdbdebc514e174b0c18555ac2af885659210b34aeed8f8832.mp4">
 <aside class="notes" data-markdown="">
 Closes the loop: nutrient concentration C drives cell-density
 growth d, which converts to volume fraction Phi, which feeds
@@ -93,40 +92,62 @@ back into density/viscosity and the migration flux. Worth
 flagging in discussion if it comes up: the paper uses two
 distinct symbols for the growth-rate and nutrient-consumption
 constants; our code currently reuses one parameter (kc) for
-both -- a disclosed simplification, not a bug.
+both. That is a disclosed simplification, not a bug.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/7bc9a92ae5e872c1199268548115320cba0ec499c84b7ee249167cd3bc1b2f9f.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/34bf7ba676b724043edc78443e2d724b00c1fbe124679247e83c1e57e30ce2a3.mp4">
 <aside class="notes" data-markdown="">
-The complete model, all seven pieces side by side -- exactly
-what was shown one slide at a time on the previous seven
-slides, just gathered here for reference before moving on to
-the implementation.
+The complete model, all seven pieces together: exactly what
+was shown one slide at a time on the previous seven slides,
+gathered here for reference before moving on to the
+implementation.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/faaa147c375709ff67578b1fa1c3a896a3cb519a84c3fb74399cacf8627d7693.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/2e03883077bf4311ece5e36108376759e64af124342f28adddce1bbbd518b2e9.mp4">
 <aside class="notes" data-markdown="">
-All five fields (u, p, Phi, C, Gamma) in one coupled nonlinear
-system, solved together each timestep with Newton's method --
-not a segregated/split scheme. Monolithic is more expensive per
-step but avoids splitting error entirely.
+All five fields (u, p, Phi, C, gamma-dot) solved together,
+monolithically, each timestep, via Newton's method with a
+backtracking line search. Not a segregated or split scheme.
+
+Weak formulation, for anyone who wants the function spaces: u
+uses vector-valued, H1-conforming Lagrange elements of order
+2; p, Phi, C, and gamma-dot each use H1-conforming Lagrange
+elements of order 1. This velocity/pressure pairing (P2/P1,
+"Taylor-Hood") is the standard inf-sup stable choice for
+incompressible flow. Test spaces V, Q, W, Z, G and trial
+spaces U, P, Phi_space, C_space, Gamma_space are assembled
+into MultiFieldFESpaces Y and X respectively.
+
+Two math tricks were needed to make this solvable, beyond
+simply lifting shear rate into its own field:
+1. The shear rate itself is regularized: sqrt(|2 eps(u) dot
+   eps(u)| + 1e-10), not a bare sqrt. Without that added
+   constant, the derivative of sqrt(x) blows up as x
+   approaches 0, which happens at rest (t=0) and at any point
+   of locally rigid rotation, exactly the kind of state this
+   problem starts in and passes through. That singular
+   derivative would wreck Newton's Jacobian.
+2. The pressure space carries a zero-mean constraint. Velocity
+   has a pure Dirichlet (no-slip, rotating-wall) boundary
+   condition everywhere, so nothing else pins down an
+   absolute pressure level. Without the zero-mean constraint,
+   pressure would be determined only up to an arbitrary
+   additive constant and the linear system would be singular.
 
 Verified two independent ways: the hand-derived analytic
 Jacobian matches Gridap's own automatic differentiation of the
 same residual to under 1e-8 relative error (a CI regression
-test); separately, the full nonlinear system is checked against
-the Method of Manufactured Solutions, confirming the solver
-converges to a known exact solution to near machine precision.
-Not just "the plots look plausible."
+test); separately, the full nonlinear system is checked
+against the Method of Manufactured Solutions, confirming the
+solver converges to a known exact solution to near machine
+precision. Not just "the plots look plausible."
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/290653362038cd0ea32f87118c04c73d5f6ea33c5ff394f76dc5a1f9c482292f.mp4">
-</section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/6d62ceb592b0924c7402e0f0ff3f1023d1c78af6c8159ac3deeccc6b8262ceb3.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/fff73ef73175427e9a1373a1129ada37a6f24f935d31a2c26f2b21af592d1350.mp4">
 <aside class="notes" data-markdown="">
 Cells here are less dense than the surrounding medium
 (buoyant), and are placed in the upper half of the disk at
-t=0 -- exactly the configuration buoyancy alone would want
+t=0, exactly the configuration buoyancy alone would want
 anyway. If buoyancy were the only thing going on, the
 concentration field would just sit there.
 
@@ -134,7 +155,7 @@ What follows is the same simulation shown two ways side by
 side: the flow field driving migration, next to the
 concentration field it's redistributing. Watch whether Phi
 visibly moves away from that buoyancy-favored starting point,
-tracking where the flow is most active -- that's
+tracking where the flow is most active. That is
 shear-induced migration actively fighting passive buoyant
 equilibrium, the qualitative claim the whole paper is built
 on.
@@ -145,56 +166,17 @@ on.
 Two caveats, stated plainly: (1) the timestep was chosen to
 resolve the Hele-Shaw drag relaxation time, the one fast
 process in this model; (2) buoyancy is artificially scaled up
-~10^6x for this clip only, so its effect is visible on the same
-timescale as shear-induced migration -- the momentum equation's
-own gravity term is untouched, only the settling flux is
-scaled, and only in this script.
+~10^6x for this clip only, so its effect is visible on the
+same timescale as shear-induced migration. The momentum
+equation's own gravity term is untouched; only the settling
+flux is scaled, and only in this script.
 
 This is a qualitative, illustrative result on a coarse mesh
-with interpolated frames for smooth playback -- not a
-converged production run.
+with interpolated frames for smooth playback, not a converged
+production run.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/3c576b6ef89ff7eececdec2eaa71f3287e6d2d6d0afcead92c79d8e51ea41efc.mp4">
-</section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/fe0481ccada061fb364e5372e3394813a82b91b31508f1bbe8d0c7133424c0a5.mp4">
-<aside class="notes" data-markdown="">
-The paper's central point, stripped of the equations: a
-rotating vessel designed specifically to minimize shear still
-has enough shear structure to move cells around in a way
-buoyancy alone would not predict. "Low shear" is a design
-goal, not a statement that transport stops.
-
-The closures themselves (Krieger-Dougherty viscosity,
-shear-induced migration flux) come from decades of suspension
-rheology on inert particles -- sand, glass beads, emulsions.
-The paper's contribution is showing they carry over to a
-living, growing particle population with almost no
-modification.
-</aside>
-</section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e4d855b077526cf63d96749bf95d27f4c026ae15a1e96de8b2f9d7dbf57ec8d8.mp4">
-<aside class="notes" data-markdown="">
-The point of this slide: an SBM isn't just "the Chao &amp; Das
-paper" -- it's a reusable modeling pattern any of these
-audiences can pick up.
-
-- Experimentalists get a predictive tool instead of pure
-  trial-and-error vessel design -- run the model before you
-  run the bioreactor.
-- Biologists get a physical explanation for spatial
-  heterogeneity in culture outcomes that's otherwise easy to
-  misattribute to biological variability.
-- Chemists/rheologists already have this toolkit for inert
-  particles -- this is a demonstration it survives contact
-  with a living, growing, consuming particle phase.
-- Applied mathematicians get a concrete, moderately-sized
-  coupled nonlinear system with a worked verification
-  story (MMS + analytic-vs-AD Jacobian) that generalizes to
-  validating other multiphysics couplings.
-
-Now open for discussion.
-</aside>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/302397733525482bfeb166e157bd26ad856d851121b4248188d28ed3c7dc92c2.mp4">
 </section>
 </div>
 </div>
