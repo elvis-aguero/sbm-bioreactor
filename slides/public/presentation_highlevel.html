@@ -68,7 +68,7 @@ random-close-packing limit where the suspension jams and stops
 behaving like a fluid at all.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/a74254e18921ea861eb6ab778c4ab6efb8af877d9ab5adafcdfd991e31e5a625.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e68f39d309a26c9885a2b1edf56b2496417fd3eccb75f004e6be6ce2316b0f6b.mp4">
 <aside class="notes" data-markdown="">
 This is our own re-derivation of the paper's Phi-transport
 equation, verified from first principles with sympy
@@ -81,15 +81,18 @@ comparison live in the other deck and in the verification
 script, not here.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/7d379fdd2043ac0a60f78ede82bcde0934a3bb59f0a34acaa712d4e9ab61baad.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/9da6db855e9167cc325407eee87db00bf4e8079b4b491c973b53dbc3950986c3.mp4">
 <aside class="notes" data-markdown="">
-Three competing migration mechanisms in one flux. Worth noting
-for anyone who wants the detail: the paper's own printed
-equations 12 through 14 are not fully self-consistent about
-the power of Phi in the shear-migration term (linear in one
-place, quadratic in another). We picked the form shown here
-(matching their Eq. 14) and disclose that choice rather than
-re-litigating it on this slide.
+Three competing migration mechanisms in one flux, each term
+colored to match its own explanation so the mapping from
+symbol to meaning isn't left as an exercise for the audience.
+
+Worth noting for anyone who wants the detail: the paper's own
+printed equations 12 through 14 are not fully self-consistent
+about the power of Phi in the shear-migration term (linear in
+one place, quadratic in another). We picked the form shown
+here (matching their Eq. 14) and disclose that choice rather
+than re-litigating it on this slide.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/7c999c23e37ec01d5ed619e0deaf1c1272ad2b95b4f45eec5844681d53a1543a.mp4">
@@ -119,7 +122,7 @@ gathered here for reference before moving on to the
 implementation.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/cf818fd7a3fe982f9373f7456ce753589f5c3b9bb4df88feeb0d67e7166ca014.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e3e7b936bf84bcdfe70ca2420ef90e4bf3b2dc1daf1e69028fbc8bb403be4b5a.mp4">
 <aside class="notes" data-markdown="">
 All five fields (u, p, Phi, C, gamma-dot) solved together,
 monolithically, each timestep, via Newton's method with a
@@ -159,7 +162,7 @@ solver converges to a known exact solution to near machine
 precision. Not just "the plots look plausible."
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/fff73ef73175427e9a1373a1129ada37a6f24f935d31a2c26f2b21af592d1350.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/ed7966600885d86f15977a01212508fdce29230c01f74e9349d315318daf5fcd.mp4">
 <aside class="notes" data-markdown="">
 Cells here are less dense than the surrounding medium
 (buoyant), and are placed in the upper half of the disk at
@@ -192,7 +195,28 @@ with interpolated frames for smooth playback, not a converged
 production run.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/302397733525482bfeb166e157bd26ad856d851121b4248188d28ed3c7dc92c2.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/896b3e285b25ef796b50c493d0411f0b1ab5f986254b9fe7f641e86d1c1f3861.mp4">
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/1e33d8ebbda7beb6ba1b2f9cf52f89cfbce080a690ece51721db41c52b53fab2.mp4">
+<aside class="notes" data-markdown="">
+This is the paper's own simulated result, read directly off
+the figure, not something we computed ourselves. Each panel's
+color scale is auto-ranged per panel, so at a glance the four
+snapshots look like the same static ring; the ring itself is
+the real content here.
+
+Physically: shear-induced migration pushes cells away from the
+highest-shear region (out near the rotating rim) and away from
+the very center (where the flow is calmest but so is the
+shear-migration driving force), so they accumulate at an
+intermediate radius instead of spreading uniformly or settling
+at either extreme. A ring, not a gradient from center to edge,
+is exactly what that competition should produce -- and that's
+what four independent time snapshots all show.
+
+The next slide follows the same simulation's average density
+over time, which turns out to have its own, separate surprise.
+</aside>
 </section>
 </div>
 </div>

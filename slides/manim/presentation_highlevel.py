@@ -33,6 +33,7 @@ RESULTS_VIDEO = Path(__file__).parent / "results_combined.mp4"
 # The paper's own Figure 7, cropped verbatim from assets/Chao_Das_2015.pdf
 # (see presentation.py's header comment for the extraction method).
 PAPER_FIGURE_7 = Path(__file__).parent.parent.parent / "assets" / "Chao_Das_2015_figure7.png"
+PAPER_FIGURE_10 = Path(__file__).parent.parent.parent / "assets" / "Chao_Das_2015_figure10.png"
 
 
 def eq(tex, font_size=EQ_FONT):
@@ -63,7 +64,8 @@ class Presentation(Slide):
         self.chapter_9_implementation()
         self.chapter_10_results_setup()
         self.chapter_11_results_video()
-        self.chapter_12_density_crash()
+        self.chapter_12_ring_pattern()
+        self.chapter_13_density_collapse()
 
     def next_slide(self, *args, **kwargs):
         result = super().next_slide(*args, **kwargs)
@@ -279,30 +281,71 @@ class Presentation(Slide):
 
     # ------------------------------------------------------------------
     def chapter_4_flux_closure(self):
-        self._equation_slide(
-            name="Flux closure: shear-induced migration",
-            tex=r"\mathbf{J}_s/\rho_s^\circ = -\left[0.41a^2\Phi\nabla(\dot{\gamma}\Phi) + 0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)\right] + f_h\mathbf{u}_{st}\Phi",
-            meaning_lines=[
-                "Cells constantly jostle each other while flowing, and that jostling is not symmetric: it pushes cells toward calmer regions",
-                "Two gradients set that direction, in shear rate (first term) and in viscosity (second term), both funneling cells toward gentler flow",
-                "Gravity still pulls denser cells down, just slowed by the crowd of neighboring cells (hindered settling, third term)",
-            ],
-            term_lines=[
-                r"$a$: cell radius",
-                r"$\dot{\gamma}$: shear rate (solved as its own field; see Implementation)",
-                r"$f_h$: hindered-settling function",
-                r"$\mathbf{u}_{st}$: Stokes settling velocity",
-            ],
-            notes="""
-            Three competing migration mechanisms in one flux. Worth noting
-            for anyone who wants the detail: the paper's own printed
-            equations 12 through 14 are not fully self-consistent about
-            the power of Phi in the shear-migration term (linear in one
-            place, quadratic in another). We picked the form shown here
-            (matching their Eq. 14) and disclose that choice rather than
-            re-litigating it on this slide.
-            """,
+        title = Text("Flux closure: shear-induced migration", font_size=36, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
+
+        # Each additive piece of the equation is colored to match its own
+        # explanation below, in place, instead of a free-floating bullet
+        # list the reader has to map back onto the symbols by guesswork.
+        eq_parts = VGroup(
+            MathTex(r"\mathbf{J}_s/\rho_s^\circ = -\Big[", font_size=EQ_FONT),
+            MathTex(r"0.41a^2\Phi\nabla(\dot{\gamma}\Phi)", font_size=EQ_FONT, color=BLUE_C),
+            MathTex(r"+", font_size=EQ_FONT),
+            MathTex(r"0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)", font_size=EQ_FONT, color=GREEN_C),
+            MathTex(r"\Big]", font_size=EQ_FONT),
+            MathTex(r"+", font_size=EQ_FONT),
+            MathTex(r"f_h\mathbf{u}_{st}\Phi", font_size=EQ_FONT, color=ORANGE),
+        ).arrange(RIGHT, buff=0.12)
+        if eq_parts.width > MAX_EQ_WIDTH:
+            eq_parts.scale_to_fit_width(MAX_EQ_WIDTH)
+        eq_parts.next_to(title, DOWN, buff=0.55, aligned_edge=LEFT)
+
+        meaning_header = Text("Physical meaning", font_size=22, color=BLUE_C).next_to(eq_parts, DOWN, buff=0.5, aligned_edge=LEFT)
+        rows = [
+            ("Shear term", "cells drift away from high-shear regions, toward calmer flow", BLUE_C),
+            ("Viscosity term", "cells drift away from thick (viscous) regions, toward thinner ones", GREEN_C),
+            ("Settling term", "gravity still pulls denser cells down, just slowed by the crowd around them", ORANGE),
+        ]
+        meaning_lines = VGroup()
+        for label, desc, color in rows:
+            lbl = Text(label + ": ", font_size=24, color=color, weight=BOLD)
+            txt = Tex(desc, font_size=24)
+            line = VGroup(lbl, txt).arrange(RIGHT, buff=0.12, aligned_edge=UP)
+            if line.width > 11.0:
+                line.scale(11.0 / line.width, about_edge=LEFT)
+            meaning_lines.add(line)
+        meaning_lines.arrange(DOWN, buff=0.28, aligned_edge=LEFT)
+        meaning_lines.next_to(meaning_header, DOWN, buff=0.3, aligned_edge=LEFT)
+
+        terms_header = Text("Terms", font_size=18, color=GRAY_B)
+        terms = self._legend(
+            r"$a$: cell radius",
+            r"$\dot{\gamma}$: shear rate (solved as its own field; see Implementation)",
+            r"$f_h$: hindered-settling function",
+            r"$\mathbf{u}_{st}$: Stokes settling velocity",
+            font_size=18,
         )
+        term_group = VGroup(terms_header, terms).arrange(DOWN, buff=0.12, aligned_edge=LEFT)
+        term_group.to_edge(DOWN, buff=0.4).align_to(title, LEFT)
+
+        self.play(FadeIn(title))
+        self.play(Write(eq_parts))
+        self.play(FadeIn(meaning_header), FadeIn(meaning_lines))
+        self.play(FadeIn(term_group))
+        self.next_slide(
+            notes="""
+            Three competing migration mechanisms in one flux, each term
+            colored to match its own explanation so the mapping from
+            symbol to meaning isn't left as an exercise for the audience.
+
+            Worth noting for anyone who wants the detail: the paper's own
+            printed equations 12 through 14 are not fully self-consistent
+            about the power of Phi in the shear-migration term (linear in
+            one place, quadratic in another). We picked the form shown
+            here (matching their Eq. 14) and disclose that choice rather
+            than re-litigating it on this slide.
+            """
+        )
+        self.play(FadeOut(title), FadeOut(eq_parts), FadeOut(meaning_header), FadeOut(meaning_lines), FadeOut(term_group))
 
     # ------------------------------------------------------------------
     def chapter_5_shear_rate(self):
@@ -504,7 +547,7 @@ class Presentation(Slide):
 
     # ------------------------------------------------------------------
     def chapter_10_results_setup(self):
-        title = Text("Putting it to the test", font_size=36, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
+        title = Text("Example simulation", font_size=36, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
 
         setup = BulletedList(
             "Adversarial initial condition: cells start exactly where\\\\buoyancy alone would already want to hold them",
@@ -556,8 +599,8 @@ class Presentation(Slide):
         )
 
     # ------------------------------------------------------------------
-    def chapter_12_density_crash(self):
-        title = Text("Cell density peaks, then collapses", font_size=32, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
+    def chapter_12_ring_pattern(self):
+        title = Text("A ring, not a center", font_size=32, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
 
         fig = ImageMobject(str(PAPER_FIGURE_7)).scale_to_fit_width(6.0).next_to(title, DOWN, buff=0.4, aligned_edge=LEFT)
         fig_caption = Text(
@@ -565,38 +608,86 @@ class Presentation(Slide):
             font_size=16, color=GRAY_B,
         ).next_to(fig, DOWN, buff=0.15, aligned_edge=LEFT)
 
-        stats_header = Text("Peak density, from the paper's own color scale:", font_size=20, color=BLUE_C)
-        stats = self._legend(
-            "Day 1: $3.73\\times10^{11}$",
-            "Day 3: $6.02\\times10^{11}$",
-            "Day 5: $6.93\\times10^{11}$",
-            "Day 7: $2.00\\times10^{11}$",
+        meaning_header = Text("What the picture shows", font_size=20, color=BLUE_C)
+        meaning = BulletedList(
+            "Density concentrates in a thin, bright ring at roughly two-thirds\\\\of the disk's radius, in all four snapshots",
+            "Just inside that ring, density is depleted: a visibly darker\\\\band sits between the ring and the center",
+            "That's the signature of active migration, not passive mixing:\\\\cells are being pushed out of the middle and piling up at the ring",
             font_size=22,
         )
-        stats_block = VGroup(stats_header, stats).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
-        if stats_block.width > 6.0:
-            stats_block.scale(6.0 / stats_block.width, about_edge=LEFT)
-        stats_block.next_to(fig, RIGHT, buff=0.8, aligned_edge=UP)
-
-        question = Text(
-            "What happens between day 5 and day 7?", font_size=24, color=BLUE_C, weight=BOLD
-        )
-        if question.width > 6.0:
-            question.scale(6.0 / question.width)
-        question.next_to(stats_block, DOWN, buff=0.6, aligned_edge=LEFT)
+        meaning_block = VGroup(meaning_header, meaning).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
+        if meaning_block.width > 6.0:
+            meaning_block.scale(6.0 / meaning_block.width, about_edge=LEFT)
+        meaning_block.next_to(fig, RIGHT, buff=0.8, aligned_edge=UP)
 
         self.play(FadeIn(title))
         self.play(FadeIn(fig), FadeIn(fig_caption))
-        self.play(FadeIn(stats_block))
+        self.play(FadeIn(meaning_block))
+        self.next_slide(
+            notes="""
+            This is the paper's own simulated result, read directly off
+            the figure, not something we computed ourselves. Each panel's
+            color scale is auto-ranged per panel, so at a glance the four
+            snapshots look like the same static ring; the ring itself is
+            the real content here.
+
+            Physically: shear-induced migration pushes cells away from the
+            highest-shear region (out near the rotating rim) and away from
+            the very center (where the flow is calmest but so is the
+            shear-migration driving force), so they accumulate at an
+            intermediate radius instead of spreading uniformly or settling
+            at either extreme. A ring, not a gradient from center to edge,
+            is exactly what that competition should produce -- and that's
+            what four independent time snapshots all show.
+
+            The next slide follows the same simulation's average density
+            over time, which turns out to have its own, separate surprise.
+            """
+        )
+        self.play(FadeOut(title), FadeOut(fig), FadeOut(fig_caption), FadeOut(meaning_block))
+
+    # ------------------------------------------------------------------
+    def chapter_13_density_collapse(self):
+        title = Text("Cell density peaks, then collapses", font_size=32, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
+
+        fig = ImageMobject(str(PAPER_FIGURE_10)).scale_to_fit_width(6.0).next_to(title, DOWN, buff=0.4, aligned_edge=LEFT)
+        fig_caption = Text(
+            "Fig. 10, Chao & Das (2015): average cell density over the same run",
+            font_size=16, color=GRAY_B,
+        ).next_to(fig, DOWN, buff=0.15, aligned_edge=LEFT)
+
+        meaning_header = Text("What the curve shows", font_size=20, color=BLUE_C)
+        meaning = BulletedList(
+            "Density roughly doubles over the first 4 days\\\\(about $3\\times10^{11}\\to 7\\times10^{11}$ cells/m$^3$)",
+            "It plateaus around day 4-5, matching Fig. 7's own day-5 peak",
+            "Then it collapses by nearly two-thirds by day 7,\\\\the same crash Fig. 7's color scale hinted at, now unmistakable",
+            font_size=22,
+        )
+        meaning_block = VGroup(meaning_header, meaning).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
+        if meaning_block.width > 6.0:
+            meaning_block.scale(6.0 / meaning_block.width, about_edge=LEFT)
+        meaning_block.next_to(fig, RIGHT, buff=0.8, aligned_edge=UP)
+
+        question = Text(
+            "What happens after day 5?", font_size=24, color=BLUE_C, weight=BOLD
+        )
+        if question.width > 6.0:
+            question.scale(6.0 / question.width)
+        question.next_to(meaning_block, DOWN, buff=0.6, aligned_edge=LEFT)
+
+        self.play(FadeIn(title))
+        self.play(FadeIn(fig), FadeIn(fig_caption))
+        self.play(FadeIn(meaning_block))
         self.play(FadeIn(question))
         self.next_slide(
             notes="""
-            Read directly off the paper's own figure, not something we
-            computed ourselves: each panel's color scale is auto-ranged,
-            so at a glance the four panels look like the same steady ring
-            pattern. But the peak values printed on the color bars tell a
-            different story: density rises for the first five days, then
-            drops by roughly two-thirds between day 5 and day 7.
+            This is the same simulation as the previous slide, plotted as
+            a continuous average over the whole disk instead of four
+            discrete snapshots, and it confirms the previous slide's
+            colorbar-peak observation with an actual trend line instead of
+            four disconnected numbers: density rises for about four days,
+            holds close to its peak for another day, then drops by nearly
+            two-thirds over the next two days.
 
             We do not have the paper's own explanation for this on hand.
             A plausible read, given the model, is nutrient depletion
@@ -610,8 +701,11 @@ class Presentation(Slide):
             detail: the paper's own Nomenclature table defines this
             field's units ambiguously (cell density in mol/m^3, alongside
             a separately-defined phase density in kg/m^3 used elsewhere in
-            the same model); we are reading the color bar values as
-            printed, not resolving that ambiguity here.
+            the same model); we are reading the plotted values as printed,
+            not resolving that ambiguity here. Also worth noting: this
+            figure's own caption says it is "not compared directly to
+            experimental measurements" -- a qualitative, simulated-only
+            result, same as the ring pattern on the previous slide.
 
             Open for discussion.
             """
