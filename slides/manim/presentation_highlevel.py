@@ -146,21 +146,23 @@ class Presentation(Slide):
                 r"$\mathbf{u}_{slip}$: relative velocity between solid and fluid",
             ],
             notes="""
-            This is the paper's own Eq. 1, in full, not a simplified
-            stand-in. The middle term is a stress from slip between the
-            phases; it's quadratic in u_slip, which for this model is
-            just the Stokes settling velocity, on the order of nanometers
-            per second. That makes the term many orders of magnitude
-            smaller than the others, and it changes nothing numerically at
-            these settling velocities, but it is genuinely implemented in
-            the solver now (src/physics.jl's slip_stress_coeff, wired into
-            the momentum residual and its analytic Jacobian in
-            src/solver.jl, verified against Gridap's automatic
-            differentiation to machine precision). It had previously been
-            omitted from both this deck and the code with no disclosure at
-            all -- caught in review, then actually fixed rather than just
-            written up as a disclosed simplification. The summary slide's
-            momentum row still shows this same complete form.
+            This is the paper's own Eq. 1, shown in full. The middle term
+            is a stress from slip between the phases; it's quadratic in
+            u_slip, which for this model is just the Stokes settling
+            velocity, on the order of nanometers per second. That makes
+            the term many orders of magnitude smaller than the others,
+            and it changes nothing numerically at these settling
+            velocities. It is genuinely implemented in the solver now
+            (src/physics.jl's slip_stress_coeff, wired into the momentum
+            residual and its analytic Jacobian in src/solver.jl, verified
+            against Gridap's automatic differentiation to machine
+            precision).
+
+            It had previously been omitted from both this deck and the
+            code with no disclosure at all: caught in review, then
+            actually fixed rather than just written up as a disclosed
+            simplification. The summary slide's momentum row still shows
+            this same complete form.
 
             This is the only momentum equation in the model. Fluid and
             suspended cells move together as one mixture; there is no
@@ -337,12 +339,12 @@ class Presentation(Slide):
             colored to match its own explanation so the mapping from
             symbol to meaning isn't left as an exercise for the audience.
 
-            Worth noting for anyone who wants the detail: the paper's own
-            printed equations 12 through 14 are not fully self-consistent
-            about the power of Phi in the shear-migration term (linear in
-            one place, quadratic in another). We picked the form shown
-            here (matching their Eq. 14) and disclose that choice rather
-            than re-litigating it on this slide.
+            For anyone who wants the detail: the paper's own printed
+            equations 12 through 14 are not fully self-consistent about
+            the power of Phi in the shear-migration term (linear in one
+            place, quadratic in another). We picked the form shown here
+            (matching their Eq. 14) and disclose that choice rather than
+            re-litigating it on this slide.
             """
         )
         self.play(FadeOut(title), FadeOut(eq_parts), FadeOut(meaning_header), FadeOut(meaning_lines), FadeOut(term_group))
@@ -600,7 +602,7 @@ class Presentation(Slide):
 
     # ------------------------------------------------------------------
     def chapter_12_ring_pattern(self):
-        title = Text("A ring, not a center", font_size=32, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
+        title = Text("Cells pile up in a ring around mid-radius", font_size=30, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
 
         fig = ImageMobject(str(PAPER_FIGURE_7)).scale_to_fit_width(6.0).next_to(title, DOWN, buff=0.4, aligned_edge=LEFT)
         fig_caption = Text(
@@ -612,7 +614,7 @@ class Presentation(Slide):
         meaning = BulletedList(
             "Density concentrates in a thin, bright ring at roughly two-thirds\\\\of the disk's radius, in all four snapshots",
             "Just inside that ring, density is depleted: a visibly darker\\\\band sits between the ring and the center",
-            "That's the signature of active migration, not passive mixing:\\\\cells are being pushed out of the middle and piling up at the ring",
+            "Shear-induced migration pushes cells out of the middle\\\\and out from the rim, and they pile up at that ring in between",
             font_size=22,
         )
         meaning_block = VGroup(meaning_header, meaning).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
@@ -635,10 +637,10 @@ class Presentation(Slide):
             highest-shear region (out near the rotating rim) and away from
             the very center (where the flow is calmest but so is the
             shear-migration driving force), so they accumulate at an
-            intermediate radius instead of spreading uniformly or settling
-            at either extreme. A ring, not a gradient from center to edge,
-            is exactly what that competition should produce -- and that's
-            what four independent time snapshots all show.
+            intermediate radius instead of spreading out evenly. Four
+            independent time snapshots all show the same ring, which is
+            exactly what that competition between center and rim should
+            produce.
 
             The next slide follows the same simulation's average density
             over time, which turns out to have its own, separate surprise.
@@ -694,18 +696,18 @@ class Presentation(Slide):
             catching up with growth (the growth term is directly
             proportional to local nutrient concentration C), but that is
             our inference, not a claim the paper defends explicitly.
-            Worth asking the room: does anyone read this differently, or
-            know whether the original paper discusses it?
+            Ask the room: does anyone read this differently, or know
+            whether the original paper discusses it?
 
-            Also worth flagging in passing, for anyone who wants the
-            detail: the paper's own Nomenclature table defines this
-            field's units ambiguously (cell density in mol/m^3, alongside
-            a separately-defined phase density in kg/m^3 used elsewhere in
-            the same model); we are reading the plotted values as printed,
-            not resolving that ambiguity here. Also worth noting: this
-            figure's own caption says it is "not compared directly to
-            experimental measurements" -- a qualitative, simulated-only
-            result, same as the ring pattern on the previous slide.
+            For anyone who wants the detail: the paper's own Nomenclature
+            table defines this field's units ambiguously (cell density in
+            mol/m^3, alongside a separately-defined phase density in
+            kg/m^3 used elsewhere in the same model); we are reading the
+            plotted values as printed, not resolving that ambiguity here.
+            This figure's own caption also says it is "not compared
+            directly to experimental measurements": a qualitative,
+            simulated-only result, same as the ring pattern on the
+            previous slide.
 
             Open for discussion.
             """
