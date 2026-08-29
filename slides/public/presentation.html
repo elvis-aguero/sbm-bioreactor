@@ -38,72 +38,71 @@ judgment calls we had to make, both the paper's and ours (3-4 min)
 qualitative result (2-3 min) -&gt; discussion.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/0efd2a67c9e93ec43d0a32e8eb83fecc63f0c12a81d0b737928f765ff06df880.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/b69ea80e1cdb718b16eb9607778c562527d0f4c0983cffa9c4a5d2479b2b9b7e.mp4">
 <aside class="notes" data-markdown="">
 The HARV: a horizontally-rotating, disk-shaped vessel with a very
-thin gap between two circular plates. Rotating the whole vessel --
-rather than stirring the fluid inside it with an impeller -- is
+thin gap between two circular plates. Rotating the whole vessel
+(rather than stirring the fluid inside it with an impeller) is
 what gets you the low-shear environment: in the frame of the
 vessel, the fluid mostly just goes along for the ride.
 
 But "mostly" is the operative word. Cells are denser or lighter
-than the medium (in this paper, actually lighter -- cells float),
+than the medium (in this paper, actually lighter: cells float),
 so gravity/buoyancy is always acting on them, all the time,
-independent of rotation. Meanwhile, wherever the flow does shear --
-near walls, near other cells -- there's a shear-induced migration
-effect that pushes particles around too, completely independent of
-buoyancy. Those two effects don't generally agree on where cells
-should go. That disagreement is the entire physical content of
-this talk.
+independent of rotation. Meanwhile, wherever the flow shears
+(near walls, near other cells), a shear-induced migration effect
+pushes particles around too, completely independent of buoyancy.
+Those two effects don't generally agree on where cells should go.
+That disagreement is the entire physical content of this talk.
 
-Chao &amp; Das's contribution was to write down a continuum model -- a
-Suspension Balance Model -- that puts a number on both effects and
+Chao &amp; Das's contribution was to write down a continuum model, a
+Suspension Balance Model, that puts a number on both effects and
 couples them to the fluid flow and nutrient transport,
 self-consistently.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/5fc50247c85233218ada75270337c117516aeaeccf20a37fe3248479a52bedcf.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/92d4e71e9415bb4b6ba87937e73c4ded792e30610af7c04b1fd2e938783f128c.mp4">
 <aside class="notes" data-markdown="">
 This is the derivation, live: a keystroke-triggered walkthrough of
 every numbered equation in the paper (Eq. 1-26, 28). On-screen
-content stays compact -- a persistent chapter header plus the
+content stays compact: a persistent chapter header plus the
 equations and their numbers, nothing that narrates itself. This
 spoken narration carries the why.
 
 Momentum balance (Eq. 1) needs two closures before it's a
 solvable system: mixture density (Eq. 2) and the Krieger-
 Dougherty viscosity law (Eq. 3). Both are independent
-constitutive relations, not derived from the momentum balance --
-shown together with it rather than as a continuation of its
-algebra.
+constitutive relations, not derived from the momentum balance.
+They are shown together with it rather than as a continuation
+of its algebra.
 
 This is the paper's own Eq. 1 in full, including the
 slip-velocity stress term (third term) that earlier versions of
-this deck had silently dropped -- caught only when spot-checked
-against the printed page. It's quadratic in u_slip, which for
+this deck had silently dropped (caught only when spot-checked
+against the printed page). It's quadratic in u_slip, which for
 this model is just the Stokes settling velocity (order
 nanometers/second), so it's many orders of magnitude smaller
-than the other terms here -- but it IS now implemented in the
-actual solver (src/physics.jl's slip_stress_coeff, wired into
+than the other terms here. It is now implemented in the actual
+solver, though (src/physics.jl's slip_stress_coeff, wired into
 the momentum residual and its analytic Jacobian in
 src/solver.jl), not just shown here and quietly left out. It
-changes nothing numerically at these settling velocities --
-that was always the point of calling it negligible -- but
-"negligible" was never a license to omit it from the code
-without saying so, and now it isn't omitted at all.
+changes nothing numerically at these settling velocities, which
+was always the point of calling it negligible. But "negligible"
+was never a license to omit it from the code without saying so,
+and now it isn't omitted at all.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/ddc166b8710d0a68b4bc14d65d86002fff13d8f3dcd885dfd93573f59d952c01.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/193e2ab5781b0a623168bb38a3a41d6b1c0e45d00e8697c0e567695fa73afd67.mp4">
 <aside class="notes" data-markdown="">
 Plugging Eq. 2's mixture density into the gravity term of Eq. 1
-makes the buoyancy contribution explicit -- the term that has to
+makes the buoyancy contribution explicit: the term that has to
 carry the physics of "cells are lighter/denser than the medium."
 Only that one term changes; every other term in the momentum
 balance is the same mobject, untouched, which is the whole point
 of showing it this way instead of fading the whole line.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/de8c505d0daefd8fa9cdd19ce4923f177fe7e309a1602573ea9b381f5e9d1f18.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/3865dbfe489a8b543957022ba8e445a7d9ce84f21ae4543cccdbdaced27ff8f5.mp4">
 <aside class="notes" data-markdown="">
 Same for Eq. 3: the Krieger-Dougherty viscosity law plugged
 into the viscous-stress term. Both closures shown at the start
@@ -111,87 +110,86 @@ of this slide are now actually used in the momentum balance,
 not just displayed alongside it.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/702c3be7e11a360dd130445c2da0e2dea1713b9a733cd64dd52c3d638e77acc8.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/936cad00bba7ff09940147d7f38ef6c4e9a00549af8a1a56a4347f6da8af81bc.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/54546794b83866baa1a70ae7bb1227197ba41aa547e1f9a029afa4153aaae1e9.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/f051958a6300a5d109dd70872a1693c36f58422eed15e25e3d7621049e278969.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/e1ba4507eec5a0254fec1ad91bd9525d335fa4345f9187c1421cbc1288d7f90d.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/7c292bcab66f619cc463fb2a256d4ac696da8ffac1ebd16d4561c6482e8904d5.mp4">
 <aside class="notes" data-markdown="">
 This is the derivation, live: a keystroke-triggered walkthrough of
 every numbered equation in the paper (Eq. 1-26, 28). On-screen
-content stays compact -- a persistent chapter header plus the
+content stays compact: a persistent chapter header plus the
 equations, nothing that narrates itself. This spoken narration
 carries the why.
 
 Substituting u_s = u + (1-c_s) u_slip turns the solid-phase
-transport equation into Eq. 6. Only the u_s term changes -- the
+transport equation into Eq. 6. Only the u_s term changes. The
 time-derivative and divergence wrapper are the same mobjects,
 untouched, same "+" sign as Eq. 5 (a direct substitution, not a
-rearrangement -- nothing here changes sign). Checked directly
+rearrangement, so nothing here changes sign). Checked directly
 against the PDF page image for this one: this repo's earlier
 markdown transcription of the paper had this sign backwards,
 and the deck inherited that error until this pass.
 
 J_s is named right here, tied to the slip-velocity term that
 just appeared: rho_s times the (1-c_s)*u_slip piece. It stays
-up rather than fading immediately -- it isn't exercised until
+up rather than fading immediately; it isn't exercised until
 Eq. 4 gets rearranged in terms of it, a few steps from now.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/2f07591399fcb39201bfbe8861d5239eb68d2a1bf81bbe8d45e93f12d2ee7359.mp4">
 <aside class="notes" data-markdown="">
-Mixture continuity is not derived from Eq. 5/6 -- it's a
-separate statement (conservation of total mixture mass). Kept on
-screen alongside Eq. 6 because both feed into the combination
-two steps from now.
+Mixture continuity is not derived from Eq. 5/6; it's a separate
+statement (conservation of total mixture mass). Kept on screen
+alongside Eq. 6 because both feed into the combination two steps
+from now.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/e95bdc6d9fbdc08092bded0527976478271a78b5a83891ae25a342b266482296.mp4">
 <aside class="notes" data-markdown="">
 Step 1 of 2, pure algebra: move the rho_f*div(u) term to the
-other side and divide through by rho_f -- same symbols as
-Eq. 4, nothing renamed. Naming the bracket is the next,
-separate step.
+other side and divide through by rho_f. Same symbols as Eq. 4,
+nothing renamed. Naming the bracket is the next, separate step.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/e5577e6163b780ad130758721cae8575eb164d605e92c05396b0f9b955cd4394.mp4">
 <aside class="notes" data-markdown="">
 Step 2 of 2: the bracketed slip-flux term is exactly J_s/rho_s
-by the definition named a few steps ago -- substituted in
-here (the fraction's denominator picks up the matching
-rho_s^o). Landing on Eq. 8. J_s's own definition stays up a
-little longer: it reappears again shortly in Eq. 7's
-restated form below.
+by the definition named a few steps ago, substituted in here
+(the fraction's denominator picks up the matching rho_s^o).
+Landing on Eq. 8. J_s's own definition stays up a little
+longer: it reappears again shortly in Eq. 7's restated form
+below.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/071755ff3ea356e4efbb2c2eee61d1dcaae51a542062e1b94d7bed3aa32b69d2.mp4">
 <aside class="notes" data-markdown="">
 Naming (rho_s-rho_f)/(rho_s*rho_f) as kappa here, right when
 it first appears in a form worth naming. Kappa has units of
-inverse density -- worth a mental note but not a red flag,
-just this quantity's dimension.
+inverse density: a mental note, not a red flag, just this
+quantity's dimension.
 
 This equation (div(u) = kappa*div(J_s)) is independently
 re-derived from scratch and verified correct in
-scripts/verify_paper_equations.py -- not just carried over
-from the paper's own Eq. 8 on trust.
+scripts/verify_paper_equations.py, not just carried over from
+the paper's own Eq. 8 on trust.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/879355765323c0f6a427d7dc2c3a868f0544996c08b3b036434510471a9fc0a8.mp4">
 <aside class="notes" data-markdown="">
 Pure algebra, not the product rule (that's a later, separate
-step): distributing the divergence over the sum -- div(A+B) =
-div(A) + div(B) -- splits the u_s-substituted transport
-equation into a div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip)
-piece, both still added on the left, "=0" on the right
-untouched. Nothing renamed yet, nothing moved yet -- that's
-the next two steps, kept separate on purpose.
+step): distributing the divergence over the sum, div(A+B) =
+div(A) + div(B), splits the u_s-substituted transport equation
+into a div(u*Phi) piece and a div(Phi*(1-c_s)*u_slip) piece,
+both still added on the left, "=0" on the right untouched.
+Nothing renamed yet, nothing moved yet: that's the next two
+steps, kept separate on purpose.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/c50f2474e3ea9bb174eb918c45ad8726b820d9ddc522ac27b40bd9e292e8de91.mp4">
 <aside class="notes" data-markdown="">
 Renaming div(Phi*(1-c_s)*u_slip) to div(J_s)/rho_s^o, using
-the definition still visible below -- a rename, nothing more:
+the definition still visible below. A rename, nothing more:
 still added, still on the left, "=0" still on the right,
 untouched.
 </aside>
@@ -199,11 +197,11 @@ untouched.
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1182971c16a0bf8bb2b527b5565543aa145b7b36a4d6fe3c2541efcef0c9f426.mp4">
 <aside class="notes" data-markdown="">
 The renamed term crosses the equals sign, picking up the
-minus sign that always comes with crossing -- landing on
-Eq. 7 exactly: div(u*Phi) stays on the left, div(J_s)/rho_s^o
-on the right with a minus. Independently re-derived and
-checked in scripts/verify_paper_equations.py -- this
-reproduces the paper's own Eq. 7 exactly.
+minus sign that always comes with crossing, landing on Eq. 7
+exactly: div(u*Phi) stays on the left, div(J_s)/rho_s^o on the
+right with a minus. Independently re-derived and checked in
+scripts/verify_paper_equations.py: this reproduces the paper's
+own Eq. 7 exactly.
 
 J_s's definition has now been visible through every one of
 its appearances in this run (Eq. 8, kappa, and here, right up
@@ -212,7 +210,7 @@ through the rename that used it) and can finally leave.
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/a38849d8d7f44807c3215bd1e5057640b7a7a8de72ca394be333966a962fc505.mp4">
 <aside class="notes" data-markdown="">
-Product rule: div(u*Phi) = u.grad(Phi) + Phi*div(u) -- the
+Product rule: div(u*Phi) = u.grad(Phi) + Phi*div(u). The
 first piece replaces div(u*Phi) in place, the second is a
 genuinely new term. Eq. 8 stays on screen below: it's exactly
 what substitutes into that new term next.
@@ -220,7 +218,7 @@ what substitutes into that new term next.
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/c0837eac8ac48d2be2f9d9ea17488feff46ba521db85b2406b8c0fad76483055.mp4">
 <aside class="notes" data-markdown="">
-div(u) = kappa*div(J_s), by Eq. 8, named a few steps ago --
+div(u) = kappa*div(J_s), by Eq. 8, named a few steps ago,
 substituted here using that already-established name, so this
 step is a single rename, not a rename-and-define at once.
 Eq. 8 has now done its job and leaves the screen.
@@ -229,7 +227,7 @@ Eq. 8 has now done its job and leaves the screen.
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/7ab06973466c6872e8b0539dfd0d3b19496a09cd94ed5d0613d95ef4e3e62b55.mp4">
 <aside class="notes" data-markdown="">
 Step 1 of 5: Phi*kappa*div(J_s) crosses the equals sign, sign
-flipping to a minus, same as any term moving sides -- landing
+flipping to a minus, same as any term moving sides, landing
 next to the -div(J_s)/rho_s^o already there. Nothing combined
 yet, that's the next step.
 </aside>
@@ -237,7 +235,7 @@ yet, that's the next step.
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/36e6d2a38d750b90aa83d27b031e2a16fd034a8fea45f24d98e9fa538206c9a0.mp4">
 <aside class="notes" data-markdown="">
 Step 2 of 5: expanding kappa back into (rho_s^o-rho_f^o)/
-(rho_s^o*rho_f^o), the name given a few chapters back -- a
+(rho_s^o*rho_f^o), the name given a few chapters back. A
 substitution, not a new definition. Still its own separate
 term, not yet combined with -div(J_s)/rho_s^o.
 </aside>
@@ -245,7 +243,7 @@ term, not yet combined with -div(J_s)/rho_s^o.
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/726cd62356dbf17c9f3d30944ffb7098bf6c2d246df7cfea913b0eafad77d030.mp4">
 <aside class="notes" data-markdown="">
 Step 3 of 5: -1/rho_s^o, rewritten over the SAME denominator
-rho_s^o*rho_f^o that kappa_expanded_term already uses --
+rho_s^o*rho_f^o that kappa_expanded_term already uses:
 multiply top and bottom by rho_f^o to get
 -rho_f^o/(rho_s^o*rho_f^o). Nothing combined yet: this is
 just putting the two terms on equal footing so the next step
@@ -256,34 +254,34 @@ an unexplained merge.
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/38bcad61e834cbc2ec02bbe9a663c8acf2d170db0cf0281e1cfd46af589f5682.mp4">
 <aside class="notes" data-markdown="">
 Step 4 of 5: both terms now share the same denominator
-rho_s^o*rho_f^o (the previous step's whole point) -- so
-adding their numerators, rho_f^o + Phi*(rho_s^o-rho_f^o),
-over that one shared denominator is a real combination, not
-an unexplained merge. div(J_s) factored out since both
-terms carry it.
+rho_s^o*rho_f^o (the previous step's whole point), so adding
+their numerators, rho_f^o + Phi*(rho_s^o-rho_f^o), over that
+one shared denominator is a real combination, not an
+unexplained merge. div(J_s) factored out since both terms
+carry it.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/526dd1f1ba500cb3f403f3435cd0c6a190b11d4203ebfd1f93b9a6e574e4ed0c.mp4">
 <aside class="notes" data-markdown="">
 Step 5 of 5: rho_f^o + Phi*(rho_s^o-rho_f^o) expands to
 rho_f^o - Phi*rho_f^o + Phi*rho_s^o, exactly (1-Phi)*rho_f^o +
-Phi*rho_s^o -- Eq. 2's own rho, not a new quantity.
-Recognizing that lands on the correct master Phi-transport
-equation: -[rho/(rho_s^o*rho_f^o)]*div(J_s), re-derived from
-Eq. 5 with nothing borrowed from the paper's own Eq. 10.
-Every one of these four steps is machine-verified in
+Phi*rho_s^o: Eq. 2's own rho, not a new quantity. Recognizing
+that lands on the correct master Phi-transport equation:
+-[rho/(rho_s^o*rho_f^o)]*div(J_s), re-derived from Eq. 5 with
+nothing borrowed from the paper's own Eq. 10. Every one of
+these four steps is machine-verified in
 scripts/verify_paper_equations.py.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/34ccd7600760851751ffefbea1e7813a9d2715f7a933579fb9e9bf5389ff4965.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/b0dedc8a27de1f478b8a10ab7096bc5b1a6e675bec5e53d81fcd66588d7141c5.mp4">
 <aside class="notes" data-markdown="">
-The paper's own Eq. 10 uses kappa here instead of rho/
-(rho_s^o*rho_f^o) -- shown in red as the actual conflicting
+The paper's own Eq. 10 uses kappa here instead of
+rho/(rho_s^o*rho_f^o), shown in red as the actual conflicting
 term, not narrated as a sentence on screen.
 
 Worth saying out loud: their own Eq. 10 states BOTH forms
 (kappa*div(J_s) and rho/(rho_s^o*rho_f^o)*div(J_s)) and
-claims they're equal. They aren't, in general -- confirmed
+claims they're equal. They aren't, in general: confirmed
 symbolically and numerically about 20x apart at their own
 Table 1 densities, in scripts/verify_paper_equations.py.
 Separately, Eq. 21 (claimed to be Eq. 10 with the flux
@@ -291,7 +289,7 @@ closure substituted in) prints yet a third, sign-flipped
 version of this same coefficient, with no algebraic step
 that should flip a sign. Our own re-derived coefficient here
 matches the paper's rho/(rho_s^o*rho_f^o) form in magnitude
-but not sign, and doesn't match kappa at all -- kappa isn't
+but not sign, and doesn't match kappa at all. Kappa isn't
 even Phi-dependent, so it can't be right for a coefficient
 that genuinely varies with Phi through rho.
 
@@ -299,19 +297,19 @@ This is what "the paper as a starting point, not ground
 truth" means in practice: re-derive it, don't transcribe it.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/a17646abca9c5f62481141361b311e964130e65b653ab53f7ea64578917feaf2.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/333cab55d45da7b1c7ebce0fb20ec7e35369b6fc5ad55eaa53bc01bab9357446.mp4">
 <aside class="notes" data-markdown="">
 These are independent modeling closures, not a chain where each
-line is derived from the last -- accumulated on screen together
-rather than replacing one another.
+line is derived from the last. They accumulate on screen
+together rather than replacing one another.
 
 J_s decomposes into two named pieces (Eq. 11): J_sc, the
 shear-induced migration flux (Eq. 12), and J_sμ, the flux from
 spatial viscosity variation (Eq. 13).
 
 The physical picture in one sentence: particles get pushed out
-of high-shear regions toward low-shear ones (J_sc -- this is
-THE effect this whole talk is about, the one that can fight
+of high-shear regions toward low-shear ones (J_sc: this is THE
+effect this whole talk is about, the one that can fight
 buoyancy), and separately pushed toward locally less-viscous
 fluid (J_sμ, a much smaller secondary effect in this geometry).
 
@@ -320,53 +318,53 @@ in this paper, it's cited. Eqs. 11-13 come from Leighton &amp;
 Acrivos (J. Fluid Mech., 1987) for the shear-induced migration
 mechanism, and Phillips, Armstrong, Brown, Graham &amp; Abbott
 (1992) for the constitutive form combining it with the
-viscosity-gradient flux -- both in this paper's own reference
+viscosity-gradient flux, both in this paper's own reference
 list.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/e5a9e49e71025ac96c4bcb10abc37d8962de9152bcefb99c14b11ce3ba07a660.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/f83046ad6f6faaa165fa90322ca528391f91a155035768743bf08996ba93089d.mp4">
 <aside class="notes" data-markdown="">
 Eq. 14 is Eqs. 12-13's bracketed terms (renamed D_Phi, D_mu, and
-divided through by rho_s) with one new physical effect added --
-the orange sedimentation term, +f_h*u_st*Phi (printed as a
-plus in the paper, checked directly against the PDF page
-image) -- that isn't in Eq. 11's decomposition at all. This is
-the hindered-settling closure the rest of the derivation uses.
+divided through by rho_s) with one new physical effect added:
+the orange sedimentation term, +f_h*u_st*Phi (printed as a plus
+in the paper, checked directly against the PDF page image).
+That term isn't in Eq. 11's decomposition at all. This is the
+hindered-settling closure the rest of the derivation uses.
 
 The two red terms are a genuine, self-contained inconsistency
 in the paper's own printed equations, not an interpretation on
 our part: Eq. 12 says J_sc scales as Phi^2; the Phi shown in
-red here (the term Eq. 14 claims is that same J_sc -- its own
+red here (the term Eq. 14 claims is that same J_sc: its own
 text says Eq. 14 comes from "combining equations 11-13") is
 only Phi^1. Separately, the gammadot shown in red is an extra
 factor on the viscosity-gradient term that Eq. 13's own J_smu
 simply doesn't have. Both confirmed by directly comparing the
-printed powers/factors -- see
+printed powers/factors: see
 scripts/verify_paper_equations.py, Block 2.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/9212089716bc71b8457cb699ae14df8f78edd6e38ecd45b70fe6d153c34b24b4.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/f947a4193aff8adab77c610f69ac46b5b62eecf0a74ce36491e872f0cbdf756a.mp4">
 <aside class="notes" data-markdown="">
 The empirical prefactors (Eq. 15-16), the Stokes settling
 velocity (Eq. 17, from balancing drag against buoyancy for a
 single sphere), and the hindered-settling function (Eq. 18,
 correcting Stokes' law for a crowd of particles rather than one
-isolated sphere) -- three independent definitions Eq. 14 relies
+isolated sphere): three independent definitions Eq. 14 relies
 on, accumulated together and kept alongside it rather than each
 replacing the last.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/861a61f0fc61593ac7512d267a120c4abb91c7c0bc324df78897b3e96e0ea050.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/34f2038339beed7eb107d2ba23556a63809c23217e271bd54d8dc7f141eb042b.mp4">
 <aside class="notes" data-markdown="">
 The shear-rate tensor (Eq. 19) contracted with itself and
-square-rooted gives its scalar magnitude -- the general
-double-dot-product form -- then written out in components for
+square-rooted gives its scalar magnitude (the general
+double-dot-product form), then written out in components for
 this model's 2D velocity field (u, v) as Eq. 20. All three
 forms of the same quantity, together rather than paced one at
 a time: the tensor, its contraction, and the component form.
 
 The point of this scalar: it's what actually feeds into the
-flux closures (J_sc, J_sμ) and the viscosity law -- migration
+flux closures (J_sc, J_sμ) and the viscosity law. Migration
 responds to how fast the fluid is shearing, not to velocity
 itself.
 </aside>
@@ -378,7 +376,7 @@ Phi-transport equation from the previous chapter (with
 -rho/(rho_s*rho_f) left as the coefficient, not the paper's
 kappa) and Eq. 14 (the hindered-settling flux closure that
 div(J_s) is about to absorb). Eq. 14 stays on screen through
-the substitution just below -- it isn't exercised yet.
+the substitution just below; it isn't exercised yet.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/ad63b662cdc5df5d1e71d66fee643a43a7fde7e7ab5beca7cce0eaa07d993664.mp4">
@@ -387,14 +385,14 @@ J_s (divided by rho_s in Eq. 14) becomes rho_s times that same
 bracket once multiplied back through. Eq. 14 has now been
 exercised, so it leaves the screen. The rho_s^o just
 introduced obviously cancels against the rho_s^o already in
-the denominator -- that cancellation is the next, separate
+the denominator: that cancellation is the next, separate
 step, not bundled in here.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/adc9a9bb4b1e5916a6980760214eb6e1256176daaa4ae111f9a0dfad1c383ce0.mp4">
 <aside class="notes" data-markdown="">
-rho_s^o cancels cleanly, top and bottom -- leaving
--rho/rho_f^o as the whole coefficient. This is the payoff of
+rho_s^o cancels cleanly, top and bottom, leaving -rho/rho_f^o
+as the whole coefficient. This is the payoff of
 re-deriving the Phi-transport equation correctly instead of
 copying the paper's own Eq. 10/21: our version cancels to
 something genuinely simpler than what the paper prints for
@@ -408,13 +406,13 @@ relative to its own Eq. 10.
 Stokes velocity (Eq. 17) and the hindered-settling function
 (Eq. 18), recalled here from the flux-closure chapter,
 substituted into the sedimentation term (kept as a plus,
-matching Eq. 14's own printed sign, fixed earlier this pass)
--- the other half of finishing the assembly, kept as its own
-step. Every step from the master equation to here was a
+matching Eq. 14's own printed sign, fixed earlier this pass).
+That's the other half of finishing the assembly, kept as its
+own step. Every step from the master equation to here was a
 concrete substitution or simplification, shown on the same
-line rather than skipped past -- this is the one equation
-that determines where the cells go, and now it's visible how
-it got built, correctly.
+line rather than skipped past. This is the one equation that
+determines where the cells go, and now it's visible how it
+got built, correctly.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/ef701b65d9978b4babda34c78c0a7552d3b49215b0c46fcc89d91cbff34d695d.mp4">
@@ -422,23 +420,24 @@ it got built, correctly.
 Flagged in red because this is another paper-side error we
 caught, continuing directly from the previous chapter's
 finding: the paper's own text says Eq. 21 is just Eq. 10 with
-Eq. 14's closure substituted in -- a pure substitution should
-never flip an overall sign. But Eq. 21's printed coefficient,
-(rho_f-rho_s)/(rho_s*rho_f), is exactly the negative of
-Eq. 10's own kappa, (rho_s-rho_f)/(rho_s*rho_f). No algebraic
-step in their own derivation explains that flip. Verified
-symbolically in scripts/verify_paper_equations.py, Block 1.
+Eq. 14's closure substituted in, and a pure substitution
+should never flip an overall sign. But Eq. 21's printed
+coefficient, (rho_f-rho_s)/(rho_s*rho_f), is exactly the
+negative of Eq. 10's own kappa, (rho_s-rho_f)/(rho_s*rho_f).
+No algebraic step in their own derivation explains that flip.
+Verified symbolically in scripts/verify_paper_equations.py,
+Block 1.
 
 Our own version, built by re-deriving from Eq. 5 rather than
 copying Eq. 10 or Eq. 21, sidesteps the whole problem: there's
 only one coefficient, -rho/rho_f^o, and it's shown exactly how
-it was obtained -- not a print-time inconsistency to explain
+it was obtained, not a print-time inconsistency to explain
 away.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/016a6f7a9fad90404dfb30109852dc714360c57c43a9e74a682094f6f627765d.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/28bc57bae187ed1e9a1b37857e9c594afd113acb8c1940ac9c355c1423b0d721.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/55894f8683013a396c34cdb9112f0894a3e5b64b8260ecd3328d9bc9125e670f.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/750d61d85520dce36d01caece047f02f2844d326d670759766ae76edf06d1af7.mp4">
 <aside class="notes" data-markdown="">
 Two boundary conditions close the momentum equation at the
 vessel wall: wall shear stress (a linear drag law toward the
@@ -446,64 +445,64 @@ wall's own velocity) and the rotational wall velocity itself,
 solid-body rotation at angular speed omega.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/875e3c1bec525519a4167e72979e4b86b1690a39e5f8b2e9680b23841a75b2b0.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1585415cc2fbf9669961a34d4e5fb2f387a078e94abf00d7cecf5808af227237.mp4">
 <aside class="notes" data-markdown="">
 Nutrient: transport and consumption, standard advection-
 diffusion with a sink term. Growth: the cell-growth kinetics
 driven by that nutrient, and the relation between cell
-diameter and volume fraction that feeds growth back into Phi
--- this is how consuming nutrient eventually raises the local
+diameter and volume fraction that feeds growth back into Phi.
+This is how consuming nutrient eventually raises the local
 particle concentration the rest of the model tracks.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/a4fba085a0b704d132751c4182f4216ca3624d12dda776ec9726da0fb7390fcc.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/ce8ba878f05b69e0d2b78968879f6575ef1a2c299281edde4a5a125df5dc84c2.mp4">
 <aside class="notes" data-markdown="">
 The complete model, all in one place: momentum, mixture
 density/viscosity, the master Phi-transport equation, the flux
 closure, shear rate, and the nutrient/growth pair. Every one of
-these was built on screen earlier in this section -- nothing
+these was built on screen earlier in this section; nothing
 here is new, this is just the full picture side by side.
 
-[Judgment calls -- spoken here, no separate slide for just two
+[Judgment calls: spoken here, no separate slide for just two
 column headers with everything else in notes anyway. This is
 the credibility moment for the room: how do you know your
 implementation matches the paper? Honest answer: in a few
 places it can't, because the paper doesn't fully agree with
 itself.]
 
-The paper's own inconsistencies -- all machine-verified in
+The paper's own inconsistencies, all machine-verified in
 scripts/verify_paper_equations.py, not just asserted:
 - Eq. 10 states its own right-hand side two different ways
   (kappa*div(J_s) and rho/(rho_s*rho_f)*div(J_s)) and claims
-  they're equal. They aren't, in general -- confirmed
+  they're equal. They aren't, in general: confirmed
   symbolically, and numerically ~20x apart at the paper's own
   Table 1 densities. Eq. 21 then prints a THIRD version of
   this same coefficient, sign-flipped from Eq. 10's own kappa,
   with no algebraic step that should flip it. We re-derived
   the correct Phi-transport equation from Eq. 5 directly
   (shown on screen during the derivation, flagged in red both
-  times against the paper's printed forms) -- it's
+  times against the paper's printed forms): it's
   -rho/(rho_s*rho_f)*div(J_s), matching the magnitude of the
   paper's second form but not its sign, and not matching
   their first form (kappa) at all.
 - Eq. 12 and Eq. 14 disagree on the power of Φ in the J_sc
-  shear-induced-migration term -- one is linear in Φ, the other
+  shear-induced-migration term: one is linear in Φ, the other
   quadratic. Eq. 14's viscosity-gradient term also carries a
   shear-rate factor Eq. 13's own version of that term doesn't
   have. These aren't two different regimes, they're the same
   term written inconsistently. We had to pick one (we went
-  with Eq. 14's form) -- flagged on screen in red, and
-  disclosed in the tutorial notebook, not buried.
+  with Eq. 14's form), flagged on screen in red, and disclosed
+  in the tutorial notebook, not buried.
 - The equation numbering itself skips/mismatches around Eq. 27 in
-  the manuscript -- minor, but it's the kind of thing that makes
+  the manuscript: minor, but it's the kind of thing that makes
   you check everything else twice.
 
 Our own explicit approximations, disclosed the same way:
 - Φ_avg (used in the hindered-settling correction) should, by the
   model's own logic, be recomputed as a domain integral every
-  timestep -- the code currently hardcodes it as a constant.
+  timestep; the code currently hardcodes it as a constant.
   Settling never adapts to the evolving concentration field. This
-  is a real simplification, not a bug we're hiding -- flagged
+  is a real simplification, not a bug we're hiding: flagged
   directly in the tutorial notebook.
 - The paper uses two distinct symbols for the growth-rate
   constant and the nutrient-consumption constant; our code
@@ -511,47 +510,47 @@ Our own explicit approximations, disclosed the same way:
 - Caught, then actually fixed, not just disclosed: Eq. 1's
   momentum balance carries a slip-velocity stress term
   (rho*c_s*(1-c_s)*u_slip⊗u_slip) that this deck, and the actual
-  solver, used to drop silently -- caught only when spot-checked
+  solver, used to drop silently, caught only when spot-checked
   against the printed page. It's quadratic in u_slip (here, the
   Stokes settling velocity, order nanometers/second), so it's
   genuinely negligible next to the other terms and changes
-  nothing numerically -- but negligible isn't the same as
-  absent. It's now implemented for real (src/physics.jl's
+  nothing numerically. But negligible isn't the same as absent.
+  It's now implemented for real (src/physics.jl's
   slip_stress_coeff, wired into the momentum residual and its
   analytic Jacobian in src/solver.jl, verified against Gridap's
   AD Jacobian to machine precision same as every other term),
   not merely shown once on a slide and left out of the code.
 - Caught, not disclosed-as-a-choice: the momentum equation's
   buoyancy term used bare g instead of ρg (Eq. 1's literal form)
-  for most of this project -- briefly rationalized as avoiding
-  double-counting with the settling flux J_st, but that
+  for most of this project, briefly rationalized as avoiding
+  double-counting with the settling flux J_st. That
   rationalization doesn't hold: momentum (bulk flow) and J_st
   (migration relative to the bulk) are different equations, each
   needing its own buoyancy term. A bare, Φ-independent g can
   always be fully absorbed into the pressure field with zero
-  effect on velocity -- so this bug meant buoyancy could never
+  effect on velocity, so this bug meant buoyancy could never
   actually drive any flow, for any particle distribution. Found
   by the physical-consistency test suite (an exact
   rigid-body-rotation steady-state check), confirmed against the
   paper, and fixed. The right story for this room isn't "we made
-  a defensible call" -- it's "our own tests caught a real bug in
-  a place hand-inspection had missed."
+  a defensible call." It's "our own tests caught a real bug in a
+  place hand-inspection had missed."
 
-None of this is "the model is wrong" -- it's "here is exactly
+None of this is "the model is wrong." It's "here is exactly
 where we had to exercise judgment, and why," which is a more
 useful thing to tell a room of experts than a claim of perfect
 fidelity.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/71e29c8b69eb97cbae4f597b1785a53a4648765fa1a5786ded1ed3f1944eeea1.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/b649660b0403e6b940edb698f1fa3d48e0e704cd743d360ffecd141fa467843c.mp4">
 <aside class="notes" data-markdown="">
 Rewritten from scratch as a monolithic finite-element solver: all
 five fields (u, p, Φ, C, Γ) in one coupled nonlinear system,
-solved together each timestep with Newton's method
-(BackTracking line search for stability) -- not a
-segregated/split scheme where you solve for flow, then
-transport, then update, and hope it's consistent. Monolithic is
-more expensive per step but avoids splitting error entirely.
+solved together each timestep with Newton's method (BackTracking
+line search for stability). Not a segregated/split scheme where
+you solve for flow, then transport, then update, and hope it's
+consistent. Monolithic is more expensive per step but avoids
+splitting error entirely.
 
 Gamma is worth a sentence of its own: it's not a sixth physical
 unknown, it's the shear rate lifted into its own FE field purely
@@ -567,7 +566,7 @@ without a multi-stage scheme.
 One implementation detail worth a sentence if there's time:
 Gridap can differentiate the residual automatically (autodiff) to
 get the Jacobian for Newton's method, but doing that for this
-particular 5-field coupled system is expensive to compile -- so we
+particular 5-field coupled system is expensive to compile. So we
 hand-derived the Jacobian analytically instead. That's a
 compile-time/engineering story, not a physics one; happy to go
 into it in discussion if anyone's curious.
@@ -576,16 +575,16 @@ Two independent checks back this solver, both load-bearing, worth
 saying out loud even without a dedicated slide for them:
 
 1. The hand-derived analytic Jacobian is checked against Gridap's
-   own automatic differentiation of the same residual -- to a
+   own automatic differentiation of the same residual, to a
    relative Frobenius-norm error under 1e-8, i.e. machine
    precision for this problem, on both the BDF1 and BDF2
    branches. This is a regression test that runs in CI, not a
-   one-off check -- if anyone changes a nonlinear term in the
+   one-off check: if anyone changes a nonlinear term in the
    residual and forgets to update the analytic Jacobian to match,
    this test fails loudly.
 
-2. Separately -- because a correct Jacobian doesn't prove the
-   discretized equations themselves are right -- the whole
+2. Separately, because a correct Jacobian doesn't prove the
+   discretized equations themselves are right, the whole
    nonlinear system is checked against the Method of Manufactured
    Solutions: pick an arbitrary smooth function for every field,
    substitute it into the PDE to derive exactly the source term
@@ -593,8 +592,7 @@ saying out loud even without a dedicated slide for them:
    actually converges to that manufactured solution to near
    machine precision. This tests the solver's correctness
    independent of whether the manufactured solution is
-   physically realistic -- it's a math check, not a physics
-   check.
+   physically realistic. It's a math check, not a physics check.
 
 Together: we're not just trusting that the plots look plausible.
 Every term in the residual and Jacobian has been exercised
@@ -603,13 +601,13 @@ against a ground truth with a known, exact answer.
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/5f2825a75b6251df69c7e1fdc203c2fa531163d76d2d6ea589bfd9acfc047c6b.mp4">
 <aside class="notes" data-markdown="">
-Same simulation, same timestamps, two views side by side -- the
+Same simulation, same timestamps, two views side by side: the
 flow driving the migration (right) next to the concentration
 field it's redistributing (left).
 
 This is a deliberately adversarial initial condition, not a
 "nice" one: cells are placed in the upper half of the disk at
-t=0 -- which, since these cells are less dense than the
+t=0, which, since these cells are less dense than the
 surrounding medium (buoyant), is exactly the configuration
 buoyancy alone would want anyway. If buoyancy were the only thing
 going on, the concentration field would just... sit there.
@@ -619,58 +617,58 @@ redistribute away from that buoyancy-favored configuration as the
 simulation runs, and does that redistribution track where the
 flow field is most active? If yes, that's shear-induced migration
 actively fighting the passive buoyant equilibrium, which is the
-qualitative claim the whole paper is built on -- that
+qualitative claim the whole paper is built on: that
 shear-induced migration is a real, non-negligible transport
 mechanism in this geometry, not a small correction to buoyancy.
 
 Two caveats to state plainly, both on-screen as a compact note,
 not buried:
 1. The timestep here (dt=0.015s) was chosen specifically to
-   resolve the Hele-Shaw drag relaxation time (tau ~ 0.04s) -- the
+   resolve the Hele-Shaw drag relaxation time (tau ~ 0.04s), the
    one fast physical process in this model. An earlier attempt
    used a timestep ~60x too coarse for that timescale and the
    flow field never actually developed; this run's real
    transient is honestly resolved, not aliased past.
 2. Buoyancy is artificially scaled up by ~10^6 for this clip only
    (the note on-screen says so). The real Stokes settling
-   velocity for these particles is nanometers/second --
-   physically real, but it would take months to visibly cross
-   the domain, useless for an illustrative video. Scaling it up
-   makes buoyancy's pull visible on the same timescale as
+   velocity for these particles is nanometers/second: physically
+   real, but it would take months to visibly cross the domain,
+   useless for an illustrative video. Scaling it up makes
+   buoyancy's pull visible on the same timescale as
    shear-induced migration, so the audience can watch the two
    effects compete directly. The momentum equation's own gravity
-   term is untouched -- only the settling flux J_st is scaled,
-   and only in this script.
+   term is untouched; only the settling flux J_st is scaled, and
+   only in this script.
 
-The simulated window is 30s -- about 3.75 vessel rotations and
-~2.7 buoyancy-crossing times under the artificial scaling above --
+The simulated window is 30s, about 3.75 vessel rotations and
+~2.7 buoyancy-crossing times under the artificial scaling above,
 chosen so the field has room to settle into a repeating pattern
 rather than show a single partial transient. Otherwise:
 coarse-for-a-slide mesh, frames interpolated between real solves
-for smooth playback -- not a converged production result. That
+for smooth playback, not a converged production result. That
 distinction matters to this audience and I'd rather say it than
 have someone ask.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/224f6a8222d371f9342489507f8417a6593f3a822f005d3ff9d0762951ac02b2.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/4c219cffbf18efa386e721b9073acb0ea25f0aa1e0e14380e527622eb303b4bf.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/545e0c308d5d149e90edde38049280f7936ce9e08bca700cf279ea16b70c04a4.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/258756d751e749cf61c548af9edc5bfdddd87549496996a52d457cd5a2110dc2.mp4">
 <aside class="notes" data-markdown="">
-This is the paper's own §3, in its own words -- separate from
+This is the paper's own §3, in its own words, separate from
 anything we built or verified ourselves.
 
 Validation against Pollack et al.'s experiments: they match the
 HARV geometry and rotation speed (10 rpm) to that prior
 experimental study, then check whether the model reproduces the
-observed swirling/sedimentation pattern -- not a quantitative
-fit, a qualitative shape check. Denser-than-medium cells migrate
+observed swirling/sedimentation pattern. Not a quantitative fit,
+a qualitative shape check. Denser-than-medium cells migrate
 toward the outer wall; lighter-than-medium cells (this paper's
 own "floating cells" case, with cells started at the top of the
 vessel) migrate inward and mix first at the outer radius before
-slowly filling toward the center -- both match Pollack et al.'s
+slowly filling toward the center. Both match Pollack et al.'s
 reported behavior. That "floating cells" case is exactly the
 adversarial initial condition used in this talk's own results
-video a moment ago -- the paper picked the same stress test we
+video a moment ago: the paper picked the same stress test we
 did.
 
 §3.2: at higher, growing cell density (their CHO-culture runs,
@@ -680,27 +678,27 @@ note this differs in detail from Pollack et al.'s own 24-hour
 distribution experiment (which showed aggregation right at the
 center) and offer two candidate explanations: cell size (drag
 effects are stronger on smaller cells) and a smaller
-fluid/cell density mismatch weakening buoyancy's role -- offered
+fluid/cell density mismatch weakening buoyancy's role, offered
 as plausible, not confirmed.
 
 §3.3: nutrient (glucose) concentration is fairly uniform overall,
 but decreases mildly from the outer radius toward the inner
-radius, most noticeably right where cell density peaks --
+radius, most noticeably right where cell density peaks,
 consistent with local consumption tracking local cell density.
 
 §3.4: comparing simulated vs. Altamirano et al.'s experimental
 CHO growth data, doubling time and overall growth trend line up
 well, including the rotating bioreactor outperforming a batch
-reactor -- attributed to sustaining higher local cell density.
+reactor, attributed to sustaining higher local cell density.
 One discrepancy, carried to the next slide: real cultures kept
 growing 20-30 hours after nutrient was fully consumed; the
 simulation does not capture that.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/1906b83ab8f23b2a356528afc7134884a2b633c69e70d17d461cda2c1ef104a8.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_assets/49248a820b24c0fe15638dfbd2e74c52473fcc91aaba426456d388a7f9921fd8.mp4">
 <aside class="notes" data-markdown="">
-The paper is upfront about where its own model falls short --
-worth holding up next to our own judgment-calls disclosure a few
+The paper is upfront about where its own model falls short. Worth
+holding up next to our own judgment-calls disclosure a few
 slides back, since this is the paper doing the same thing for
 itself.
 
@@ -709,22 +707,22 @@ cultures kept growing for 20-30 hours after nutrient was fully
 consumed; this model's cells die off/degenerate immediately once
 nutrient runs out. The paper's own explanation is a lack of
 precise experimental data for HARV specifically to calibrate
-against -- not a claim that the mechanism is fully understood and
+against, not a claim that the mechanism is fully understood and
 just mis-tuned. This is exactly the sort of gap a design-tool
 framing can tolerate but a predictive-fit claim couldn't.
 
 Conclusion (§4), the paper's own framing of what it built: a tool
-to explore bioreactor design choices -- rotation speed, scaffold
-density, geometry, cell type -- by letting you vary parameters
-and see the qualitative consequence, rather than a validated
+to explore bioreactor design choices (rotation speed, scaffold
+density, geometry, cell type) by letting you vary parameters and
+see the qualitative consequence, rather than a validated
 quantitative predictor you'd trust for a specific culture without
 further calibration. They state plainly that several parameters
 were fixed by assumption because the necessary data didn't exist
 at the time, and that "further studies are needed" to pin those
-down -- their words, not a caveat we're adding on their behalf.
+down: their words, not a caveat we're adding on their behalf.
 
 Point for discussion: this is a second, independent instance of
-the same theme as our own judgment-calls slide -- an honest model
+the same theme as our own judgment-calls slide: an honest model
 author disclosing where the model doesn't yet have solid ground
 to stand on, rather than presenting it as finished. Worth naming
 explicitly for the room.

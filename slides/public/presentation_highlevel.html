@@ -15,9 +15,9 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/46ef291d162d319b2f488800fe0011c523070949fe8481e7e0bacb9f7b1bf51a.mp4" data-background-video-muted="">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/311b7184491d763460dff8966645849790432698026c56a81cb5e180f917d81c.mp4" data-background-video-muted="">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/9a2393affadea1e2cca3c7e999a6bbff1064b5161ba420bd48d0f4da7e5fc0cf.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/45c67ce66cd49af135af22de960181dc4f6bf0c96d161f180f2e9b30ba74e609.mp4">
 <aside class="notes" data-markdown="">
 Short version of the deck: no derivation on screen, just the
 final equations that define the model, one per slide, then the
@@ -27,21 +27,23 @@ wants the shape of the model and the result, not the algebra.
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e054a60b3108d36b6b25cd60fe718ff4b41177738ae7301e97491a3d13213795.mp4">
 <aside class="notes" data-markdown="">
-This is the paper's own Eq. 1, in full, not a simplified
-stand-in. The middle term is a stress from slip between the
-phases; it's quadratic in u_slip, which for this model is
-just the Stokes settling velocity, on the order of nanometers
-per second. That makes the term many orders of magnitude
-smaller than the others, and it changes nothing numerically at
-these settling velocities, but it is genuinely implemented in
-the solver now (src/physics.jl's slip_stress_coeff, wired into
-the momentum residual and its analytic Jacobian in
-src/solver.jl, verified against Gridap's automatic
-differentiation to machine precision). It had previously been
-omitted from both this deck and the code with no disclosure at
-all -- caught in review, then actually fixed rather than just
-written up as a disclosed simplification. The summary slide's
-momentum row still shows this same complete form.
+This is the paper's own Eq. 1, shown in full. The middle term
+is a stress from slip between the phases; it's quadratic in
+u_slip, which for this model is just the Stokes settling
+velocity, on the order of nanometers per second. That makes
+the term many orders of magnitude smaller than the others,
+and it changes nothing numerically at these settling
+velocities. It is genuinely implemented in the solver now
+(src/physics.jl's slip_stress_coeff, wired into the momentum
+residual and its analytic Jacobian in src/solver.jl, verified
+against Gridap's automatic differentiation to machine
+precision).
+
+It had previously been omitted from both this deck and the
+code with no disclosure at all: caught in review, then
+actually fixed rather than just written up as a disclosed
+simplification. The summary slide's momentum row still shows
+this same complete form.
 
 This is the only momentum equation in the model. Fluid and
 suspended cells move together as one mixture; there is no
@@ -87,12 +89,12 @@ Three competing migration mechanisms in one flux, each term
 colored to match its own explanation so the mapping from
 symbol to meaning isn't left as an exercise for the audience.
 
-Worth noting for anyone who wants the detail: the paper's own
-printed equations 12 through 14 are not fully self-consistent
-about the power of Phi in the shear-migration term (linear in
-one place, quadratic in another). We picked the form shown
-here (matching their Eq. 14) and disclose that choice rather
-than re-litigating it on this slide.
+For anyone who wants the detail: the paper's own printed
+equations 12 through 14 are not fully self-consistent about
+the power of Phi in the shear-migration term (linear in one
+place, quadratic in another). We picked the form shown here
+(matching their Eq. 14) and disclose that choice rather than
+re-litigating it on this slide.
 </aside>
 </section>
 <section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/7c999c23e37ec01d5ed619e0deaf1c1272ad2b95b4f45eec5844681d53a1543a.mp4">
@@ -195,9 +197,9 @@ with interpolated frames for smooth playback, not a converged
 production run.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/896b3e285b25ef796b50c493d0411f0b1ab5f986254b9fe7f641e86d1c1f3861.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/00097fc4ba7d657b9709ebe6271404080f89677a55734213f7ffb3132838f65f.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/1e33d8ebbda7beb6ba1b2f9cf52f89cfbce080a690ece51721db41c52b53fab2.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/9f1b62ed15aa4ec2089e4b1f2cb45dc40116df1a9fc31e457ebc139a5dbc46ef.mp4">
 <aside class="notes" data-markdown="">
 This is the paper's own simulated result, read directly off
 the figure, not something we computed ourselves. Each panel's
@@ -209,10 +211,10 @@ Physically: shear-induced migration pushes cells away from the
 highest-shear region (out near the rotating rim) and away from
 the very center (where the flow is calmest but so is the
 shear-migration driving force), so they accumulate at an
-intermediate radius instead of spreading uniformly or settling
-at either extreme. A ring, not a gradient from center to edge,
-is exactly what that competition should produce -- and that's
-what four independent time snapshots all show.
+intermediate radius instead of spreading out evenly. Four
+independent time snapshots all show the same ring, which is
+exactly what that competition between center and rim should
+produce.
 
 The next slide follows the same simulation's average density
 over time, which turns out to have its own, separate surprise.
