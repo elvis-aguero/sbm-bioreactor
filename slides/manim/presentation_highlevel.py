@@ -112,7 +112,8 @@ class Presentation(Slide):
 
     # ------------------------------------------------------------------
     def chapter_0_title(self):
-        title = Text("Where Do the Cells Go?", font_size=52, weight=BOLD)
+        title = Text("Numerical simulation of coupled cell motion and nutrient transport in NASA's rotating bioreactor",
+                     font_size=52, weight=BOLD)
         subtitle = Text(
             "High-level overview: Chao & Das (2015), Chem. Eng. J.", font_size=26, color=GRAY_B
         ).next_to(title, DOWN, buff=0.5)
