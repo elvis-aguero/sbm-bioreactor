@@ -112,7 +112,7 @@ class Presentation(Slide):
 
     # ------------------------------------------------------------------
     def chapter_0_title(self):
-        title = Text("Numerical simulation of coupled cell motion and nutrient transport in NASA's rotating bioreactor",
+        title = Text("Numerical simulation of coupled cell motion \n and nutrient transport in NASA's rotating bioreactor",
                      font_size=52, weight=BOLD)
         subtitle = Text(
             "High-level overview: Chao & Das (2015), Chem. Eng. J.", font_size=26, color=GRAY_B
