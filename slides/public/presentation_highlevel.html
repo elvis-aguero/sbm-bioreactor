@@ -15,9 +15,9 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/311b7184491d763460dff8966645849790432698026c56a81cb5e180f917d81c.mp4" data-background-video-muted="">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/4eb91bdc485bc7549f0598c0b5e7afe65de70dee89411b3e853d260cb1eb0abf.mp4" data-background-video-muted="">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/45c67ce66cd49af135af22de960181dc4f6bf0c96d161f180f2e9b30ba74e609.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/322f4583b8422e04edbd6030d9cb568de5f2dd1448fa4c76f3c75f996c96e563.mp4">
 <aside class="notes" data-markdown="">
 Short version of the deck: no derivation on screen, just the
 final equations that define the model, one per slide, then the
@@ -25,7 +25,26 @@ implementation and a results video. Good for an audience that
 wants the shape of the model and the result, not the algebra.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e054a60b3108d36b6b25cd60fe718ff4b41177738ae7301e97491a3d13213795.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/67c7d3bb760daa3ae82ec13c13239aa3a3c5e9ce296347c830d4c5dbbf3fbe9b.mp4">
+<aside class="notes" data-markdown="">
+This is the "SBM" in the paper's title: a continuum model, not
+a discrete-particle one. Instead of tracking millions of
+individual cells, it tracks one smooth field, Phi, the local
+fraction of the mixture's volume that's cells. That's what
+makes it computationally tractable for something the size of
+a bioreactor.
+
+The five equations on the next several slides are each one
+piece of this picture: momentum (how the mixture flows),
+density/viscosity (how Phi changes the fluid's own
+properties), the Phi-transport equation and its flux closure
+(the shear-vs-buoyancy competition this whole talk is about),
+and nutrient/growth (the biological side, coupled in through
+the same Phi field). Nothing on this slide is new physics;
+it's the map before the terrain.
+</aside>
+</section>
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/f9a937a0c718389219dc74f86b3b1ccb92574561d25a5c061731aa0bec372379.mp4">
 <aside class="notes" data-markdown="">
 This is the paper's own Eq. 1, shown in full. The middle term
 is a stress from slip between the phases; it's quadratic in
@@ -54,7 +73,7 @@ this system nonlinear, and is where the suspension physics
 actually enters.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/1cd1153bcd65f3e36fe784a0e6c132ab9482b689fa09ecd3c5550326a42e9d27.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/bef8e922019c50cb533fe72b669e198472719d7d69ec9edc7d66952c6bcc93fc.mp4">
 <aside class="notes" data-markdown="">
 Both closures are algebraic. No new PDEs; they just define rho
 and mu as functions of Phi so the momentum equation above can
@@ -70,7 +89,7 @@ random-close-packing limit where the suspension jams and stops
 behaving like a fluid at all.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e68f39d309a26c9885a2b1edf56b2496417fd3eccb75f004e6be6ce2316b0f6b.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/cb08eb3ab3902bc2879acd4a7407b775a8e2692d9089c8d9d804c0394fb844d6.mp4">
 <aside class="notes" data-markdown="">
 This is our own re-derivation of the paper's Phi-transport
 equation, verified from first principles with sympy
@@ -83,7 +102,7 @@ comparison live in the other deck and in the verification
 script, not here.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/9da6db855e9167cc325407eee87db00bf4e8079b4b491c973b53dbc3950986c3.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/d974c3caabe5bf7037304203b4442c195bec6df5dd876af2eb755971927f182a.mp4">
 <aside class="notes" data-markdown="">
 Three competing migration mechanisms in one flux, each term
 colored to match its own explanation so the mapping from
@@ -97,7 +116,7 @@ place, quadratic in another). We picked the form shown here
 re-litigating it on this slide.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/7c999c23e37ec01d5ed619e0deaf1c1272ad2b95b4f45eec5844681d53a1543a.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/0f7bb2208fa14db010f1a05589960175ab2c2f4f2293e178a8023589a4eb61d9.mp4">
 <aside class="notes" data-markdown="">
 The second transport equation in the system, coupled to the
 flow the same way Phi is: advected by u, plus its own
@@ -105,7 +124,7 @@ diffusion and a sink term for consumption by the cells. Feeds
 into growth kinetics on the next slide.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/45c1bd1dccf396b6113490635d07976b27fdb9427f08a4f050a493fe35adc46b.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/585e09256256ceb413a84253c6c095d42b3c044ab8accaf99cc9578a4eb8fb23.mp4">
 <aside class="notes" data-markdown="">
 Closes the loop: nutrient concentration C drives cell-density
 growth d, which converts to volume fraction Phi, which feeds
@@ -116,7 +135,7 @@ constants; our code currently reuses one parameter (kc) for
 both. That is a disclosed simplification, not a bug.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/43d01eec275cc3f6eba0fe5799c637e30c8c19006785712ddc1ae9c13848527c.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/d9b4c23ecea7580aec6ebe5a3e2dfb9968a8efc73eebee6cbef013a8364f8ba3.mp4">
 <aside class="notes" data-markdown="">
 The complete model, all seven pieces together: exactly what
 was shown one slide at a time on the previous seven slides,
@@ -124,7 +143,7 @@ gathered here for reference before moving on to the
 implementation.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/e3e7b936bf84bcdfe70ca2420ef90e4bf3b2dc1daf1e69028fbc8bb403be4b5a.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/87d4a82d8fc06f43f837ab8cabb13030a072015607763a8275a12b011fcc31d5.mp4">
 <aside class="notes" data-markdown="">
 All five fields (u, p, Phi, C, gamma-dot) solved together,
 monolithically, each timestep, via Newton's method with a
@@ -164,7 +183,7 @@ solver converges to a known exact solution to near machine
 precision. Not just "the plots look plausible."
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/ed7966600885d86f15977a01212508fdce29230c01f74e9349d315318daf5fcd.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/89c45836de5c30962811f68d2b8a1ff436cebe583dea54c96ada9015adf872dd.mp4">
 <aside class="notes" data-markdown="">
 Cells here are less dense than the surrounding medium
 (buoyant), and are placed in the upper half of the disk at
@@ -197,9 +216,9 @@ with interpolated frames for smooth playback, not a converged
 production run.
 </aside>
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/00097fc4ba7d657b9709ebe6271404080f89677a55734213f7ffb3132838f65f.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/6aed6ae353cf07fd023c9e8a02fe19a72adc5e7f364601edcc0c84d33f1baf7b.mp4">
 </section>
-<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/9f1b62ed15aa4ec2089e4b1f2cb45dc40116df1a9fc31e457ebc139a5dbc46ef.mp4">
+<section data-background-color="black" data-background-size="contain" data-background-video="presentation_highlevel_assets/4f8791c6c52a3684fc463fae702521f9f0e39cb30aaf61ff335687b7a52701e9.mp4">
 <aside class="notes" data-markdown="">
 This is the paper's own simulated result, read directly off
 the figure, not something we computed ourselves. Each panel's

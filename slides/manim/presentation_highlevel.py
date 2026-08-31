@@ -50,6 +50,7 @@ class Presentation(Slide):
         self.add(self._page)
 
         self.chapter_0_title()
+        self.chapter_0b_what_it_does()
         self.chapter_1_momentum()
         self.chapter_2_density_viscosity()
         self.chapter_3_transport()
@@ -129,6 +130,41 @@ class Presentation(Slide):
             """
         )
         self.play(FadeOut(title), FadeOut(subtitle))
+
+    # ------------------------------------------------------------------
+    def chapter_0b_what_it_does(self):
+        title = Text("What the model does", font_size=36, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
+
+        points = BulletedList(
+            "Treats the fluid and the suspended cells as one continuous\\\\mixture, not as individually tracked particles",
+            "Tracks a single field, the local particle volume fraction $\\Phi$,\\\\and couples it to the fluid flow",
+            "Two mechanisms compete to move $\\Phi$ around: shear-induced\\\\migration, which pushes cells out of high-shear regions,\\\\against buoyancy, which settles or floats them by density difference",
+            "Also tracks nutrient transport and cell growth, so the model\\\\predicts both where cells accumulate and how the population grows",
+            font_size=28,
+        ).next_to(title, DOWN, buff=0.7, aligned_edge=LEFT)
+
+        self.play(FadeIn(title))
+        self.play(LaggedStart(*[FadeIn(p) for p in points], lag_ratio=0.4))
+        self.next_slide(
+            notes="""
+            This is the "SBM" in the paper's title: a continuum model, not
+            a discrete-particle one. Instead of tracking millions of
+            individual cells, it tracks one smooth field, Phi, the local
+            fraction of the mixture's volume that's cells. That's what
+            makes it computationally tractable for something the size of
+            a bioreactor.
+
+            The five equations on the next several slides are each one
+            piece of this picture: momentum (how the mixture flows),
+            density/viscosity (how Phi changes the fluid's own
+            properties), the Phi-transport equation and its flux closure
+            (the shear-vs-buoyancy competition this whole talk is about),
+            and nutrient/growth (the biological side, coupled in through
+            the same Phi field). Nothing on this slide is new physics;
+            it's the map before the terrain.
+            """
+        )
+        self.play(FadeOut(title), FadeOut(points))
 
     # ------------------------------------------------------------------
     def chapter_1_momentum(self):
