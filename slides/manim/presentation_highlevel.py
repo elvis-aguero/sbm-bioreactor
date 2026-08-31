@@ -113,8 +113,12 @@ class Presentation(Slide):
 
     # ------------------------------------------------------------------
     def chapter_0_title(self):
-        title = Text("Numerical simulation of coupled cell motion \n and nutrient transport in NASA's rotating bioreactor",
-                     font_size=52, weight=BOLD)
+        title = Text(
+            "Numerical simulation of\ncoupled cell motion\nand nutrient transport\nin NASA's rotating bioreactor",
+            font_size=52, weight=BOLD,
+        )
+        if title.width > 12.5:
+            title.scale_to_fit_width(12.5)
         subtitle = Text(
             "High-level overview: Chao & Das (2015), Chem. Eng. J.", font_size=26, color=GRAY_B
         ).next_to(title, DOWN, buff=0.5)
