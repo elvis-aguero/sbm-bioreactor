@@ -34,6 +34,8 @@ RESULTS_VIDEO = Path(__file__).parent / "results_combined.mp4"
 # (see presentation.py's header comment for the extraction method).
 PAPER_FIGURE_7 = Path(__file__).parent.parent.parent / "assets" / "Chao_Das_2015_figure7.png"
 PAPER_FIGURE_10 = Path(__file__).parent.parent.parent / "assets" / "Chao_Das_2015_figure10.png"
+GITHUB_ICON = Path(__file__).parent.parent.parent / "assets" / "github_mark.svg"
+CODE_URL = "github.com/elvis-aguero/sbm-bioreactor"
 
 
 def eq(tex, font_size=EQ_FONT):
@@ -50,7 +52,8 @@ class Presentation(Slide):
         self.add(self._page)
 
         self.chapter_0_title()
-        self.chapter_0b_what_it_does()
+        # self.chapter_0b_what_it_does()  # hidden per feedback: too much
+        # text for its own slide.
         self.chapter_1_momentum()
         self.chapter_2_density_viscosity()
         self.chapter_3_transport()
@@ -63,7 +66,8 @@ class Presentation(Slide):
         self.chapter_7_growth()
         self.chapter_8_summary()
         self.chapter_9_implementation()
-        self.chapter_10_results_setup()
+        # self.chapter_10_results_setup()  # removed per feedback: says
+        # nothing beyond what the video itself + its notes already cover.
         self.chapter_11_results_video()
         self.chapter_12_ring_pattern()
         self.chapter_13_density_collapse()
@@ -548,10 +552,16 @@ class Presentation(Slide):
             Tex(r"$\dot{\gamma}$: shear rate, solved as its own field", font_size=30),
         ).arrange(DOWN, buff=0.22, aligned_edge=LEFT).next_to(headline, RIGHT, buff=1.0, aligned_edge=UP)
 
+        github_icon = SVGMobject(str(GITHUB_ICON)).set_color(WHITE).scale_to_fit_height(0.4)
+        github_text = Text(CODE_URL, font_size=22, color=GRAY_B)
+        github_group = VGroup(github_icon, github_text).arrange(RIGHT, buff=0.2)
+        github_group.to_corner(DL, buff=0.4).align_to(title, LEFT)
+
         self.play(FadeIn(title), FadeIn(subtitle))
         self.play(FadeIn(headline))
         self.play(Create(mesh))
         self.play(FadeIn(fields))
+        self.play(FadeIn(github_group))
         self.next_slide(
             notes="""
             All five fields (u, p, Phi, C, gamma-dot) solved together,
@@ -592,10 +602,11 @@ class Presentation(Slide):
             precision. Not just "the plots look plausible."
             """
         )
-        self.play(FadeOut(title), FadeOut(subtitle), FadeOut(headline), FadeOut(mesh), FadeOut(fields))
-        # No extra next_slide() here: chapter_10 has real animations of
-        # its own, so this fade-out folds safely into its leading content
-        # instead of needing a dedicated (and otherwise-blank) slide.
+        self.play(FadeOut(title), FadeOut(subtitle), FadeOut(headline), FadeOut(mesh), FadeOut(fields), FadeOut(github_group))
+        # No extra next_slide() here: chapter_11's next_slide(src=...) call
+        # replaces the whole frame with the external video anyway, so this
+        # fade-out folds safely into that transition instead of needing a
+        # dedicated (and otherwise-blank) slide.
 
     # ------------------------------------------------------------------
     def chapter_10_results_setup(self):
@@ -652,27 +663,26 @@ class Presentation(Slide):
 
     # ------------------------------------------------------------------
     def chapter_12_ring_pattern(self):
-        title = Text("Cells pile up in a ring around mid-radius", font_size=30, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
+        title = Text("Simulations from the paper", font_size=32, weight=BOLD).to_edge(UP, buff=0.6).to_edge(LEFT, buff=LEFT_BUFF)
+        subtitle = Text("Results", font_size=22, color=GRAY_B).next_to(title, DOWN, buff=0.15, aligned_edge=LEFT)
 
-        fig = ImageMobject(str(PAPER_FIGURE_7)).scale_to_fit_width(6.0).next_to(title, DOWN, buff=0.4, aligned_edge=LEFT)
+        fig = ImageMobject(str(PAPER_FIGURE_7)).scale_to_fit_width(6.0).next_to(subtitle, DOWN, buff=0.4, aligned_edge=LEFT)
         fig_caption = Text(
             "Fig. 7, Chao & Das (2015): simulated cell density at t = 1, 3, 5, 7 days",
             font_size=16, color=GRAY_B,
         ).next_to(fig, DOWN, buff=0.15, aligned_edge=LEFT)
 
-        meaning_header = Text("What the picture shows", font_size=20, color=BLUE_C)
-        meaning = BulletedList(
+        meaning_block = BulletedList(
             "Density concentrates in a thin, bright ring at roughly two-thirds\\\\of the disk's radius, in all four snapshots",
             "Just inside that ring, density is depleted: a visibly darker\\\\band sits between the ring and the center",
             "Shear-induced migration pushes cells out of the middle\\\\and out from the rim, and they pile up at that ring in between",
             font_size=22,
         )
-        meaning_block = VGroup(meaning_header, meaning).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
         if meaning_block.width > 6.0:
             meaning_block.scale(6.0 / meaning_block.width, about_edge=LEFT)
         meaning_block.next_to(fig, RIGHT, buff=0.8, aligned_edge=UP)
 
-        self.play(FadeIn(title))
+        self.play(FadeIn(title), FadeIn(subtitle))
         self.play(FadeIn(fig), FadeIn(fig_caption))
         self.play(FadeIn(meaning_block))
         self.next_slide(
@@ -696,7 +706,7 @@ class Presentation(Slide):
             over time, which turns out to have its own, separate surprise.
             """
         )
-        self.play(FadeOut(title), FadeOut(fig), FadeOut(fig_caption), FadeOut(meaning_block))
+        self.play(FadeOut(title), FadeOut(subtitle), FadeOut(fig), FadeOut(fig_caption), FadeOut(meaning_block))
 
     # ------------------------------------------------------------------
     def chapter_13_density_collapse(self):
@@ -708,29 +718,19 @@ class Presentation(Slide):
             font_size=16, color=GRAY_B,
         ).next_to(fig, DOWN, buff=0.15, aligned_edge=LEFT)
 
-        meaning_header = Text("What the curve shows", font_size=20, color=BLUE_C)
-        meaning = BulletedList(
+        meaning_block = BulletedList(
             "Density roughly doubles over the first 4 days\\\\(about $3\\times10^{11}\\to 7\\times10^{11}$ cells/m$^3$)",
             "It plateaus around day 4-5, matching Fig. 7's own day-5 peak",
             "Then it collapses by nearly two-thirds by day 7,\\\\the same crash Fig. 7's color scale hinted at, now unmistakable",
             font_size=22,
         )
-        meaning_block = VGroup(meaning_header, meaning).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
         if meaning_block.width > 6.0:
             meaning_block.scale(6.0 / meaning_block.width, about_edge=LEFT)
         meaning_block.next_to(fig, RIGHT, buff=0.8, aligned_edge=UP)
 
-        question = Text(
-            "What happens after day 5?", font_size=24, color=BLUE_C, weight=BOLD
-        )
-        if question.width > 6.0:
-            question.scale(6.0 / question.width)
-        question.next_to(meaning_block, DOWN, buff=0.6, aligned_edge=LEFT)
-
         self.play(FadeIn(title))
         self.play(FadeIn(fig), FadeIn(fig_caption))
         self.play(FadeIn(meaning_block))
-        self.play(FadeIn(question))
         self.next_slide(
             notes="""
             This is the same simulation as the previous slide, plotted as
