@@ -13,7 +13,7 @@ This repository provides a fully coupled, monolithic solver for the Navier-Stoke
 ### 1. Installation
 Ensure you have [Julia](https://julialang.org/) installed.
 ```bash
-git clone https://github.com/your-username/sbm-bioreactor
+git clone https://github.com/elvis-aguero/sbm-bioreactor
 cd sbm-bioreactor
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
 ```
