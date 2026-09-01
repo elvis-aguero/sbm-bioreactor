@@ -329,15 +329,25 @@ class Presentation(Slide):
         # Each additive piece of the equation is colored to match its own
         # explanation below, in place, instead of a free-floating bullet
         # list the reader has to map back onto the symbols by guesswork.
-        eq_parts = VGroup(
+        # Two lines, not one: f_h and u_st are substituted in from their own
+        # explicit formulas (Eqs. 17-18), not left as opaque named symbols,
+        # which makes the settling term too wide to share a line with the
+        # bracketed shear/viscosity terms.
+        row1 = VGroup(
             MathTex(r"\mathbf{J}_s/\rho_s^\circ = -\Big[", font_size=EQ_FONT),
             MathTex(r"0.41a^2\Phi\nabla(\dot{\gamma}\Phi)", font_size=EQ_FONT, color=BLUE_C),
             MathTex(r"+", font_size=EQ_FONT),
             MathTex(r"0.62a^2\Phi^2\dot{\gamma}\nabla(\ln\mu)", font_size=EQ_FONT, color=GREEN_C),
             MathTex(r"\Big]", font_size=EQ_FONT),
-            MathTex(r"+", font_size=EQ_FONT),
-            MathTex(r"f_h\mathbf{u}_{st}\Phi", font_size=EQ_FONT, color=ORANGE),
         ).arrange(RIGHT, buff=0.12)
+        row2 = VGroup(
+            MathTex(r"+", font_size=EQ_FONT),
+            MathTex(
+                r"\Phi\,\frac{2\mu_f a^2(1-\Phi_{avg})(\rho_s-\rho_f)}{9\mu^2}\,\mathbf{g}",
+                font_size=EQ_FONT, color=ORANGE,
+            ),
+        ).arrange(RIGHT, buff=0.12)
+        eq_parts = VGroup(row1, row2).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
         if eq_parts.width > MAX_EQ_WIDTH:
             eq_parts.scale_to_fit_width(MAX_EQ_WIDTH)
         eq_parts.next_to(title, DOWN, buff=0.55, aligned_edge=LEFT)
@@ -363,8 +373,7 @@ class Presentation(Slide):
         terms = self._legend(
             r"$a$: cell radius",
             r"$\dot{\gamma}$: shear rate (solved as its own field; see Implementation)",
-            r"$f_h$: hindered-settling function",
-            r"$\mathbf{u}_{st}$: Stokes settling velocity",
+            r"$\Phi_{avg}$: domain-average particle volume fraction",
             font_size=18,
         )
         term_group = VGroup(terms_header, terms).arrange(DOWN, buff=0.12, aligned_edge=LEFT)
